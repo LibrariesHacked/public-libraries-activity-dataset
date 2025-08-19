@@ -143,7 +143,6 @@ def rotate_activity_data():
                 elif 'digital' in header:
                     physical_digital = 'Digital'
 
-                # total_active_members active_members_11_under active_members_adults active_members_12_17
                 # Members: We want a schema of Authority, Age Group, Count
                 if header.startswith('active_members') and value != "":
                     authority_members.append({
@@ -165,13 +164,14 @@ def rotate_activity_data():
 
                 # Now events - these are the columns total_physical_events_april,total_physical_events_may,total_physical_events_june,total_physical_events_july,total_physical_events_august,total_physical_events_september,total_physical_events_october,total_physical_events_november,total_physical_events_december,total_physical_events_january,total_physical_events_february,total_physical_events_march,physical_events_adults_april,physical_events_adults_may,physical_events_adults_june,physical_events_adults_july,physical_events_adults_august,physical_events_adults_september,physical_events_adults_october,physical_events_adults_november,physical_events_adults_december,physical_events_adults_january,physical_events_adults_february,physical_events_adults_march,physical_events_11_under_april,physical_events_11_under_may,physical_events_11_under_june,physical_events_11_under_july,physical_events_11_under_august,physical_events_11_under_september,physical_events_11_under_october,physical_events_11_under_november,physical_events_11_under_december,physical_events_11_under_january,physical_events_11_under_february,physical_events_11_under_march,physical_events_12_17_april,physical_events_12_17_may,physical_events_12_17_june,physical_events_12_17_july,physical_events_12_17_august,physical_events_12_17_september,physical_events_12_17_october,physical_events_12_17_november,physical_events_12_17_december,physical_events_12_17_january,physical_events_12_17_february,physical_events_12_17_march,physical_events_all_ages_april,physical_events_all_ages_may,physical_events_all_ages_june,physical_events_all_ages_july,physical_events_all_ages_august,physical_events_all_ages_september,physical_events_all_ages_october,physical_events_all_ages_november,physical_events_all_ages_december,physical_events_all_ages_january,physical_events_all_ages_february,physical_events_all_ages_march,total_digital_events_april,total_digital_events_may,total_digital_events_june,total_digital_events_july,total_digital_events_august,total_digital_events_september,total_digital_events_october,total_digital_events_november,total_digital_events_december,total_digital_events_january,total_digital_events_february,total_digital_events_march,digital_events_adults_april,digital_events_adults_may,digital_events_adults_june,digital_events_adults_july,digital_events_adults_august,digital_events_adults_september,digital_events_adults_october,digital_events_adults_november,digital_events_adults_december,digital_events_adults_january,digital_events_adults_february,digital_events_adults_march,digital_events_11_under_april,digital_events_11_under_may,digital_events_11_under_june,digital_events_11_under_july,digital_events_11_under_august,digital_events_11_under_september,digital_events_11_under_october,digital_events_11_under_november,digital_events_11_under_december,digital_events_11_under_january,digital_events_11_under_february,digital_events_11_under_march,digital_events_12_17_april,digital_events_12_17_may,digital_events_12_17_june,digital_events_12_17_july,digital_events_12_17_august,digital_events_12_17_september,digital_events_12_17_october,digital_events_12_17_november,digital_events_12_17_december,digital_events_12_17_january,digital_events_12_17_february,digital_events_12_17_march,digital_events_all_ages_april,digital_events_all_ages_may,digital_events_all_ages_june,digital_events_all_ages_july,digital_events_all_ages_august,digital_events_all_ages_september,digital_events_all_ages_october,digital_events_all_ages_november,digital_events_all_ages_december,digital_events_all_ages_january,digital_events_all_ages_february,digital_events_all_ages_march
                 if header.startswith('total_physical_events') or header.startswith('physical_events') or header.startswith('total_digital_events') or header.startswith('digital_events'):
-                    authority_events.append({
-                        'Authority': authority_code,
-                        'Event type': physical_digital,
-                        'Age group': age_group or 'All ages',
-                        'Period': period_start,
-                        'Count': value
-                    })
+                    if value is not None and value != "":
+                        authority_events.append({
+                            'Authority': authority_code,
+                            'Event type': physical_digital,
+                            'Age group': age_group or 'All ages',
+                            'Period': period_start,
+                            'Count': value
+                        })
 
                 # Attendance: total_attendees_physical_events_april,total_attendees_physical_events_may,total_attendees_physical_events_june,total_attendees_physical_events_july,total_attendees_physical_events_august,total_attendees_physical_events_september,total_attendees_physical_events_october,total_attendees_physical_events_november,total_attendees_physical_events_december,total_attendees_physical_events_january,total_attendees_physical_events_february,total_attendees_physical_events_march,physical_attendees_adults_april,physical_attendees_adults_may,physical_attendees_adults_june,physical_attendees_adults_july,physical_attendees_adults_august,physical_attendees_adults_september,physical_attendees_adults_october,physical_attendees_adults_november,physical_attendees_adults_december,physical_attendees_adults_january,physical_attendees_adults_february,physical_attendees_adults_march,physical_attendees_11_under_april,physical_attendees_11_under_may,physical_attendees_11_under_june,physical_attendees_11_under_july,physical_attendees_11_under_august,physical_attendees_11_under_september,physical_attendees_11_under_october,physical_attendees_11_under_november,physical_attendees_11_under_december,physical_attendees_11_under_january,physical_attendees_11_under_february,physical_attendees_11_under_march,physical_attendees_12_17_april,physical_attendees_12_17_may,physical_attendees_12_17_june,physical_attendees_12_17_july,physical_attendees_12_17_august,physical_attendees_12_17_september,physical_attendees_12_17_october,physical_attendees_12_17_november,physical_attendees_12_17_december,physical_attendees_12_17_january,physical_attendees_12_17_february,physical_attendees_12_17_march,total_attendees_digital_events_april,total_attendees_digital_events_may,total_attendees_digital_events_june,total_attendees_digital_events_july,total_attendees_digital_events_august,total_attendees_digital_events_september,total_attendees_digital_events_october,total_attendees_digital_events_november,total_attendees_digital_events_december,total_attendees_digital_events_january,total_attendees_digital_events_february,total_attendees_digital_events_march,digital_attendees_adults_april,digital_attendees_adults_may,digital_attendees_adults_june,digital_attendees_adults_july,digital_attendees_adults_august,digital_attendees_adults_september,digital_attendees_adults_october,digital_attendees_adults_november,digital_attendees_adults_december,digital_attendees_adults_january,digital_attendees_adults_february,digital_attendees_adults_march,digital_attendees_11_under_april,digital_attendees_11_under_may,digital_attendees_11_under_june,digital_attendees_11_under_july,digital_attendees_11_under_august,digital_attendees_11_under_september,digital_attendees_11_under_october,digital_attendees_11_under_november,digital_attendees_11_under_december,digital_attendees_11_under_january,digital_attendees_11_under_february,digital_attendees_11_under_march,digital_attendees_12_17_april,digital_attendees_12_17_may,digital_attendees_12_17_june,digital_attendees_12_17_july,digital_attendees_12_17_august,digital_attendees_12_17_september,digital_attendees_12_17_october,digital_attendees_12_17_november,digital_attendees_12_17_december,digital_attendees_12_17_january,digital_attendees_12_17_february,digital_attendees_12_17_march
                 if header.startswith('total_attendees_physical_events') or header.startswith('physical_attendees') or \
@@ -185,6 +185,32 @@ def rotate_activity_data():
                             'Count': value
                         })
 
+            # For events we need to split the array into arrays grouped by just event type and age group
+            events_dict = {}
+            for record in authority_events:
+                key = (record['Event type'],
+                       record['Age group'])
+                if key not in events_dict:
+                    events_dict[key] = []
+                events_dict[key].append(record)
+
+            # Then for each grouping we need to work out if the dates are monthly or quarterly
+            event_frequency = None
+            for (event_type, age_group), records in events_dict.items():
+                if len(records) == 4:
+                    event_frequency = 'Quarterly'
+                elif len(records) == 12:
+                    event_frequency = 'Monthly'
+
+                for record in records:
+                    period = None
+                    if event_frequency == 'Monthly':
+                        period = record['Period'] + '/P1M'
+                    elif event_frequency == 'Quarterly':
+                        period = record['Period'] + '/P3M'
+                    record['Period'] = period
+            events.extend(authority_events)
+
             # For attendance we need to split the array into arrays grouped by just event type and age group
             attendance_dict = {}
             for record in authority_attendance:
@@ -195,23 +221,22 @@ def rotate_activity_data():
                 attendance_dict[key].append(record)
 
             # Then for each grouping we need to work out if the dates are monthly or quarterly
-            # Quarterly will only have 4 completed entries - monthly will have 12
-            frequency = None
+            attendance_frequency = None
             for (event_type, age_group), records in attendance_dict.items():
                 if len(records) == 4:
-                    frequency = 'Quarterly'
+                    attendance_frequency = 'Quarterly'
                 elif len(records) == 12:
-                    frequency = 'Monthly'
+                    attendance_frequency = 'Monthly'
 
                 for record in records:
                     period = None
-                    if frequency == 'Monthly':
+                    if attendance_frequency == 'Monthly':
                         period = record['Period'] + '/P1M'
-                    elif frequency == 'Quarterly':
+                    elif attendance_frequency == 'Quarterly':
                         period = record['Period'] + '/P3M'
                     record['Period'] = period
-
             attendance.extend(authority_attendance)
+
             members.extend(authority_members)
             events.extend(authority_events)
 
