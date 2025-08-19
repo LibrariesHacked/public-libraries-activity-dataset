@@ -8,12 +8,14 @@ ISSUES = './data/issues.csv'
 VISITS = './data/visits.csv'
 COMPUTER_USAGE = './data/computer_usage.csv'
 METADATA = './data/libraries_metadata.csv'
+AUTHORITIES = './data/uk_local_authorities.csv'
 
 
 def rotate_activity_data():
     """Rotate the activity data from the input CSV file into multiple output files."""
 
     with open(INPUT, mode='r', newline='', encoding='utf-8') as infile, \
+            open(AUTHORITIES, mode='r', newline='', encoding='utf-8') as authorities_file, \
             open(MEMBERS, mode='w', newline='', encoding='utf-8') as members_out, \
             open(EVENTS, mode='w', newline='', encoding='utf-8') as events_out, \
             open(ATTENDANCE, mode='w', newline='', encoding='utf-8') as attendance_out, \
@@ -22,6 +24,19 @@ def rotate_activity_data():
             open(COMPUTER_USAGE, mode='w', newline='', encoding='utf-8') as computer_usage_out, \
             open(METADATA, mode='w', newline='', encoding='utf-8') as metadata_out:
         reader = csv.DictReader(infile)
+
+        # Create a lookup dictionary for authorities
+        authorities = {}
+        authorities_reader = csv.DictReader(authorities_file)
+        for authority_row in authorities_reader:
+            auth_object = {
+                'gss-code': authority_row['gss-code'],
+                'official-name': authority_row['official-name'],
+                'nice-name': authority_row['nice-name']
+            }
+            # Use both official name and nice name as keys for lookup
+            authorities[authority_row['nice-name']] = auth_object
+            authorities[authority_row['official-name']] = auth_object
 
         members_writer = csv.DictWriter(members_out, fieldnames=[
                                         'Authority', 'Age group', 'Count'])
@@ -39,6 +54,16 @@ def rotate_activity_data():
         for row in reader:
 
             authority = row['authority']
+            authority_code = None
+            authority_nice_name = None
+
+            if authority in authorities:
+                authority_code = authorities[authority]['gss-code']
+                authority_nice_name = authorities[authority]['nice-name']
+            else:
+                # If the authority is not found, we skip this row.
+                print(f"Authority '{authority}' not found in authorities data.")
+                continue
 
             # Each row is a single reading which could be a monthly count or other data point.
             for header, value in row.items():
@@ -108,7 +133,7 @@ def rotate_activity_data():
                 # Members: We want a schema of Authority, Age Group, Count
                 if header.startswith('active_members') and value != "":
                     members_writer.writerow(
-                        {'Authority': authority, 'Age group': age_group, 'Count': value})
+                        {'Authority': authority_code, 'Age group': age_group, 'Count': value})
 
                 if header.startswith('total_active_members'):
                     # We only record the total members IF there is no data for the individual age groups.
@@ -116,7 +141,7 @@ def rotate_activity_data():
                        row.get('active_members_adults') == "" and \
                        row.get('active_members_12_17') == "":
                         members_writer.writerow({
-                            'Authority': authority,
+                            'Authority': authority_code,
                             'Age group': 'Unknown',
                             'Count': value
                         })
@@ -125,7 +150,7 @@ def rotate_activity_data():
                 if header.startswith('total_physical_events') or header.startswith('physical_events') or header.startswith('total_digital_events') or header.startswith('digital_events'):
 
                     events_writer.writerow({
-                        'Authority': authority,
+                        'Authority': authority_code,
                         'Event type': physical_digital,
                         'Age group': age_group,
                         'Start': start,
@@ -138,7 +163,7 @@ def rotate_activity_data():
                    header.startswith('total_attendees_digital_events') or header.startswith('digital_attendees'):
 
                     attendance_out.writerow({
-                        'Authority': authority,
+                        'Authority': authority_code,
                         'Event type': physical_digital,
                         'Age group': age_group,
                         'Start': start,
