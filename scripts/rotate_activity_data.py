@@ -12,9 +12,11 @@ MEMBERS = './data/members.csv'
 EVENTS = './data/events.csv'
 ATTENDANCE = './data/event_attendance.csv'
 LOANS = './data/loans.csv'
+CLICK_COLLECT = './data/click_and_collect.csv'
 VISITS = './data/visits.csv'
 COMPUTER_USAGE = './data/computer_usage.csv'
-METADATA = './data/libraries_metadata.csv'
+WIFI_SESSIONS = './data/wifi_sessions.csv'
+SERVICES = './data/services.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
 
 
@@ -41,9 +43,11 @@ def rotate_activity_data():
             open(EVENTS, mode='w', newline='', encoding='utf-8') as events_out, \
             open(ATTENDANCE, mode='w', newline='', encoding='utf-8') as attendance_out, \
             open(LOANS, mode='w', newline='', encoding='utf-8') as loans_out, \
+            open(CLICK_COLLECT, mode='w', newline='', encoding='utf-8') as click_collect_out, \
             open(VISITS, mode='w', newline='', encoding='utf-8') as visits_out, \
             open(COMPUTER_USAGE, mode='w', newline='', encoding='utf-8') as computer_usage_out, \
-            open(METADATA, mode='w', newline='', encoding='utf-8') as metadata_out:
+            open(WIFI_SESSIONS, mode='w', newline='', encoding='utf-8') as wifi_sessions_out, \
+            open(SERVICES, mode='w', newline='', encoding='utf-8') as services_out:
         reader = csv.DictReader(infile)
 
         # Create a lookup dictionary for authorities
@@ -79,21 +83,36 @@ def rotate_activity_data():
         loans_writer.writeheader()
         loans = []
 
+        click_collect_writer = csv.DictWriter(click_collect_out, fieldnames=[
+            'Authority', 'Period', 'Count'])
+        click_collect_writer.writeheader()
+        click_collect = []
+
         visits_writer = csv.DictWriter(visits_out, fieldnames=[
-            'Authority', 'Age group', 'Period', 'Count'])
+            'Authority', 'Location', 'Period', 'Count'])
         visits_writer.writeheader()
         visits = []
 
         computer_usage_writer = csv.DictWriter(computer_usage_out, fieldnames=[
-            'Authority', 'Age group', 'Period', 'Count'])
+            'Authority', 'Period', 'Hours'])
         computer_usage_writer.writeheader()
         computer_usage = []
 
-        metadata_writer = csv.DictWriter(metadata_out, fieldnames=[
-                                         'Authority', 'Year', 'Total Events', 'Total Attendance',
-                                         'Total Issues', 'Total Visits', 'Total Computer Usage'])
+        wifi_sessions_writer = csv.DictWriter(wifi_sessions_out, fieldnames=[
+            'Authority', 'Period', 'Sessions'])
+        wifi_sessions_writer.writeheader()
+        wifi_sessions = []
+
+        metadata_writer = csv.DictWriter(services_out, fieldnames=['Authority code',
+                                                                   'Authority nice name',
+                                                                   'Library service',
+                                                                   'Year', 'Events', 'Attendance',
+                                                                   'Issues', 'Visits',
+                                                                   'Computer usage',
+                                                                   'Population under 12', 'Population 12-17',
+                                                                   'Population adult'])
         metadata_writer.writeheader()
-        metadata = []
+        services = []
 
         # Each row is all the authority's activity data for the year
         for row in reader:
@@ -106,8 +125,10 @@ def rotate_activity_data():
             authority_events = []
             authority_attendance = []
             authority_loans = []
+            authority_click_collect = []
             authority_visits = []
             authority_computer_usage = []
+            authority_wifi_sessions = []
 
             # Check if the authority exists in the authorities data
             if authority in authorities:
@@ -201,7 +222,7 @@ def rotate_activity_data():
                         })
                 if header.startswith('total_physical_events'):
                     # Record total physical events IF no data for the individual months.
-                    if row.get('physical_events_june') == "":
+                    if row.get('physical_events_march') == "":
                         if value is not None and value != "":
                             authority_events.append({
                                 'Authority': authority_code,
@@ -212,7 +233,7 @@ def rotate_activity_data():
                             })
                 if header.startswith('total_digital_events'):
                     # Record the total digital events IF there is no data for the individual months.
-                    if row.get('digital_events_june') == "":
+                    if row.get('digital_events_march') == "":
                         if value is not None and value != "":
                             authority_events.append({
                                 'Authority': authority_code,
@@ -235,7 +256,7 @@ def rotate_activity_data():
                         })
                 if header.startswith('total_attendees_physical_events'):
                     # Record total physical attendance IF no data for the individual months.
-                    if row.get('physical_attendees_june') == "":
+                    if row.get('physical_attendees_march') == "":
                         if value is not None and value != "":
                             authority_attendance.append({
                                 'Authority': authority_code,
@@ -246,7 +267,7 @@ def rotate_activity_data():
                             })
                 if header.startswith('total_attendees_digital_events'):
                     # Record total digital attendance IF no data for the individual months.
-                    if row.get('digital_attendees_june') == "":
+                    if row.get('digital_attendees_march') == "":
                         if value is not None and value != "":
                             authority_attendance.append({
                                 'Authority': authority_code,
@@ -256,20 +277,29 @@ def rotate_activity_data():
                                 'Count': value
                             })
 
-                # Loans: total_physical_book_issues_april,total_physical_book_issues_may,total_physical_book_issues_june,total_physical_book_issues_july,total_physical_book_issues_august,total_physical_book_issues_september,total_physical_book_issues_october,total_physical_book_issues_november,total_physical_book_issues_december,total_physical_book_issues_january,total_physical_book_issues_february,total_physical_book_issues_march,loans_adult_april,loans_adult_may,loans_adult_june,loans_adult_july,loans_adult_august,loans_adult_september,loans_adult_october,loans_adult_november,loans_adult_december,loans_adult_january,loans_adult_february,loans_adult_march,loans_11_under_april,loans_11_under_may,loans_11_under_june,loans_11_under_july,loans_11_under_august,loans_11_under_september,loans_11_under_october,loans_11_under_november,loans_11_under_december,loans_11_under_january,loans_11_under_february,loans_11_under_march,loans_12_17_april,loans_12_17_may,loans_12_17_june,loans_12_17_july,loans_12_17_august,loans_12_17_september,loans_12_17_october,loans_12_17_november,loans_12_17_december,loans_12_17_january,loans_12_17_february,loans_12_17_march,total_physical_audiobook_issues_april,total_physical_audiobook_issues_may,total_physical_audiobook_issues_june,total_physical_audiobook_issues_july,total_physical_audiobook_issues_august,total_physical_audiobook_issues_september,total_physical_audiobook_issues_october,total_physical_audiobook_issues_november,total_physical_audiobook_issues_december,total_physical_audiobook_issues_january,total_physical_audiobook_issues_february,total_physical_audiobook_issues_march,loans_adult_april_digital,loans_adult_may_digital,loans_adult_june_digital,loans_adult_july_digital,loans_adult_august_digital,loans_adult_september_digital,loans_adult_october_digital,loans_adult_november_digital,loans_adult_december_digital,loans_adult_january_digital,loans_adult_february_digital,loans_adult_march_digital,loans_11_under_april_digital,loans_11_under_may_digital,loans_11_under_june_digital,loans_11_under_july_digital,loans_11_under_august_digital,loans_11_under_september_digital,loans_11_under_october_digital,loans_11_under_november_digital,loans_11_under_december_digital,loans_11_under_january_digital,loans_11_under_february_digital,loans_11_under_march_digital,loans_12_17_april_digital,loans_12_17_may_digital,loans_12_17_june_digital,loans_12_17_july_digital,loans_12_17_august_digital,loans_12_17_september_digital,loans_12_17_october_digital,loans_12_17_november_digital,loans_12_17_december_digital,loans_12_17_january_digital,loans_12_17_february_digital,loans_12_17_march_digital,ebook_and_eaudio_data_collection,total_ebook_issues_april,total_ebook_issues_may,total_ebook_issues_june,total_ebook_issues_july,total_ebook_issues_august,total_ebook_issues_september,total_ebook_issues_october,total_ebook_issues_november,total_ebook_issues_december,total_ebook_issues_january,total_ebook_issues_february,total_ebook_issues_march,ebooks_adult_april,ebooks_adult_may,ebooks_adult_june,ebooks_adult_july,ebooks_adult_august,ebooks_adult_september,ebooks_adult_october,ebooks_adult_november,ebooks_adult_december,ebooks_adult_january,ebooks_adult_february,ebooks_adult_march,ebooks_11_under_april,ebooks_11_under_may,ebooks_11_under_june,ebooks_11_under_july,ebooks_11_under_august,ebooks_11_under_september,ebooks_11_under_october,ebooks_11_under_november,ebooks_11_under_december,ebooks_11_under_january,ebooks_11_under_february,ebooks_11_under_march,ebooks_12_17_april,ebooks_12_17_may,ebooks_12_17_june,ebooks_12_17_july,ebooks_12_17_august,ebooks_12_17_september,ebooks_12_17_october,ebooks_12_17_november,ebooks_12_17_december,ebooks_12_17_january,ebooks_12_17_february,ebooks_12_17_march,total_digital_audiobook_issues_april,total_digital_audiobook_issues_may,total_digital_audiobook_issues_june,total_digital_audiobook_issues_july,total_digital_audiobook_issues_august,total_digital_audiobook_issues_september,total_digital_audiobook_issues_october,total_digital_audiobook_issues_november,total_digital_audiobook_issues_december,total_digital_audiobook_issues_january,total_digital_audiobook_issues_february,total_digital_audiobook_issues_march,digital_audiobook_issues_adult_april,digital_audiobook_issues_adult_may,digital_audiobook_issues_adult_june,digital_audiobook_issues_adult_july,digital_audiobook_issues_adult_august,digital_audiobook_issues_adult_september,digital_audiobook_issues_adult_october,digital_audiobook_issues_adult_november,digital_audiobook_issues_adult_december,digital_audiobook_issues_adult_january,digital_audiobook_issues_adult_february,digital_audiobook_issues_adult_march,digital_audiobook_issues_11_under_april,digital_audiobook_issues_11_under_may,digital_audiobook_issues_11_under_june,digital_audiobook_issues_11_under_july,digital_audiobook_issues_11_under_august,digital_audiobook_issues_11_under_september,digital_audiobook_issues_11_under_october,digital_audiobook_issues_11_under_november,digital_audiobook_issues_11_under_december,digital_audiobook_issues_11_under_january,digital_audiobook_issues_11_under_february,digital_audiobook_issues_11_under_march,digital_audiobook_issues_12_17_april,digital_audiobook_issues_12_17_may,digital_audiobook_issues_12_17_june,digital_audiobook_issues_12_17_july,digital_audiobook_issues_12_17_august,digital_audiobook_issues_12_17_september,digital_audiobook_issues_12_17_october,digital_audiobook_issues_12_17_november,digital_audiobook_issues_12_17_december,digital_audiobook_issues_12_17_january,digital_audiobook_issues_12_17_february,digital_audiobook_issues_12_17_march
-                # Based on headers we want a schema of Authority, Format, Age Group, Period, Count
-                # The format is Physical book, Physical audiobook, Ebook, Eaudio
+                # Click and collect: There are no totals for click and collect
+                if header.startswith('click_and_collect'):
+                    # Click and Collect: Authority, Period, Count
+                    if value is not None and value != "":
+                        authority_click_collect.append({
+                            'Authority': authority_code,
+                            'Period': period_start,
+                            'Count': value
+                        })
 
+                # Loans: we want a schema of Authority, Format, Content age group, Period, Count
+                # Formats are Physical book, Physical audiobook, Ebook, Eaudio
                 format_type = 'Physical book'
-                if '_digital' in header:
+                if '_digital' in header or 'physical_audiobook' in header:
                     format_type = 'Physical audiobook'
                 elif 'ebook' in header:
                     format_type = 'Ebook'
-                elif 'eaudio' in header:
+                elif 'digital_audiobook' in header:
                     format_type = 'Eaudio'
 
                 # Age category physical book and audiobook issues
-                if header.startswith('loans_'):
+                if header.startswith('loans_') or header.startswith('ebooks_') or \
+                        header.startswith('digital_audiobook_issues_'):
                     if value is not None and value != "":
                         authority_loans.append({
                             'Authority': authority_code,
@@ -281,7 +311,7 @@ def rotate_activity_data():
 
                 if header.startswith('total_physical_book_issues'):
                     # Record total physical book issues IF no data for the individual months.
-                    if row.get('loans_adult_june') == "":
+                    if row.get('loans_adult_march') == "":
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -293,7 +323,7 @@ def rotate_activity_data():
 
                 if header.startswith('total_physical_audiobook_issues'):
                     # Record total physical audiobook issues IF no data for the individual months.
-                    if row.get('loans_adult_june_digital') == "":
+                    if row.get('loans_adult_march_digital') == "":
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -305,7 +335,7 @@ def rotate_activity_data():
 
                 if header.startswith('total_ebook_issues'):
                     # Record total ebook issues IF no data for the individual months.
-                    if row.get('ebooks_adult_june') == "":
+                    if row.get('ebooks_adult_march') == "":
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -317,7 +347,7 @@ def rotate_activity_data():
 
                 if header.startswith('total_digital_audiobook_issues'):
                     # Record total digital audiobook issues IF no data for the individual months.
-                    if row.get('digital_audiobook_issues_adult_june') == "":
+                    if row.get('digital_audiobook_issues_adult_march') == "":
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -326,6 +356,55 @@ def rotate_activity_data():
                                 'Period': period_start,
                                 'Count': value
                             })
+
+                # Visits: Authority, Location, Period, Count
+                if header.startswith('physical_visits'):
+                    location = 'Library'
+                    if 'no_colocation' in header:
+                        location = 'Shared building'
+                    if value is not None and value != "":
+                        authority_visits.append({
+                            'Authority': authority_code,
+                            'Location': location,
+                            'Period': period_start,
+                            'Count': value
+                        })
+
+                if header.startswith('mobile_libraries'):
+                    if value is not None and value != "":
+                        authority_visits.append({
+                            'Authority': authority_code,
+                            'Location': 'Mobile library',
+                            'Period': period_start,
+                            'Count': value
+                        })
+
+                if header.startswith('home_delivery'):
+                    if value is not None and value != "":
+                        authority_visits.append({
+                            'Authority': authority_code,
+                            'Location': 'Home delivery',
+                            'Period': period_start,
+                            'Count': value
+                        })
+
+                # Computer usage: Authority, Period, Hours
+                if header.startswith('hours_public_computers'):
+                    if value is not None and value != "":
+                        authority_computer_usage.append({
+                            'Authority': authority_code,
+                            'Period': period_start,
+                            'Hours': value
+                        })
+
+                # Wifi sessions: Authority, Period, Sessions
+                if header.startswith('wifi_sessions'):
+                    if value is not None and value != "":
+                        authority_wifi_sessions.append({
+                            'Authority': authority_code,
+                            'Period': period_start,
+                            'Sessions': value
+                        })
 
             members.extend(authority_members)
 
@@ -394,6 +473,8 @@ def rotate_activity_data():
             # Then for each grouping we need to work out if the dates are monthly or quarterly
             loans_frequency = None
             for (format_type, content_age_group), records in loans_dict.items():
+                if len(records) == 1:
+                    loans_frequency = 'Yearly'
                 if len(records) == 4:
                     loans_frequency = 'Quarterly'
                 elif len(records) == 12:
@@ -405,14 +486,101 @@ def rotate_activity_data():
                         period = record['Period'] + '/P1M'
                     elif loans_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
+                    elif loans_frequency == 'Yearly':
+                        period = '2023-04-01/P1Y'
                     record['Period'] = period
             loans.extend(authority_loans)
+
+            # Visits: split the array into arrays grouped by colocation
+            visits_dict = {}
+            for record in authority_visits:
+                key = record['Location']
+                if key not in visits_dict:
+                    visits_dict[key] = []
+                visits_dict[key].append(record)
+
+            # Then for each grouping we need to work out if the dates are monthly or quarterly
+            visits_frequency = None
+            for (location), records in visits_dict.items():
+                if len(records) == 1:
+                    visits_frequency = 'Yearly'
+                if len(records) == 4:
+                    visits_frequency = 'Quarterly'
+                elif len(records) == 12:
+                    visits_frequency = 'Monthly'
+
+                for record in records:
+                    period = None
+                    if visits_frequency == 'Monthly':
+                        period = record['Period'] + '/P1M'
+                    elif visits_frequency == 'Quarterly':
+                        period = convert_date_to_quarterly(record['Period'])
+                    elif visits_frequency == 'Yearly':
+                        period = '2023-04-01/P1Y'
+                    record['Period'] = period
+            visits.extend(authority_visits)
+
+            # Click and collect: No need to group but do convert the period
+            cc_visits_frequency = None
+            if len(authority_click_collect) == 1:
+                cc_visits_frequency = 'Yearly'
+            if len(authority_click_collect) == 4:
+                cc_visits_frequency = 'Quarterly'
+            elif len(authority_click_collect) == 12:
+                cc_visits_frequency = 'Monthly'
+            for record in authority_click_collect:
+                period = None
+                if cc_visits_frequency == 'Quarterly':
+                    period = convert_date_to_quarterly(record['Period'])
+                elif cc_visits_frequency == 'Yearly':
+                    period = '2023-04-01/P1Y'
+                else:
+                    period = record['Period'] + '/P1M'
+                record['Period'] = period
+            click_collect.extend(authority_click_collect)
+
+            # Computer usage: No need to group but convert the period
+            computer_usage_frequency = None
+            if len(authority_computer_usage) == 4:
+                computer_usage_frequency = 'Quarterly'
+            elif len(authority_computer_usage) == 12:
+                computer_usage_frequency = 'Monthly'
+            for record in authority_computer_usage:
+                period = None
+                if computer_usage_frequency == 'Quarterly':
+                    period = convert_date_to_quarterly(record['Period'])
+                else:
+                    period = record['Period'] + '/P1M'
+                record['Period'] = period
+            computer_usage.extend(authority_computer_usage)
+
+            # Wifi sessions: No need to group but convert the period
+            wifi_sessions_frequency = None
+            if len(wifi_sessions) == 1:
+                wifi_sessions_frequency = 'Yearly'
+            if len(wifi_sessions) == 4:
+                wifi_sessions_frequency = 'Quarterly'
+            elif len(wifi_sessions) == 12:
+                wifi_sessions_frequency = 'Monthly'
+            for record in authority_wifi_sessions:
+                period = None
+                if wifi_sessions_frequency == 'Quarterly':
+                    period = convert_date_to_quarterly(record['Period'])
+                else:
+                    period = record['Period'] + '/P1M'
+                record['Period'] = period
+            wifi_sessions.extend(authority_wifi_sessions)
 
         # Write the aggregated data to the respective CSV files
         attendance_writer.writerows(attendance)
         members_writer.writerows(members)
         events_writer.writerows(events)
         loans_writer.writerows(loans)
+        visits_writer.writerows(visits)
+        click_collect_writer.writerows(click_collect)
+        computer_usage_writer.writerows(computer_usage)
+        wifi_sessions_writer.writerows(wifi_sessions)
+        metadata_writer.writerows(services)
 
 
 rotate_activity_data()
