@@ -8,6 +8,7 @@ import csv
 from datetime import datetime
 
 INPUT = './data/libraries_activity_data_2023_2024.csv'
+POPULATION = './data/mye24tablesew.csv'
 MEMBERS = './data/members.csv'
 EVENTS = './data/events.csv'
 ATTENDANCE = './data/event_attendance.csv'
@@ -37,7 +38,8 @@ def convert_date_to_quarterly(date_str):
 def rotate_activity_data():
     """Rotate the activity data from the input CSV file into multiple output files."""
 
-    with open(INPUT, mode='r', newline='', encoding='utf-8') as infile, \
+    with open(INPUT, mode='r', newline='', encoding='utf-8-sig') as infile, \
+            open(POPULATION, mode='r', newline='', encoding='utf-8-sig') as population_file, \
             open(AUTHORITIES, mode='r', newline='', encoding='utf-8') as authorities_file, \
             open(MEMBERS, mode='w', newline='', encoding='utf-8') as members_out, \
             open(EVENTS, mode='w', newline='', encoding='utf-8') as events_out, \
@@ -50,6 +52,36 @@ def rotate_activity_data():
             open(SERVICES, mode='w', newline='', encoding='utf-8') as services_out:
         reader = csv.DictReader(infile)
 
+        # Create a lookup dictionary for population data
+        population = {}
+        population_reader = csv.DictReader(population_file)
+        for row in population_reader:
+            authority_code = row['Code']
+
+            # The column headers are each age year e.g '0', '1', '2', ..., '90+'
+            # Loop through the columns to calculate the population for each age group
+            under_12 = 0
+            age_12_17 = 0
+            adult = 0
+            for key in row:
+                if key.isdigit():
+                    age = int(key)
+                    if age < 12:
+                        under_12 = under_12 + int(row[key])
+                    elif 12 <= age <= 17:
+                        age_12_17 = age_12_17 + int(row[key])
+                    else:
+                        adult = adult + int(row[key])
+                if key == '90+':
+                    # Handle the '90+' case separately
+                    adult = adult + int(row[key])
+
+            population[authority_code] = {
+                'under_12': under_12,
+                '12_17': age_12_17,
+                'adult': adult
+            }
+
         # Create a lookup dictionary for authorities
         authorities = {}
         authorities_reader = csv.DictReader(authorities_file)
@@ -57,7 +89,7 @@ def rotate_activity_data():
             auth_object = {
                 'gss-code': authority_row['gss-code'],
                 'official-name': authority_row['official-name'],
-                'nice-name': authority_row['nice-name']
+                'nice-name': authority_row['nice-name'],
             }
             # Use both official name and nice name as keys for lookup
             authorities[authority_row['nice-name']] = auth_object
@@ -103,23 +135,26 @@ def rotate_activity_data():
         wifi_sessions_writer.writeheader()
         wifi_sessions = []
 
-        metadata_writer = csv.DictWriter(services_out, fieldnames=['Authority code',
-                                                                   'Authority nice name',
-                                                                   'Library service',
-                                                                   'Year', 'Events', 'Attendance',
-                                                                   'Issues', 'Visits',
-                                                                   'Computer usage',
-                                                                   'Population under 12', 'Population 12-17',
-                                                                   'Population adult'])
-        metadata_writer.writeheader()
+        service_writer = csv.DictWriter(services_out, fieldnames=['Authority code',
+                                                                  'Authority nice name',
+                                                                  'Library service',
+                                                                  'Period', 'Members', 'Events',
+                                                                  'Attendance', 'Issues', 'Visits',
+                                                                  'Computer hours', 'Wifi sessions',
+                                                                  'Population under 12',
+                                                                  'Population 12-17',
+                                                                  'Population adult'])
+        service_writer.writeheader()
         services = []
 
         # Each row is all the authority's activity data for the year
         for row in reader:
 
             authority = row['authority']
+            library_service = row['library_details']
             authority_code = None
             authority_nice_name = None
+            auth_pop = None
 
             authority_members = []
             authority_events = []
@@ -134,6 +169,8 @@ def rotate_activity_data():
             if authority in authorities:
                 authority_code = authorities[authority]['gss-code']
                 authority_nice_name = authorities[authority]['nice-name']
+                auth_pop = population.get(
+                    authority_code, {'under_12': 0, '12_17': 0, 'adult': 0})
             else:
                 # If the authority is not found, we skip this row.
                 print(
@@ -191,7 +228,7 @@ def rotate_activity_data():
                     physical_digital = 'Digital'
 
                 # Members: We want a schema of Authority, Age Group, Count
-                if header.startswith('active_members') and value != "":
+                if header.startswith('active_members') and value.isdigit():
                     authority_members.append({
                         'Authority': authority_code,
                         'Age group': age_group,
@@ -202,7 +239,8 @@ def rotate_activity_data():
                     # We record the total members IF there is no data for the individual age groups.
                     if row.get('active_members_11_under') == "" and \
                        row.get('active_members_adults') == "" and \
-                       row.get('active_members_12_17') == "":
+                       row.get('active_members_12_17') == "" and \
+                        value.isdigit():
                         authority_members.append({
                             'Authority': authority_code,
                             'Age group': 'Unknown',
@@ -406,6 +444,39 @@ def rotate_activity_data():
                             'Sessions': value
                         })
 
+            # Add the authority's data to the services list
+            members_count = sum(
+                int(record['Count']) for record in authority_members)
+            events_count = sum(
+                int(record['Count']) for record in authority_events)
+            attendance_count = sum(
+                int(record['Count']) for record in authority_attendance)
+            issues_count = sum(
+                int(record['Count']) for record in authority_loans)
+            visits_count = sum(
+                int(record['Count']) for record in authority_visits)
+            computer_hours_count = sum(
+                int(record['Hours']) for record in authority_computer_usage)
+            wifi_sessions_count = sum(
+                int(record['Sessions']) for record in authority_wifi_sessions)
+
+            services.append({
+                'Authority code': authority_code,
+                'Authority nice name': authority_nice_name,
+                'Library service': library_service,
+                'Period': '2023-04-01/P1Y',
+                'Members': members_count,
+                'Events': events_count,
+                'Attendance': attendance_count,
+                'Issues': issues_count,
+                'Visits': visits_count,
+                'Computer hours': computer_hours_count,
+                'Wifi sessions': wifi_sessions_count,
+                'Population under 12': auth_pop['under_12'],
+                'Population 12-17': auth_pop['12_17'],
+                'Population adult': auth_pop['adult']
+            })
+
             members.extend(authority_members)
 
             # Events: split the array into arrays grouped by just event type and age group
@@ -580,7 +651,7 @@ def rotate_activity_data():
         click_collect_writer.writerows(click_collect)
         computer_usage_writer.writerows(computer_usage)
         wifi_sessions_writer.writerows(wifi_sessions)
-        metadata_writer.writerows(services)
+        service_writer.writerows(services)
 
 
 rotate_activity_data()
