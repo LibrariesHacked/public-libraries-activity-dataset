@@ -9,16 +9,17 @@ from datetime import datetime
 
 INPUT = './data/libraries_activity_data_2023_2024.csv'
 POPULATION = './data/mye24tablesew.csv'
-MEMBERS = './data/members.csv'
-EVENTS = './data/events.csv'
-ATTENDANCE = './data/event_attendance.csv'
-LOANS = './data/loans.csv'
-CLICK_COLLECT = './data/click_and_collect.csv'
-VISITS = './data/visits.csv'
-COMPUTER_USAGE = './data/computer_usage.csv'
-WIFI_SESSIONS = './data/wifi_sessions.csv'
-SERVICES = './data/services.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
+
+MEMBERS = './public/members.csv'
+EVENTS = './public/events.csv'
+ATTENDANCE = './public/event_attendance.csv'
+LOANS = './public/loans.csv'
+CLICK_COLLECT = './public/click_and_collect.csv'
+VISITS = './public/visits.csv'
+COMPUTER_USAGE = './public/computer_usage.csv'
+WIFI_SESSIONS = './public/wifi_sessions.csv'
+SERVICES = './public/services.csv'
 
 
 def convert_date_to_quarterly(date_str):
@@ -240,7 +241,7 @@ def rotate_activity_data():
                     if row.get('active_members_11_under') == "" and \
                        row.get('active_members_adults') == "" and \
                        row.get('active_members_12_17') == "" and \
-                        value.isdigit():
+                            value.isdigit():
                         authority_members.append({
                             'Authority': authority_code,
                             'Age group': 'Unknown',
