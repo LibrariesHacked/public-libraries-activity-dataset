@@ -10,8 +10,12 @@ import '@fontsource/roboto/700.css'
 
 import App from './App.jsx'
 
+import { ApplicationStateProvider } from './providers/applicationStateProvider'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ApplicationStateProvider>
+      <App />
+    </ApplicationStateProvider>
   </StrictMode>
 )

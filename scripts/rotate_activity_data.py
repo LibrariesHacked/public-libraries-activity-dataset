@@ -5,21 +5,25 @@ members, events, attendance, issues, visits, computer usage, and metadata.
 """
 
 import csv
+import json
 from datetime import datetime
 
 INPUT = './data/libraries_activity_data_2023_2024.csv'
 POPULATION = './data/mye24tablesew.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
 
-MEMBERS = './public/members.csv'
-EVENTS = './public/events.csv'
-ATTENDANCE = './public/event_attendance.csv'
-LOANS = './public/loans.csv'
-CLICK_COLLECT = './public/click_and_collect.csv'
-VISITS = './public/visits.csv'
-COMPUTER_USAGE = './public/computer_usage.csv'
-WIFI_SESSIONS = './public/wifi_sessions.csv'
-SERVICES = './public/services.csv'
+SERVICES = './data/services.csv'
+MEMBERS = './data/members.csv'
+EVENTS = './data/events.csv'
+ATTENDANCE = './data/event_attendance.csv'
+LOANS = './data/loans.csv'
+CLICK_COLLECT = './data/click_and_collect.csv'
+VISITS = './data/visits.csv'
+COMPUTER_USAGE = './data/computer_usage.csv'
+WIFI_SESSIONS = './data/wifi_sessions.csv'
+
+SERVICES_JSON = './public/services.json'
+MEMBERS_JSON = './public/members.json'
 
 
 def convert_date_to_quarterly(date_str):
@@ -653,6 +657,12 @@ def rotate_activity_data():
         computer_usage_writer.writerows(computer_usage)
         wifi_sessions_writer.writerows(wifi_sessions)
         service_writer.writerows(services)
+
+        # Convert the services dictionary array to an array of array values
+        service_values = [list(service.values()) for service in services]
+
+        with open(SERVICES_JSON, 'w', encoding='utf-8') as f:
+            json.dump(service_values, f)
 
 
 rotate_activity_data()

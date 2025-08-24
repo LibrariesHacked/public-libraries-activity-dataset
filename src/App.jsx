@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import AppBar from '@mui/material/AppBar'
@@ -20,13 +20,36 @@ import Typography from '@mui/material/Typography'
 
 import Home from './Home.jsx'
 
+import { useApplicationStateValue } from './hooks/useApplicationState'
+
+import * as serviceModel from './models/service'
+
 import './App.css'
 
 const drawerWidth = 240
 
 function App () {
-  const [mobileOpen, setMobileOpen] = React.useState(false)
-  const [isClosing, setIsClosing] = React.useState(false)
+  const [{}, dispatchApplication] = useApplicationStateValue() //eslint-disable-line
+
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
+
+  useEffect(() => {
+    // Initial data setup
+    async function getServices () {
+      const services = await serviceModel.getServices()
+      const serviceLookup = {}
+      services.forEach(service => {
+        serviceLookup[service.code] = service
+      })
+      dispatchApplication({
+        type: 'AddServices',
+        services,
+        serviceLookup
+      })
+    }
+    getServices()
+  }, []) // eslint-disable-line
 
   const handleDrawerClose = () => {
     setIsClosing(true)
