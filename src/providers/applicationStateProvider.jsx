@@ -4,7 +4,8 @@ import { ApplicationStateContext } from '../context/applicationStateContext'
 
 const initialApplicationState = {
   services: [],
-  serviceLookup: {}
+  serviceLookup: {},
+  filteredServices: []
 }
 
 const applicationReducer = (state, action) => {
@@ -14,6 +15,11 @@ const applicationReducer = (state, action) => {
         ...state,
         services: action.services,
         serviceLookup: action.serviceLookup
+      }
+    case 'FilterServices':
+      return {
+        ...state,
+        filteredServices: action.filteredServices
       }
     default:
       return state
