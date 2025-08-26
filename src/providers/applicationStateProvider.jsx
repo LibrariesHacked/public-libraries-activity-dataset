@@ -16,7 +16,7 @@ const applicationReducer = (state, action) => {
         services: action.services,
         serviceLookup: action.serviceLookup
       }
-    case 'FilterServices':
+    case 'SetFilteredServices':
       return {
         ...state,
         filteredServices: action.filteredServices

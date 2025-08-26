@@ -52,19 +52,17 @@ const Home = () => {
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
-        Home
-      </Typography>
       <Grid container spacing={2}>
         <Grid
           size={{
             xs: 12,
-            md: 6
+            md: 6,
+            lg: 3
           }}
         >
           <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
             <CardContent>
-              <Typography component='h2' variant='subtitle2' gutterBottom>
+              <Typography component='h2' variant='h6' gutterBottom>
                 Members
               </Typography>
               <Stack
@@ -73,16 +71,16 @@ const Home = () => {
               >
                 <Stack sx={{ justifyContent: 'space-between' }}>
                   <Typography
-                    variant='caption'
+                    variant='h3'
                     sx={{ color: 'text.secondary' }}
                   >
-                    {membersCount} members
+                    {membersCount.toLocaleString('en-GB')}
                   </Typography>
                   <Typography
-                    variant='caption'
+                    variant='h4'
                     sx={{ color: 'text.secondary' }}
                   >
-                    {percentageMembers}%
+                    {Math.round(percentageMembers)}%
                   </Typography>
                 </Stack>
                 <Box sx={{ width: '100%', height: 50 }}></Box>

@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
-import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
+import OutlinedInput from '@mui/material/OutlinedInput'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import Select from '@mui/material/Select'
+import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
 import Divider from '@mui/material/Divider'
@@ -26,7 +31,9 @@ import { useApplicationState } from './hooks/useApplicationState'
 import * as serviceModel from './models/service'
 
 function App () {
-  const [{}, dispatchApplication] = useApplicationState() //eslint-disable-line
+  const [{ services, serviceLookup }, dispatchApplication] = useApplicationState() //eslint-disable-line
+
+  const [libraryServiceFilterName, setLibraryServiceFilterName] = useState([])
 
   useEffect(() => {
     // Initial data setup
@@ -45,6 +52,18 @@ function App () {
     getServices()
   }, []) // eslint-disable-line
 
+  const handleChangeLibraryServiceFilter = event => {
+    const {
+      target: { value }
+    } = event
+    const filter = typeof value === 'string' ? value.split(',') : value
+    setLibraryServiceFilterName(filter)
+    dispatchApplication({
+      type: 'SetFilteredServices',
+      filteredServices: filter
+    })
+  }
+
   return (
     <>
       <CssBaseline />
@@ -60,6 +79,34 @@ function App () {
             <Typography component='h1' variant='h2' gutterBottom>
               English public libraries activity
             </Typography>
+            <div>
+              <FormControl sx={{ width: '100%', mb: 2 }}>
+                <InputLabel id='library-service-filter-label'>Library services</InputLabel>
+                <Select
+                  labelId='library-service-filter-label'
+                  id='library-service-filter'
+                  multiple
+                  value={libraryServiceFilterName}
+                  onChange={handleChangeLibraryServiceFilter}
+                  input={
+                    <OutlinedInput id='select-multiple-library-service' label='Library service filter' />
+                  }
+                  renderValue={selected => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map(value => (
+                        <Chip key={value} label={serviceLookup[value].libraryService} />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {services.map(s => (
+                    <MenuItem key={s.code} value={s.code}>
+                      {s.libraryService}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </div>
             <Routes>
               <Route path='/' element={<Home />} />
             </Routes>
