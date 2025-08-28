@@ -3,9 +3,11 @@ import React, { useReducer } from 'react'
 import { ApplicationStateContext } from '../context/applicationStateContext'
 
 const initialApplicationState = {
-  services: [],
-  serviceLookup: {},
-  filteredServices: []
+  services: null,
+  serviceLookup: null,
+  filteredServices: [],
+  members: null,
+  loans: null
 }
 
 const applicationReducer = (state, action) => {
@@ -20,6 +22,16 @@ const applicationReducer = (state, action) => {
       return {
         ...state,
         filteredServices: action.filteredServices
+      }
+    case 'SetMembers':
+      return {
+        ...state,
+        members: action.members
+      }
+    case 'SetLoans':
+      return {
+        ...state,
+        loans: action.loans
       }
     default:
       return state

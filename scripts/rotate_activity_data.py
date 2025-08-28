@@ -24,6 +24,13 @@ WIFI_SESSIONS = './data/wifi_sessions.csv'
 
 SERVICES_JSON = './public/services.json'
 MEMBERS_JSON = './public/members.json'
+LOANS_JSON = './public/loans.json'
+VISITS_JSON = './public/visits.json'
+EVENTS_JSON = './public/events.json'
+ATTENDANCE_JSON = './public/attendance.json'
+CLICK_COLLECT_JSON = './public/click_collect.json'
+COMPUTER_USAGE_JSON = './public/computer_usage.json'
+WIFI_SESSIONS_JSON = './public/wifi_sessions.json'
 
 
 def convert_date_to_quarterly(date_str):
@@ -32,10 +39,7 @@ def convert_date_to_quarterly(date_str):
     # Set to the first of the month
     new_date = date_obj.replace(day=1)
     # Subtract 3 months from the date
-    new_date = new_date.replace(month=(new_date.month - 3) % 12 or 12)
-    if new_date.month > 9:  # If month is October or later, year needs to be adjusted
-        new_date = new_date.replace(year=new_date.year - 1)
-        # Format the period as YYYY-MM-DD/P3M
+    new_date = new_date.replace(month=(new_date.month - 2) % 12 or 12)
     period = new_date.strftime("%Y-%m-%d") + '/P3M'
     return period
 
@@ -101,7 +105,7 @@ def rotate_activity_data():
             authorities[authority_row['official-name']] = auth_object
 
         members_writer = csv.DictWriter(members_out, fieldnames=[
-                                        'Authority', 'Age group', 'Count'])
+                                        'Authority', 'Period', 'Age group', 'Count'])
         members_writer.writeheader()
         members = []
 
@@ -236,6 +240,7 @@ def rotate_activity_data():
                 if header.startswith('active_members') and value.isdigit():
                     authority_members.append({
                         'Authority': authority_code,
+                        'Period': '2023-04-01/P1Y',
                         'Age group': age_group,
                         'Count': value
                     })
@@ -248,6 +253,7 @@ def rotate_activity_data():
                             value.isdigit():
                         authority_members.append({
                             'Authority': authority_code,
+                            'Period': '2023-04-01/P1Y',
                             'Age group': 'Unknown',
                             'Count': value
                         })
@@ -506,8 +512,7 @@ def rotate_activity_data():
                     if event_frequency == 'Monthly':
                         period = record['Period'] + '/P1M'
                     elif event_frequency == 'Quarterly':
-                        period = record['Period']
-                        # period = convert_date_to_quarterly(record['Period'])
+                        period = convert_date_to_quarterly(record['Period'])
 
                     record['Period'] = period
             events.extend(authority_events)
@@ -660,9 +665,41 @@ def rotate_activity_data():
 
         # Convert the services dictionary array to an array of array values
         service_values = [list(service.values()) for service in services]
-
         with open(SERVICES_JSON, 'w', encoding='utf-8') as f:
             json.dump(service_values, f)
+
+        membership_values = [list(membership.values()) for membership in members]
+        with open(MEMBERS_JSON, 'w', encoding='utf-8') as f:
+            json.dump(membership_values, f)
+
+        loans_values = [list(loan.values()) for loan in loans]
+        with open(LOANS_JSON, 'w', encoding='utf-8') as f:
+            json.dump(loans_values, f)
+
+        visits_values = [list(visit.values()) for visit in visits]
+        with open(VISITS_JSON, 'w', encoding='utf-8') as f:
+            json.dump(visits_values, f)
+
+        events_values = [list(event.values()) for event in events]
+        with open(EVENTS_JSON, 'w', encoding='utf-8') as f:
+            json.dump(events_values, f)
+
+        attendance_values = [list(attend.values()) for attend in attendance]
+        with open(ATTENDANCE_JSON, 'w', encoding='utf-8') as f:
+            json.dump(attendance_values, f) 
+
+        click_collect_values = [list(cc.values()) for cc in click_collect]
+        with open(CLICK_COLLECT_JSON, 'w', encoding='utf-8') as f:
+            json.dump(click_collect_values, f)
+
+        computer_usage_values = [list(cu.values()) for cu in computer_usage]
+        with open(COMPUTER_USAGE_JSON, 'w', encoding='utf-8') as f:
+            json.dump(computer_usage_values, f)
+
+        wifi_sessions_values = [list(ws.values()) for ws in wifi_sessions]
+        with open(WIFI_SESSIONS_JSON, 'w', encoding='utf-8') as f:
+            json.dump(wifi_sessions_values, f)
+
 
 
 rotate_activity_data()

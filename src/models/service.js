@@ -20,6 +20,8 @@ export class Service {
     this.populationUnder12 = json[11]
     this.population12To17 = json[12]
     this.populationAdult = json[13]
+    // Total population is not in the original data, but we calculate it here for convenience
+    this.totalPopulation = (json[11] || 0) + (json[12] || 0) + (json[13] || 0)
 
     return this
   }

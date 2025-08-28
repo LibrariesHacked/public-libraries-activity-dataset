@@ -10,28 +10,19 @@ import Select from '@mui/material/Select'
 import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
-import Divider from '@mui/material/Divider'
-import Drawer from '@mui/material/Drawer'
-import IconButton from '@mui/material/IconButton'
-import InboxIcon from '@mui/icons-material/MoveToInbox'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import MailIcon from '@mui/icons-material/Mail'
-import MenuIcon from '@mui/icons-material/Menu'
-import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 
-import Home from './Home.jsx'
+import Home from './Home'
+import Loans from './Loans'
+import Members from './Members'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import * as serviceModel from './models/service'
 
 function App () {
-  const [{ services, serviceLookup }, dispatchApplication] = useApplicationState() //eslint-disable-line
+  const [{ services, serviceLookup }, dispatchApplication] =
+    useApplicationState() //eslint-disable-line
 
   const [libraryServiceFilterName, setLibraryServiceFilterName] = useState([])
 
@@ -76,12 +67,14 @@ function App () {
           }}
         >
           <main>
-            <Typography component='h1' variant='h2' gutterBottom>
+            <Typography component='h1' variant='h3' gutterBottom>
               English public libraries activity
             </Typography>
             <div>
               <FormControl sx={{ width: '100%', mb: 2 }}>
-                <InputLabel id='library-service-filter-label'>Library services</InputLabel>
+                <InputLabel id='library-service-filter-label'>
+                  Library services
+                </InputLabel>
                 <Select
                   labelId='library-service-filter-label'
                   id='library-service-filter'
@@ -89,17 +82,23 @@ function App () {
                   value={libraryServiceFilterName}
                   onChange={handleChangeLibraryServiceFilter}
                   input={
-                    <OutlinedInput id='select-multiple-library-service' label='Library service filter' />
+                    <OutlinedInput
+                      id='select-multiple-library-service'
+                      label='Library service filter'
+                    />
                   }
                   renderValue={selected => (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                       {selected.map(value => (
-                        <Chip key={value} label={serviceLookup[value].libraryService} />
+                        <Chip
+                          key={value}
+                          label={serviceLookup[value].libraryService}
+                        />
                       ))}
                     </Box>
                   )}
                 >
-                  {services.map(s => (
+                  {services?.map(s => (
                     <MenuItem key={s.code} value={s.code}>
                       {s.libraryService}
                     </MenuItem>
@@ -109,6 +108,8 @@ function App () {
             </div>
             <Routes>
               <Route path='/' element={<Home />} />
+              <Route path='/members' element={<Members />} />
+              <Route path='/loans' element={<Loans />} />
             </Routes>
           </main>
         </Container>
