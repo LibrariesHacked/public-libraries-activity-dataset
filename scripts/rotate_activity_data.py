@@ -23,12 +23,11 @@ COMPUTER_USAGE = './data/computer_usage.csv'
 WIFI_SESSIONS = './data/wifi_sessions.csv'
 
 SERVICES_JSON = './public/services.json'
-MEMBERS_JSON = './public/members.json'
 LOANS_JSON = './public/loans.json'
+MEMBERS_JSON = './public/members.json'
 VISITS_JSON = './public/visits.json'
 EVENTS_JSON = './public/events.json'
 ATTENDANCE_JSON = './public/attendance.json'
-CLICK_COLLECT_JSON = './public/click_collect.json'
 COMPUTER_USAGE_JSON = './public/computer_usage.json'
 WIFI_SESSIONS_JSON = './public/wifi_sessions.json'
 
@@ -38,10 +37,39 @@ def convert_date_to_quarterly(date_str):
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
     # Set to the first of the month
     new_date = date_obj.replace(day=1)
-    # Subtract 3 months from the date
+    # Subtract 2 months from the date and adjust the year if necessary
     new_date = new_date.replace(month=(new_date.month - 2) % 12 or 12)
     period = new_date.strftime("%Y-%m-%d") + '/P3M'
+
+    # Correct some invalid entries
+    if period == '2023-03-01/P3M':
+        period = '2023-04-01/P3M'
     return period
+
+
+def convert_values_to_monthly(data):
+    """Add monthly values to the existing data."""
+    for record in data:
+        if 'Period' in record and 'P3M' in record['Period']:
+            # We need to adjust the count to be a third and add two new records
+            original_count = int(record['Count'])
+            new_count = int(original_count / 3)
+            # Round up to the nearest integer
+            record['Count'] = new_count
+            original_period = record['Period']
+            record['Period'] = original_period.replace('/P3M', '/P1M')
+            original_date_obj = datetime.strptime(
+                original_period.split('/')[0], "%Y-%m-%d")
+            print(original_date_obj)
+            new_records = [
+                {**record, 'Period': original_date_obj.replace(
+                    month=original_date_obj.month + 1).strftime("%Y-%m-%d") + '/P1M', 'Count': new_count},
+                {**record, 'Period': original_date_obj.replace(
+                    month=original_date_obj.month + 2).strftime("%Y-%m-%d") + '/P1M', 'Count': new_count}
+            ]
+            data.extend(new_records)
+
+    return data
 
 
 def rotate_activity_data():
@@ -673,27 +701,30 @@ def rotate_activity_data():
         with open(MEMBERS_JSON, 'w', encoding='utf-8') as f:
             json.dump(membership_values, f)
 
-        loans_values = [list(loan.values()) for loan in loans]
+        loans_monthly = convert_values_to_monthly(loans)
+        loans_values = [list(loan.values()) for loan in loans_monthly]
         with open(LOANS_JSON, 'w', encoding='utf-8') as f:
             json.dump(loans_values, f)
 
-        visits_values = [list(visit.values()) for visit in visits]
+        visits_monthly = convert_values_to_monthly(visits)
+        visits_values = [list(visit.values()) for visit in visits_monthly]
         with open(VISITS_JSON, 'w', encoding='utf-8') as f:
             json.dump(visits_values, f)
 
-        events_values = [list(event.values()) for event in events]
+        events_monthly = convert_values_to_monthly(events)
+        events_values = [list(event.values()) for event in events_monthly]
         with open(EVENTS_JSON, 'w', encoding='utf-8') as f:
             json.dump(events_values, f)
 
-        attendance_values = [list(attend.values()) for attend in attendance]
+        attendance_monthly = convert_values_to_monthly(attendance)
+        attendance_values = [list(attend.values())
+                             for attend in attendance_monthly]
         with open(ATTENDANCE_JSON, 'w', encoding='utf-8') as f:
             json.dump(attendance_values, f)
 
-        click_collect_values = [list(cc.values()) for cc in click_collect]
-        with open(CLICK_COLLECT_JSON, 'w', encoding='utf-8') as f:
-            json.dump(click_collect_values, f)
-
-        computer_usage_values = [list(cu.values()) for cu in computer_usage]
+        computer_usage_monthly = convert_values_to_monthly(computer_usage)
+        computer_usage_values = [list(cu.values())
+                                 for cu in computer_usage_monthly]
         with open(COMPUTER_USAGE_JSON, 'w', encoding='utf-8') as f:
             json.dump(computer_usage_values, f)
 
