@@ -504,7 +504,7 @@ def rotate_activity_data():
             for (event_type, age_group), records in events_dict.items():
                 if len(records) == 4:
                     event_frequency = 'Quarterly'
-                elif len(records) == 12:
+                else:
                     event_frequency = 'Monthly'
 
                 for record in records:
@@ -530,7 +530,7 @@ def rotate_activity_data():
             for (event_type, age_group), records in attendance_dict.items():
                 if len(records) == 4:
                     attendance_frequency = 'Quarterly'
-                elif len(records) == 12:
+                else:
                     attendance_frequency = 'Monthly'
 
                 for record in records:
@@ -558,7 +558,7 @@ def rotate_activity_data():
                     loans_frequency = 'Yearly'
                 if len(records) == 4:
                     loans_frequency = 'Quarterly'
-                elif len(records) == 12:
+                else:
                     loans_frequency = 'Monthly'
 
                 for record in records:
@@ -668,7 +668,8 @@ def rotate_activity_data():
         with open(SERVICES_JSON, 'w', encoding='utf-8') as f:
             json.dump(service_values, f)
 
-        membership_values = [list(membership.values()) for membership in members]
+        membership_values = [list(membership.values())
+                             for membership in members]
         with open(MEMBERS_JSON, 'w', encoding='utf-8') as f:
             json.dump(membership_values, f)
 
@@ -686,7 +687,7 @@ def rotate_activity_data():
 
         attendance_values = [list(attend.values()) for attend in attendance]
         with open(ATTENDANCE_JSON, 'w', encoding='utf-8') as f:
-            json.dump(attendance_values, f) 
+            json.dump(attendance_values, f)
 
         click_collect_values = [list(cc.values()) for cc in click_collect]
         with open(CLICK_COLLECT_JSON, 'w', encoding='utf-8') as f:
@@ -699,7 +700,6 @@ def rotate_activity_data():
         wifi_sessions_values = [list(ws.values()) for ws in wifi_sessions]
         with open(WIFI_SESSIONS_JSON, 'w', encoding='utf-8') as f:
             json.dump(wifi_sessions_values, f)
-
 
 
 rotate_activity_data()

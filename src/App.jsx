@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Box from '@mui/material/Box'
@@ -11,6 +12,8 @@ import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
 import Typography from '@mui/material/Typography'
+
+import NavTabs from './components/NavTabs'
 
 import Home from './Home'
 import Loans from './Loans'
@@ -73,7 +76,7 @@ function App () {
             <div>
               <FormControl sx={{ width: '100%', mb: 2 }}>
                 <InputLabel id='library-service-filter-label'>
-                  Library services
+                  Choose libraries
                 </InputLabel>
                 <Select
                   labelId='library-service-filter-label'
@@ -106,6 +109,7 @@ function App () {
                 </Select>
               </FormControl>
             </div>
+            <NavTabs />
             <Routes>
               <Route path='/' element={<Home />} />
               <Route path='/members' element={<Members />} />

@@ -19,7 +19,7 @@ E09000001,Physical audiobook,Under 12,2023-04-01/P3M,20
 E09000001,Physical audiobook,Under 12,2023-07-01/P3M,32
 E09000001,Physical audiobook,Under 12,2023-10-01/P3M,23
 E09000001,Physical audiobook,Under 12,2024-01-01/P3M,51
-E09000001,Physical audiobook,12-17,2023-04-01/P1Y,2
+E09000001,Physical audiobook,12-17,2023-06-01/P1M,2
 E09000001,Ebook,Adult,2023-04-01/P3M,6004
 E09000001,Ebook,Adult,2023-07-01/P3M,7481
 E09000001,Ebook,Adult,2023-10-01/P3M,7769
@@ -1589,78 +1589,78 @@ E06000052,Physical audiobook,12-17,2023-09-01/P1M,2
 E06000052,Physical audiobook,12-17,2023-10-01/P1M,6
 E06000052,Physical audiobook,12-17,2023-12-01/P1M,3
 E06000052,Physical audiobook,12-17,2024-01-01/P1M,1
-E08000026,Physical book,Unknown,,42821
-E08000026,Physical book,Unknown,,44591
-E08000026,Physical book,Unknown,,39886
-E08000026,Physical book,Unknown,,46182
-E08000026,Physical book,Unknown,,54135
-E08000026,Physical book,Unknown,,45028
-E08000026,Physical book,Unknown,,46894
-E08000026,Physical book,Unknown,,45934
-E08000026,Physical book,Adult,,23147
-E08000026,Physical book,Adult,,24591
-E08000026,Physical book,Adult,,20966
-E08000026,Physical book,Adult,,22177
-E08000026,Physical book,Adult,,24441
-E08000026,Physical book,Adult,,22489
-E08000026,Physical book,Adult,,23685
-E08000026,Physical book,Adult,,22582
-E08000026,Physical book,Under 12,,18181
-E08000026,Physical book,Under 12,,18321
-E08000026,Physical book,Under 12,,17542
-E08000026,Physical book,Under 12,,22298
-E08000026,Physical book,Under 12,,27907
-E08000026,Physical book,Under 12,,20848
-E08000026,Physical book,Under 12,,21469
-E08000026,Physical book,Under 12,,20833
-E08000026,Physical book,12-17,,1028
-E08000026,Physical book,12-17,,1025
-E08000026,Physical book,12-17,,845
-E08000026,Physical book,12-17,,1248
-E08000026,Physical book,12-17,,1172
-E08000026,Physical book,12-17,,1216
-E08000026,Physical book,12-17,,1328
-E08000026,Physical book,12-17,,1505
-E08000026,Physical audiobook,Unknown,,465
-E08000026,Physical audiobook,Unknown,,654
-E08000026,Physical audiobook,Unknown,,533
-E08000026,Physical audiobook,Unknown,,459
-E08000026,Physical audiobook,Unknown,,615
-E08000026,Physical audiobook,Unknown,,475
-E08000026,Physical audiobook,Unknown,,412
-E08000026,Physical audiobook,Unknown,,914
-E08000026,Physical audiobook,Adult,,447
-E08000026,Physical audiobook,Adult,,633
-E08000026,Physical audiobook,Adult,,520
-E08000026,Physical audiobook,Adult,,436
-E08000026,Physical audiobook,Adult,,549
-E08000026,Physical audiobook,Adult,,466
-E08000026,Physical audiobook,Adult,,401
-E08000026,Physical audiobook,Adult,,893
-E08000026,Physical audiobook,Under 12,,17
-E08000026,Physical audiobook,Under 12,,21
-E08000026,Physical audiobook,Under 12,,13
-E08000026,Physical audiobook,Under 12,,23
-E08000026,Physical audiobook,Under 12,,66
-E08000026,Physical audiobook,Under 12,,9
-E08000026,Physical audiobook,Under 12,,11
-E08000026,Physical audiobook,Under 12,,21
-E08000026,Ebook,Unknown,,2151
-E08000026,Ebook,Unknown,,2354
-E08000026,Ebook,Unknown,,2246
-E08000026,Ebook,Unknown,,2645
-E08000026,Ebook,Unknown,,2818
-E08000026,Ebook,Unknown,,2815
-E08000026,Ebook,Unknown,,2676
-E08000026,Ebook,Unknown,,2607
-E08000026,Physical audiobook,Unknown,,4074
-E08000026,Physical audiobook,Unknown,,4196
-E08000026,Physical audiobook,Unknown,,3984
-E08000026,Physical audiobook,Unknown,,4367
-E08000026,Physical audiobook,Unknown,,4290
-E08000026,Physical audiobook,Unknown,,4129
-E08000026,Physical audiobook,Unknown,,4576
-E08000026,Physical audiobook,Unknown,,3986
+E08000026,Physical book,Unknown,2023-04-01/P1M,42821
+E08000026,Physical book,Unknown,2023-05-01/P1M,44591
+E08000026,Physical book,Unknown,2023-06-01/P1M,39886
+E08000026,Physical book,Unknown,2023-07-01/P1M,46182
+E08000026,Physical book,Unknown,2023-08-01/P1M,54135
+E08000026,Physical book,Unknown,2023-09-01/P1M,45028
+E08000026,Physical book,Unknown,2023-10-01/P1M,46894
+E08000026,Physical book,Unknown,2023-11-01/P1M,45934
+E08000026,Physical book,Adult,2023-04-01/P1M,23147
+E08000026,Physical book,Adult,2023-05-01/P1M,24591
+E08000026,Physical book,Adult,2023-06-01/P1M,20966
+E08000026,Physical book,Adult,2023-07-01/P1M,22177
+E08000026,Physical book,Adult,2023-08-01/P1M,24441
+E08000026,Physical book,Adult,2023-09-01/P1M,22489
+E08000026,Physical book,Adult,2023-10-01/P1M,23685
+E08000026,Physical book,Adult,2023-11-01/P1M,22582
+E08000026,Physical book,Under 12,2023-04-01/P1M,18181
+E08000026,Physical book,Under 12,2023-05-01/P1M,18321
+E08000026,Physical book,Under 12,2023-06-01/P1M,17542
+E08000026,Physical book,Under 12,2023-07-01/P1M,22298
+E08000026,Physical book,Under 12,2023-08-01/P1M,27907
+E08000026,Physical book,Under 12,2023-09-01/P1M,20848
+E08000026,Physical book,Under 12,2023-10-01/P1M,21469
+E08000026,Physical book,Under 12,2023-11-01/P1M,20833
+E08000026,Physical book,12-17,2023-04-01/P1M,1028
+E08000026,Physical book,12-17,2023-05-01/P1M,1025
+E08000026,Physical book,12-17,2023-06-01/P1M,845
+E08000026,Physical book,12-17,2023-07-01/P1M,1248
+E08000026,Physical book,12-17,2023-08-01/P1M,1172
+E08000026,Physical book,12-17,2023-09-01/P1M,1216
+E08000026,Physical book,12-17,2023-10-01/P1M,1328
+E08000026,Physical book,12-17,2023-11-01/P1M,1505
+E08000026,Physical audiobook,Unknown,2023-04-01/P1M,465
+E08000026,Physical audiobook,Unknown,2023-05-01/P1M,654
+E08000026,Physical audiobook,Unknown,2023-06-01/P1M,533
+E08000026,Physical audiobook,Unknown,2023-07-01/P1M,459
+E08000026,Physical audiobook,Unknown,2023-08-01/P1M,615
+E08000026,Physical audiobook,Unknown,2023-09-01/P1M,475
+E08000026,Physical audiobook,Unknown,2023-10-01/P1M,412
+E08000026,Physical audiobook,Unknown,2023-11-01/P1M,914
+E08000026,Physical audiobook,Adult,2023-04-01/P1M,447
+E08000026,Physical audiobook,Adult,2023-05-01/P1M,633
+E08000026,Physical audiobook,Adult,2023-06-01/P1M,520
+E08000026,Physical audiobook,Adult,2023-07-01/P1M,436
+E08000026,Physical audiobook,Adult,2023-08-01/P1M,549
+E08000026,Physical audiobook,Adult,2023-09-01/P1M,466
+E08000026,Physical audiobook,Adult,2023-10-01/P1M,401
+E08000026,Physical audiobook,Adult,2023-11-01/P1M,893
+E08000026,Physical audiobook,Under 12,2023-04-01/P1M,17
+E08000026,Physical audiobook,Under 12,2023-05-01/P1M,21
+E08000026,Physical audiobook,Under 12,2023-06-01/P1M,13
+E08000026,Physical audiobook,Under 12,2023-07-01/P1M,23
+E08000026,Physical audiobook,Under 12,2023-08-01/P1M,66
+E08000026,Physical audiobook,Under 12,2023-09-01/P1M,9
+E08000026,Physical audiobook,Under 12,2023-10-01/P1M,11
+E08000026,Physical audiobook,Under 12,2023-11-01/P1M,21
+E08000026,Ebook,Unknown,2023-04-01/P1M,2151
+E08000026,Ebook,Unknown,2023-05-01/P1M,2354
+E08000026,Ebook,Unknown,2023-06-01/P1M,2246
+E08000026,Ebook,Unknown,2023-07-01/P1M,2645
+E08000026,Ebook,Unknown,2023-08-01/P1M,2818
+E08000026,Ebook,Unknown,2023-09-01/P1M,2815
+E08000026,Ebook,Unknown,2023-10-01/P1M,2676
+E08000026,Ebook,Unknown,2023-11-01/P1M,2607
+E08000026,Physical audiobook,Unknown,2023-04-01/P1M,4074
+E08000026,Physical audiobook,Unknown,2023-05-01/P1M,4196
+E08000026,Physical audiobook,Unknown,2023-06-01/P1M,3984
+E08000026,Physical audiobook,Unknown,2023-07-01/P1M,4367
+E08000026,Physical audiobook,Unknown,2023-08-01/P1M,4290
+E08000026,Physical audiobook,Unknown,2023-09-01/P1M,4129
+E08000026,Physical audiobook,Unknown,2023-10-01/P1M,4576
+E08000026,Physical audiobook,Unknown,2023-11-01/P1M,3986
 E06000063,Physical book,Adult,2023-04-01/P1M,22714
 E06000063,Physical book,Adult,2023-05-01/P1M,23031
 E06000063,Physical book,Adult,2023-06-01/P1M,23576
@@ -3173,12 +3173,12 @@ E10000014,Eaudio,12-17,2023-12-01/P1M,2144
 E10000014,Eaudio,12-17,2024-01-01/P1M,2173
 E10000014,Eaudio,12-17,2024-02-01/P1M,2222
 E10000014,Eaudio,12-17,2024-03-01/P1M,2294
-E09000014,Physical book,Adult,2023-04-01/P1Y,198406
-E09000014,Physical book,Under 12,2023-04-01/P1Y,249453
-E09000014,Physical audiobook,Adult,2023-04-01/P1Y,4399
-E09000014,Physical audiobook,Under 12,2023-04-01/P1Y,652
-E09000014,Ebook,Unknown,2023-04-01/P1Y,7784
-E09000014,Physical audiobook,Unknown,2023-04-01/P1Y,11128
+E09000014,Physical book,Adult,2024-03-01/P1M,198406
+E09000014,Physical book,Under 12,2024-03-01/P1M,249453
+E09000014,Physical audiobook,Adult,2024-03-01/P1M,4399
+E09000014,Physical audiobook,Under 12,2024-03-01/P1M,652
+E09000014,Ebook,Unknown,2024-03-01/P1M,7784
+E09000014,Physical audiobook,Unknown,2024-03-01/P1M,11128
 E09000015,Physical book,Unknown,2023-04-01/P1M,61570
 E09000015,Physical book,Unknown,2023-05-01/P1M,51990
 E09000015,Physical book,Unknown,2023-06-01/P1M,47237
@@ -3609,9 +3609,9 @@ E06000046,Physical audiobook,Unknown,2023-12-01/P1M,3705
 E06000046,Physical audiobook,Unknown,2024-01-01/P1M,3705
 E06000046,Physical audiobook,Unknown,2024-02-01/P1M,3705
 E06000046,Physical audiobook,Unknown,2024-03-01/P1M,3705
-E09000019,Physical book,Adult,2023-04-01/P1Y,2698280
-E09000019,Physical audiobook,Adult,2023-04-01/P1Y,6630
-E09000019,Physical audiobook,Under 12,2023-04-01/P1Y,913
+E09000019,Physical book,Adult,2024-03-01/P1M,2698280
+E09000019,Physical audiobook,Adult,2024-03-01/P1M,6630
+E09000019,Physical audiobook,Under 12,2024-03-01/P1M,913
 E09000019,Ebook,Unknown,2023-04-01/P1M,2216
 E09000019,Ebook,Unknown,2023-05-01/P1M,2268
 E09000019,Ebook,Unknown,2023-06-01/P1M,2153
@@ -4690,11 +4690,11 @@ E09000002,Eaudio,12-17,2023-12-01/P1M,60
 E09000002,Eaudio,12-17,2024-01-01/P1M,64
 E09000002,Eaudio,12-17,2024-02-01/P1M,51
 E09000002,Eaudio,12-17,2024-03-01/P1M,69
-E09000003,Physical book,Adult,2023-04-01/P1Y,346876
-E09000003,Physical book,Under 12,2023-04-01/P1Y,639721
-E09000003,Physical book,12-17,2023-04-01/P1Y,53613
-E09000003,Physical audiobook,Adult,2023-04-01/P1Y,4698
-E09000003,Physical audiobook,Under 12,2023-04-01/P1Y,55
+E09000003,Physical book,Adult,2024-03-01/P1M,346876
+E09000003,Physical book,Under 12,2024-03-01/P1M,639721
+E09000003,Physical book,12-17,2024-03-01/P1M,53613
+E09000003,Physical audiobook,Adult,2024-03-01/P1M,4698
+E09000003,Physical audiobook,Under 12,2024-03-01/P1M,55
 E09000003,Ebook,Adult,2023-04-01/P1M,3673
 E09000003,Ebook,Adult,2023-05-01/P1M,3754
 E09000003,Ebook,Adult,2023-06-01/P1M,3479
@@ -5262,9 +5262,9 @@ E09000027,Physical audiobook,Under 12,2023-04-01/P3M,533
 E09000027,Physical audiobook,Under 12,2023-07-01/P3M,757
 E09000027,Physical audiobook,Under 12,2023-10-01/P3M,503
 E09000027,Physical audiobook,Under 12,2024-01-01/P3M,559
-E09000027,Physical audiobook,12-17,2023-04-01/P3M,1
-E09000027,Physical audiobook,12-17,2023-07-01/P3M,5
-E09000027,Physical audiobook,12-17,2023-10-01/P3M,4
+E09000027,Physical audiobook,12-17,2023-06-01/P1M,1
+E09000027,Physical audiobook,12-17,2023-09-01/P1M,5
+E09000027,Physical audiobook,12-17,2023-12-01/P1M,4
 E09000027,Ebook,Unknown,2023-04-01/P1M,4494
 E09000027,Ebook,Unknown,2023-05-01/P1M,4395
 E09000027,Ebook,Unknown,2023-06-01/P1M,3996
@@ -5445,9 +5445,9 @@ E08000003,Eaudio,12-17,2023-04-01/P3M,2975
 E08000003,Eaudio,12-17,2023-07-01/P3M,3081
 E08000003,Eaudio,12-17,2023-10-01/P3M,2803
 E08000003,Eaudio,12-17,2024-01-01/P3M,3112
-E09000024,Physical book,Adult,2023-04-01/P1Y,372546
-E09000024,Physical book,Under 12,2023-04-01/P1Y,11918
-E09000024,Physical book,12-17,2023-04-01/P1Y,2190
+E09000024,Physical book,Adult,2024-03-01/P1M,372546
+E09000024,Physical book,Under 12,2024-03-01/P1M,11918
+E09000024,Physical book,12-17,2024-03-01/P1M,2190
 E09000024,Ebook,Unknown,2023-04-01/P1M,4032
 E09000024,Ebook,Unknown,2023-05-01/P1M,4140
 E09000024,Ebook,Unknown,2023-06-01/P1M,3901
@@ -5564,15 +5564,15 @@ E09000025,Physical audiobook,Unknown,2023-12-01/P1M,184
 E09000025,Physical audiobook,Unknown,2024-01-01/P1M,230
 E09000025,Physical audiobook,Unknown,2024-02-01/P1M,161
 E09000025,Physical audiobook,Unknown,2024-03-01/P1M,197
-E10000020,Physical book,Adult,2023-04-01/P1Y,1818623
-E10000020,Physical book,Under 12,2023-04-01/P1Y,1499491
-E10000020,Physical audiobook,Adult,2023-04-01/P1Y,290920
-E10000020,Physical audiobook,Under 12,2023-04-01/P1Y,15868
-E10000020,Ebook,Adult,2023-04-01/P1Y,1011379
-E10000020,Ebook,Under 12,2023-04-01/P1Y,323510
-E10000020,Physical audiobook,Unknown,2023-04-01/P1Y,174793
-E10000020,Eaudio,Adult,2023-04-01/P1Y,139214
-E10000020,Eaudio,Under 12,2023-04-01/P1Y,35579
+E10000020,Physical book,Adult,2024-03-01/P1M,1818623
+E10000020,Physical book,Under 12,2024-03-01/P1M,1499491
+E10000020,Physical audiobook,Adult,2024-03-01/P1M,290920
+E10000020,Physical audiobook,Under 12,2024-03-01/P1M,15868
+E10000020,Ebook,Adult,2024-03-01/P1M,1011379
+E10000020,Ebook,Under 12,2024-03-01/P1M,323510
+E10000020,Physical audiobook,Unknown,2024-02-01/P1M,174793
+E10000020,Eaudio,Adult,2024-02-01/P1M,139214
+E10000020,Eaudio,Under 12,2024-02-01/P1M,35579
 E06000012,Physical book,Adult,2023-04-01/P1M,10406
 E06000012,Physical book,Adult,2023-05-01/P1M,11167
 E06000012,Physical book,Adult,2023-06-01/P1M,11080
@@ -10376,12 +10376,12 @@ E08000015,Eaudio,12-17,2023-12-01/P1M,47
 E08000015,Eaudio,12-17,2024-01-01/P1M,60
 E08000015,Eaudio,12-17,2024-02-01/P1M,44
 E08000015,Eaudio,12-17,2024-03-01/P1M,64
-E08000031,Physical book,Adult,2023-04-01/P1Y,229023
-E08000031,Physical book,Under 12,2023-04-01/P1Y,247059
-E08000031,Physical audiobook,Adult,2023-04-01/P1Y,6962
-E08000031,Physical audiobook,Under 12,2023-04-01/P1Y,412
-E08000031,Ebook,Unknown,2023-04-01/P1Y,7183
-E08000031,Physical audiobook,Unknown,2023-04-01/P1Y,18179
+E08000031,Physical book,Adult,2024-03-01/P1M,229023
+E08000031,Physical book,Under 12,2024-03-01/P1M,247059
+E08000031,Physical audiobook,Adult,2024-03-01/P1M,6962
+E08000031,Physical audiobook,Under 12,2024-03-01/P1M,412
+E08000031,Ebook,Unknown,2024-03-01/P1M,7183
+E08000031,Physical audiobook,Unknown,2024-03-01/P1M,18179
 E10000034,Physical book,Adult,2023-04-01/P1M,69339
 E10000034,Physical book,Adult,2023-05-01/P1M,72488
 E10000034,Physical book,Adult,2023-06-01/P1M,71031
