@@ -13,14 +13,14 @@ POPULATION = './data/mye24tablesew.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
 
 SERVICES = './data/services.csv'
+LOANS = './data/loans.csv'
 MEMBERS = './data/members.csv'
+VISITS = './data/visits.csv'
 EVENTS = './data/events.csv'
 ATTENDANCE = './data/event_attendance.csv'
-LOANS = './data/loans.csv'
-CLICK_COLLECT = './data/click_and_collect.csv'
-VISITS = './data/visits.csv'
 COMPUTER_USAGE = './data/computer_usage.csv'
 WIFI_SESSIONS = './data/wifi_sessions.csv'
+CLICK_COLLECT = './data/click_and_collect.csv'
 
 SERVICES_JSON = './public/services.json'
 LOANS_JSON = './public/loans.json'
@@ -33,12 +33,20 @@ WIFI_SESSIONS_JSON = './public/wifi_sessions.json'
 
 
 def convert_date_to_quarterly(date_str):
-    """Convert a date string in YYYY-MM-DD format to a quarterly period string."""
+    """
+        Convert a date string in YYYY-MM-DD format to a quarterly period string.
+        such as 2023-01-01/P3M
+    """
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
     # Set to the first of the month
     new_date = date_obj.replace(day=1)
-    # Subtract 2 months from the date and adjust the year if necessary
-    new_date = new_date.replace(month=(new_date.month - 2) % 12 or 12)
+    # Subtract 2 months from the date
+    current_month = new_date.month
+    if current_month == 1 or current_month == 2:
+        new_date = new_date.replace(
+            year=new_date.year - 1, month=12 + (current_month - 2))
+    new_date = new_date.replace(month=(current_month - 2) % 12 or 12)
+
     period = new_date.strftime("%Y-%m-%d") + '/P3M'
 
     # Correct some invalid entries
@@ -50,6 +58,7 @@ def convert_date_to_quarterly(date_str):
 def convert_values_to_monthly(data):
     """Add monthly values to the existing data."""
     for record in data:
+        print(record)
         if 'Period' in record and 'P3M' in record['Period']:
             # We need to adjust the count to be a third and add two new records
             original_count = int(record['Count'])
@@ -60,12 +69,32 @@ def convert_values_to_monthly(data):
             record['Period'] = original_period.replace('/P3M', '/P1M')
             original_date_obj = datetime.strptime(
                 original_period.split('/')[0], "%Y-%m-%d")
+
+            original_date_month = original_date_obj.month
+            original_date_year = original_date_obj.year
+
+            first_new_month = None
+            second_new_month = None
+            if original_date_month == 11:
+                first_new_month = original_date_obj.replace(
+                    month=12, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+                second_new_month = original_date_obj.replace(
+                    month=1, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+            elif original_date_month == 12:
+                first_new_month = original_date_obj.replace(
+                    month=1, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+                second_new_month = original_date_obj.replace(
+                    month=2, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+            else:
+                first_new_month = original_date_obj.replace(
+                    month=original_date_month + 1, year=original_date_year).strftime("%Y-%m-%d") + '/P1M'
+                second_new_month = original_date_obj.replace(
+                    month=original_date_month + 2, year=original_date_year).strftime("%Y-%m-%d") + '/P1M'
+
             print(original_date_obj)
             new_records = [
-                {**record, 'Period': original_date_obj.replace(
-                    month=original_date_obj.month + 1).strftime("%Y-%m-%d") + '/P1M', 'Count': new_count},
-                {**record, 'Period': original_date_obj.replace(
-                    month=original_date_obj.month + 2).strftime("%Y-%m-%d") + '/P1M', 'Count': new_count}
+                {**record, 'Period': first_new_month, 'Count': new_count},
+                {**record, 'Period': second_new_month, 'Count': new_count}
             ]
             data.extend(new_records)
 
@@ -163,12 +192,12 @@ def rotate_activity_data():
         visits = []
 
         computer_usage_writer = csv.DictWriter(computer_usage_out, fieldnames=[
-            'Authority', 'Period', 'Hours'])
+            'Authority', 'Period', 'Count'])
         computer_usage_writer.writeheader()
         computer_usage = []
 
         wifi_sessions_writer = csv.DictWriter(wifi_sessions_out, fieldnames=[
-            'Authority', 'Period', 'Sessions'])
+            'Authority', 'Period', 'Count'])
         wifi_sessions_writer.writeheader()
         wifi_sessions = []
 
@@ -465,13 +494,13 @@ def rotate_activity_data():
                             'Count': value
                         })
 
-                # Computer usage: Authority, Period, Hours
+                # Computer usage: Authority, Period, Count (hours)
                 if header.startswith('hours_public_computers'):
                     if value is not None and value != "":
                         authority_computer_usage.append({
                             'Authority': authority_code,
                             'Period': period_start,
-                            'Hours': value
+                            'Count': value
                         })
 
                 # Wifi sessions: Authority, Period, Sessions
@@ -480,7 +509,7 @@ def rotate_activity_data():
                         authority_wifi_sessions.append({
                             'Authority': authority_code,
                             'Period': period_start,
-                            'Sessions': value
+                            'Count': value
                         })
 
             # Add the authority's data to the services list
@@ -495,9 +524,9 @@ def rotate_activity_data():
             visits_count = sum(
                 int(record['Count']) for record in authority_visits)
             computer_hours_count = sum(
-                int(record['Hours']) for record in authority_computer_usage)
+                int(record['Count']) for record in authority_computer_usage)
             wifi_sessions_count = sum(
-                int(record['Sessions']) for record in authority_wifi_sessions)
+                int(record['Count']) for record in authority_wifi_sessions)
 
             services.append({
                 'Authority code': authority_code,
@@ -615,7 +644,7 @@ def rotate_activity_data():
                     visits_frequency = 'Yearly'
                 if len(records) == 4:
                     visits_frequency = 'Quarterly'
-                elif len(records) == 12:
+                else:
                     visits_frequency = 'Monthly'
 
                 for record in records:
