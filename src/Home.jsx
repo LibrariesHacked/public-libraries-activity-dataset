@@ -3,6 +3,7 @@ import React from 'react'
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 
+import LoansTotalCard from './components/LoansTotalCard'
 import MembersTotalCard from './components/MembersTotalCard'
 
 const Home = () => {
@@ -18,7 +19,9 @@ const Home = () => {
         >
           <MembersTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}></Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <LoansTotalCard />
+        </Grid>
         <Grid size={{ xs: 12, md: 6 }}></Grid>
       </Grid>
     </Box>

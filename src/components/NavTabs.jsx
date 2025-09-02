@@ -24,9 +24,9 @@ const NavTabs = () => {
     '/',
     '/loans',
     '/members',
-    'visits',
-    'events',
-    'computers'
+    '/visits',
+    '/events',
+    '/computers'
   ])
   const currentTab = routeMatch?.pattern?.path
   return (
@@ -36,6 +36,7 @@ const NavTabs = () => {
         <Tab label='Loans' value='/loans' to='/loans' component={Link} />
         <Tab label='Members' value='/members' to='/members' component={Link} />
         <Tab label='Events' value='/events' to='/events' component={Link} />
+        <Tab label='Visits' value='/visits' to='/visits' component={Link} />
         <Tab
           label='Computers'
           value='/computers'
