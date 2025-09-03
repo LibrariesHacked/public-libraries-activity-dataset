@@ -13,7 +13,7 @@ export class Service {
     this.members = json[4]
     this.events = json[5]
     this.attendance = json[6]
-    this.issues = json[7]
+    this.loans = json[7]
     this.visits = json[8]
     this.computerHours = json[9]
     this.wifiSessions = json[10]

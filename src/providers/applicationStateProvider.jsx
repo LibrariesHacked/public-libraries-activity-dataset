@@ -6,8 +6,13 @@ const initialApplicationState = {
   services: null,
   serviceLookup: null,
   filteredServices: [],
+  attendance: null,
+  computerUsage: null,
+  events: null,
+  loans: null,
   members: null,
-  loans: null
+  visits: null,
+  wifiSessions: null
 }
 
 const applicationReducer = (state, action) => {

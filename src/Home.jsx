@@ -4,6 +4,7 @@ import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 
 import LoansTotalCard from './components/LoansTotalCard'
+import LoansByTypeCard from './components/LoansByTypeCard'
 import MembersTotalCard from './components/MembersTotalCard'
 
 const Home = () => {
@@ -19,10 +20,22 @@ const Home = () => {
         >
           <MembersTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <LoansTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6 }}></Grid>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}></Grid>
+        <Grid
+          size={{
+            xs: 12,
+            md: 6,
+            lg: 3
+          }}
+        >
+          <LoansByTypeCard />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+        </Grid>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}></Grid>
       </Grid>
     </Box>
   )

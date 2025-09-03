@@ -29,10 +29,8 @@ import { useApplicationState } from './hooks/useApplicationState'
 import * as loansModel from './models/loans'
 
 const Loans = () => {
-  const [
-    { filteredServices, services, serviceLookup, loans },
-    dispatchApplication
-  ] = useApplicationState()
+  const [{ filteredServices, services, loans }, dispatchApplication] =
+    useApplicationState()
 
   const [charts, setCharts] = useState([])
 
@@ -42,12 +40,12 @@ const Loans = () => {
       dispatchApplication({ type: 'SetLoans', loans: loans })
     }
 
-    // Trigger download of members data (if not already done)
+    // Trigger download of loans data (if not already done)
     if (!loans) getLoans()
   }, [services, loans, dispatchApplication])
 
   useEffect(() => {
-    if (!loans || !serviceLookup) return
+    if (!loans) return
 
     let charts = []
 
@@ -110,7 +108,7 @@ const Loans = () => {
     })
 
     setCharts(charts)
-  }, [filteredServices, serviceLookup, loans])
+  }, [filteredServices, loans])
   return (
     <Box>
       {charts.map((chart, index) => (

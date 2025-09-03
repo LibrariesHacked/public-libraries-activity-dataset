@@ -1,7 +1,7 @@
 """"
 This script reads a CSV file containing library activity data for the year 2023-2024,
 rotates the data into multiple output files, and handles various aspects such as authorities,
-members, events, attendance, issues, visits, computer usage, and metadata.
+members, events, attendance, loans, visits, computer usage, and metadata.
 """
 
 import csv
@@ -56,19 +56,24 @@ def convert_date_to_quarterly(date_str):
 
 
 def convert_values_to_monthly(data):
-    """Add monthly values to the existing data."""
+    """Convert quarterly and annual values to monthly and return as months """
     for record in data:
-        print(record)
-        if 'Period' in record and 'P3M' in record['Period']:
+        if 'Period' in record and 'P1M' in record['Period']:
+            original_period = record['Period']
+            original_date_obj = datetime.strptime(
+                original_period.split('/')[0], "%Y-%m-%d")
+            record['Period'] = original_date_obj.strftime("%Y-%m")
+        elif 'Period' in record and 'P3M' in record['Period']:
             # We need to adjust the count to be a third and add two new records
             original_count = int(record['Count'])
             new_count = int(original_count / 3)
             # Round up to the nearest integer
             record['Count'] = new_count
             original_period = record['Period']
-            record['Period'] = original_period.replace('/P3M', '/P1M')
             original_date_obj = datetime.strptime(
                 original_period.split('/')[0], "%Y-%m-%d")
+            
+            record['Period'] = original_date_obj.strftime("%Y-%m")
 
             original_date_month = original_date_obj.month
             original_date_year = original_date_obj.year
@@ -77,25 +82,43 @@ def convert_values_to_monthly(data):
             second_new_month = None
             if original_date_month == 11:
                 first_new_month = original_date_obj.replace(
-                    month=12, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+                    month=12, year=original_date_year + 1).strftime("%Y-%m")
                 second_new_month = original_date_obj.replace(
-                    month=1, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+                    month=1, year=original_date_year + 1).strftime("%Y-%m")
             elif original_date_month == 12:
                 first_new_month = original_date_obj.replace(
-                    month=1, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+                    month=1, year=original_date_year + 1).strftime("%Y-%m")
                 second_new_month = original_date_obj.replace(
-                    month=2, year=original_date_year + 1).strftime("%Y-%m-%d") + '/P1M'
+                    month=2, year=original_date_year + 1).strftime("%Y-%m")
             else:
                 first_new_month = original_date_obj.replace(
-                    month=original_date_month + 1, year=original_date_year).strftime("%Y-%m-%d") + '/P1M'
+                    month=original_date_month + 1, year=original_date_year).strftime("%Y-%m")
                 second_new_month = original_date_obj.replace(
-                    month=original_date_month + 2, year=original_date_year).strftime("%Y-%m-%d") + '/P1M'
+                    month=original_date_month + 2, year=original_date_year).strftime("%Y-%m")
 
-            print(original_date_obj)
             new_records = [
                 {**record, 'Period': first_new_month, 'Count': new_count},
                 {**record, 'Period': second_new_month, 'Count': new_count}
             ]
+            data.extend(new_records)
+
+        elif 'Period' in record and 'P1Y' in record['Period']:
+            # We need to adjust the count to be each month and add 11 new records
+            original_count = int(record['Count'])
+            new_count = int(original_count / 12)
+            # Round up to the nearest integer
+            record['Count'] = new_count
+            original_period = record['Period']
+            record['Period'] = '2023-04'
+
+            new_records = []
+            for i in range(1, 11):
+                new_month = (4 + i - 1) % 12 + 1
+                new_year = 2023 + ((4 + i - 1) // 12)
+                new_date_str = f"{new_year}-{new_month:02d}"
+                new_records.append(
+                    {**record, 'Period': new_date_str, 'Count': new_count})
+
             data.extend(new_records)
 
     return data
@@ -205,7 +228,7 @@ def rotate_activity_data():
                                                                   'Authority nice name',
                                                                   'Library service',
                                                                   'Period', 'Members', 'Events',
-                                                                  'Attendance', 'Issues', 'Visits',
+                                                                  'Attendance', 'Loans', 'Visits',
                                                                   'Computer hours', 'Wifi sessions',
                                                                   'Population under 12',
                                                                   'Population 12-17',
@@ -403,7 +426,7 @@ def rotate_activity_data():
                 elif 'digital_audiobook' in header:
                     format_type = 'Eaudio'
 
-                # Age category physical book and audiobook issues
+                # Age category physical book and audiobook loans
                 if header.startswith('loans_') or header.startswith('ebooks_') or \
                         header.startswith('digital_audiobook_issues_'):
                     if value is not None and value != "":
@@ -416,7 +439,7 @@ def rotate_activity_data():
                         })
 
                 if header.startswith('total_physical_book_issues'):
-                    # Record total physical book issues IF no data for the individual months.
+                    # Record total physical book loans IF no data for the individual months.
                     if row.get('loans_adult_march') == "":
                         if value is not None and value != "":
                             authority_loans.append({
@@ -428,7 +451,7 @@ def rotate_activity_data():
                             })
 
                 if header.startswith('total_physical_audiobook_issues'):
-                    # Record total physical audiobook issues IF no data for the individual months.
+                    # Record total physical audiobook loans IF no data for the individual months.
                     if row.get('loans_adult_march_digital') == "":
                         if value is not None and value != "":
                             authority_loans.append({
@@ -440,7 +463,7 @@ def rotate_activity_data():
                             })
 
                 if header.startswith('total_ebook_issues'):
-                    # Record total ebook issues IF no data for the individual months.
+                    # Record total ebook loans IF no data for the individual months.
                     if row.get('ebooks_adult_march') == "":
                         if value is not None and value != "":
                             authority_loans.append({
@@ -452,7 +475,7 @@ def rotate_activity_data():
                             })
 
                 if header.startswith('total_digital_audiobook_issues'):
-                    # Record total digital audiobook issues IF no data for the individual months.
+                    # Record total digital audiobook loans IF no data for the individual months.
                     if row.get('digital_audiobook_issues_adult_march') == "":
                         if value is not None and value != "":
                             authority_loans.append({
@@ -519,7 +542,7 @@ def rotate_activity_data():
                 int(record['Count']) for record in authority_events)
             attendance_count = sum(
                 int(record['Count']) for record in authority_attendance)
-            issues_count = sum(
+            loans_count = sum(
                 int(record['Count']) for record in authority_loans)
             visits_count = sum(
                 int(record['Count']) for record in authority_visits)
@@ -536,7 +559,7 @@ def rotate_activity_data():
                 'Members': members_count,
                 'Events': events_count,
                 'Attendance': attendance_count,
-                'Issues': issues_count,
+                'Loans': loans_count,
                 'Visits': visits_count,
                 'Computer hours': computer_hours_count,
                 'Wifi sessions': wifi_sessions_count,
@@ -558,8 +581,10 @@ def rotate_activity_data():
 
             # Then for each grouping we need to work out if the dates are monthly or quarterly
             event_frequency = None
-            for (event_type, age_group), records in events_dict.items():
-                if len(records) == 4:
+            for (event_type, event_age), records in events_dict.items():
+                if len(records) == 1:
+                    event_frequency = 'Yearly'
+                elif len(records) == 4:
                     event_frequency = 'Quarterly'
                 else:
                     event_frequency = 'Monthly'
@@ -570,8 +595,14 @@ def rotate_activity_data():
                         period = record['Period'] + '/P1M'
                     elif event_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
+                    elif event_frequency == 'Yearly':
+                        period = '2023-04-01/P1Y'
 
                     record['Period'] = period
+
+            # Flatten the dictionary back into a list
+            authority_events = [
+                record for records in events_dict.values() for record in records]
             events.extend(authority_events)
 
             # Attendance: split the array into arrays grouped by just event type and age group
@@ -584,8 +615,10 @@ def rotate_activity_data():
                 attendance_dict[key].append(record)
             # Then for each grouping we need to work out if the dates are monthly or quarterly
             attendance_frequency = None
-            for (event_type, age_group), records in attendance_dict.items():
-                if len(records) == 4:
+            for (event_type, event_age), records in attendance_dict.items():
+                if len(records) == 1:
+                    attendance_frequency = 'Yearly'
+                elif len(records) == 4:
                     attendance_frequency = 'Quarterly'
                 else:
                     attendance_frequency = 'Monthly'
@@ -594,9 +627,15 @@ def rotate_activity_data():
                     period = None
                     if attendance_frequency == 'Monthly':
                         period = record['Period'] + '/P1M'
+                    elif attendance_frequency == 'Yearly':
+                        period = '2023-04-01/P1Y'
                     elif attendance_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
                     record['Period'] = period
+
+            # Flatten the dictionary back into a list
+            authority_attendance = [
+                record for records in attendance_dict.values() for record in records]
             attendance.extend(authority_attendance)
 
             # Loans: split the array into arrays grouped by just format and age group
@@ -608,12 +647,12 @@ def rotate_activity_data():
                     loans_dict[key] = []
                 loans_dict[key].append(record)
 
-            # Then for each grouping we need to work out if the dates are monthly or quarterly
+            # For each grouping work out if the dates are monthly, quarterly, or yearly
             loans_frequency = None
-            for (format_type, content_age_group), records in loans_dict.items():
+            for (content_format, content_age_group), records in loans_dict.items():
                 if len(records) == 1:
                     loans_frequency = 'Yearly'
-                if len(records) == 4:
+                elif len(records) == 4:
                     loans_frequency = 'Quarterly'
                 else:
                     loans_frequency = 'Monthly'
@@ -627,6 +666,10 @@ def rotate_activity_data():
                     elif loans_frequency == 'Yearly':
                         period = '2023-04-01/P1Y'
                     record['Period'] = period
+
+            # Flatten the dictionary back into a list
+            authority_loans = [record for records in loans_dict.values()
+                               for record in records]
             loans.extend(authority_loans)
 
             # Visits: split the array into arrays grouped by colocation
@@ -656,6 +699,10 @@ def rotate_activity_data():
                     elif visits_frequency == 'Yearly':
                         period = '2023-04-01/P1Y'
                     record['Period'] = period
+
+            # Flatten the dictionary back into a list
+            authority_visits = [
+                record for records in visits_dict.values() for record in records]
             visits.extend(authority_visits)
 
             # Click and collect: No need to group but do convert the period

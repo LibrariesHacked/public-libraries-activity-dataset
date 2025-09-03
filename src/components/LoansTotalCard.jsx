@@ -34,7 +34,7 @@ const LoansTotalCard = () => {
       ) || 0
 
     const loansPerCapita =
-      totalPopulation > 0 ? (totalLoans / totalPopulation) * 100 : 0
+      totalPopulation > 0 ? Math.round(totalLoans / totalPopulation) : 0
 
     setLoansCount(totalLoans)
     setTotalPopulation(totalPopulation)
@@ -56,7 +56,7 @@ const LoansTotalCard = () => {
               {loansCount.toLocaleString('en-GB')}
             </Typography>
             <Typography variant='h4' sx={{ color: 'text.secondary' }}>
-              {Math.round(loansPerCapita)} loans per capita
+              ~{Math.round(loansPerCapita)} per person
             </Typography>
           </Stack>
           <Box sx={{ width: '100%', height: 50 }}></Box>
