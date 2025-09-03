@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+
 import Box from '@mui/material/Box'
 import OutlinedInput from '@mui/material/OutlinedInput'
 import InputLabel from '@mui/material/InputLabel'
@@ -18,10 +20,41 @@ import NavTabs from './components/NavTabs'
 import Home from './Home'
 import Loans from './Loans'
 import Members from './Members'
+import Visits from './Visits'
+import Events from './Events'
+import Computers from './Computers'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import * as serviceModel from './models/service'
+
+const theme = createTheme({
+  palette: {
+    background: {
+      default: 'hsl(0, 0%, 99%)',
+      paper: 'hsl(220, 35%, 97%)'
+    }
+  },
+  shape: {
+    borderRadius: 8
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none'
+        }
+      }
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none'
+        }
+      }
+    }
+  }
+})
 
 function App () {
   const [{ services, serviceLookup }, dispatchApplication] =
@@ -59,7 +92,7 @@ function App () {
   }
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
         <Container
@@ -70,8 +103,11 @@ function App () {
           }}
         >
           <main>
-            <Typography component='h1' variant='h3' gutterBottom>
-              English public libraries activity
+            <Typography component='h1' variant='h3'>
+              Library activity
+            </Typography>
+            <Typography component='h1' variant='h5' gutterBottom>
+              Hello
             </Typography>
             <div>
               <FormControl sx={{ width: '100%', mb: 2 }}>
@@ -112,13 +148,16 @@ function App () {
             <NavTabs />
             <Routes>
               <Route path='/' element={<Home />} />
-              <Route path='/members' element={<Members />} />
               <Route path='/loans' element={<Loans />} />
+              <Route path='/members' element={<Members />} />
+              <Route path='/visits' element={<Visits />} />
+              <Route path='/events' element={<Events />} />
+              <Route path='/computers' element={<Computers />} />
             </Routes>
           </main>
         </Container>
       </BrowserRouter>
-    </>
+    </ThemeProvider>
   )
 }
 

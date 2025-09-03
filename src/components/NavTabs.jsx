@@ -35,10 +35,10 @@ const NavTabs = () => {
         <Tab label='Home' value='/' to='/' component={Link} />
         <Tab label='Loans' value='/loans' to='/loans' component={Link} />
         <Tab label='Members' value='/members' to='/members' component={Link} />
-        <Tab label='Events' value='/events' to='/events' component={Link} />
         <Tab label='Visits' value='/visits' to='/visits' component={Link} />
+        <Tab label='Events' value='/events' to='/events' component={Link} />
         <Tab
-          label='Computers'
+          label='Computers and WiFi'
           value='/computers'
           to='/computers'
           component={Link}
