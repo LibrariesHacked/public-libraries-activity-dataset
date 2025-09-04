@@ -9,7 +9,8 @@ export class Events {
     this.serviceCode = json[0]
     this.type = json[1]
     this.ageGroup = json[2]
-    this.countEvents = parseInt(json[3]) || null
+    this.month = json[3]
+    this.countEvents = parseInt(json[4]) || null
 
     return this
   }
