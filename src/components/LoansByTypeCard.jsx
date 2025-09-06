@@ -32,7 +32,7 @@ const LoansByTypeCard = () => {
   }, [services, loans, dispatchApplication])
 
   useEffect(() => {
-    if (!loans) return
+    if (!loans || !filteredServices || !services) return
     const activeServices =
       filteredServices?.length > 0
         ? services.filter(s => filteredServices.includes(s.code))

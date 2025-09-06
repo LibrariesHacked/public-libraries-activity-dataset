@@ -26,102 +26,134 @@ import Box from '@mui/material/Box'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
-import * as loansModel from './models/loans'
+import * as computersModel from './models/computers'
+import * as wifiModel from './models/wifi'
+
+// We neeed a chart js chart of bar with a line for wifi
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top'
+    },
+    title: {
+      display: true,
+      text: 'Chart.js Line Chart'
+    }
+  },
+  scales: {
+    y: {
+      type: 'linear',
+      display: true,
+      position: 'left',
+      title: {
+        display: true,
+        text: 'Computer Usage Hours'
+      }
+    },
+    y1: {
+      type: 'linear',
+      display: true,
+      position: 'right',
+      title: {
+        display: true,
+        text: 'WiFi Usage Sessions'
+      },
+      grid: {
+        drawOnChartArea: false
+      }
+    }
+  }
+}
 
 const Computers = () => {
-  const [
-    { filteredServices, services, serviceLookup, loans },
-    dispatchApplication
-  ] = useApplicationState()
+  const [{ filteredServices, services, computers, wifi }, dispatchApplication] =
+    useApplicationState()
 
-  const [charts, setCharts] = useState([])
+  const [computerChart, setComputerChart] = useState(null)
 
   useEffect(() => {
-    const getLoans = async () => {
-      const loans = await loansModel.getLoans()
-      dispatchApplication({ type: 'SetLoans', loans: loans })
+    const getComputers = async () => {
+      const computers = await computersModel.getComputers()
+      dispatchApplication({ type: 'SetComputers', computers: computers })
+    }
+
+    const getWiFi = async () => {
+      const wifi = await wifiModel.getWiFi()
+      dispatchApplication({ type: 'SetWiFi', wifi: wifi })
     }
 
     // Trigger download of members data (if not already done)
-    if (!loans) getLoans()
-  }, [services, loans, dispatchApplication])
+    if (!computers || !wifi) {
+      getComputers()
+      getWiFi()
+    }
+  }, [services, computers, wifi, dispatchApplication])
 
   useEffect(() => {
-    if (!loans || !serviceLookup) return
+    if (!computers || !wifi) return
 
-    let charts = []
+    let computerChart = {}
 
-    // We want a chart for each format
-    const itemFormats = [...new Set(loans.map(m => m.format))].sort()
+    const filteredWifi = wifi.filter(m =>
+      filteredServices.length === 0
+        ? true
+        : filteredServices.includes(m.serviceCode)
+    )
 
-    itemFormats.forEach(format => {
-      const options = {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top'
-          },
-          title: {
-            display: true,
-            text: 'Chart.js Line Chart'
-          }
-        }
+    const filteredComputers = computers.filter(m =>
+      filteredServices.length === 0
+        ? true
+        : filteredServices.includes(m.serviceCode)
+    )
+
+    const labels = [
+      ...new Set(filteredWifi.map(wifi => wifi.month)),
+      ...new Set(filteredComputers.map(computer => computer.year))
+    ].sort()
+
+    const datasets = [
+      {
+        label: 'Computer hours',
+        data: labels.map(label => {
+          return (
+            filteredComputers
+              .filter(c => c.month === label)
+              .reduce((sum, v) => sum + (v.countHours || 0), 0) || 0
+          )
+        })
+      },
+      {
+        label: 'WiFi sessions',
+        data: labels.map(label => {
+          return (
+            filteredWifi
+              .filter(w => w.month === label)
+              .reduce((sum, v) => sum + (v.countSessions || 0), 0) || 0
+          )
+        })
       }
-      const formatLoans = loans.filter(m => m.format === format)
+    ]
 
-      let labels = []
-      let datasets = []
-      // The labels are the months in the data. The months are already formattted as YYYY-MM
-      labels = [...new Set(formatLoans.map(loan => loan.month))].sort()
+    computerChart = {
+      format: 'Computer Usage Hours vs WiFi Sessions',
+      options: chartOptions,
+      labels: labels,
+      datasets: datasets.map((d, index) => ({
+        ...d,
+        borderColor: index === 0 ? 'rgb(53, 162, 235)' : 'rgb(255, 99, 132)',
+        backgroundColor:
+          index === 0 ? 'rgba(53, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)',
+        yAxisID: index === 0 ? 'y' : 'y1'
+      }))
+    }
 
-      // We want a dataset for each content age group
-      const contentAgeGroups = [
-        ...new Set(formatLoans.map(m => m.contentAgeGroup))
-      ].sort()
-      contentAgeGroups.forEach(contentAgeGroup => {
-        // We want a dataset for each age group
-        const data = []
-        labels.forEach(label => {
-          // For each label (month) we need to count the number of loans for this age group
-          let count = 0
-          formatLoans.forEach(loan => {
-            if (
-              loan.countLoans &&
-              loan.month === label &&
-              loan.contentAgeGroup === contentAgeGroup &&
-              (filteredServices.length === 0 ||
-                filteredServices.includes(loan.serviceCode))
-            ) {
-              count += loan.countLoans
-            }
-          })
-          data.push(count)
-        })
-        const color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`
-        datasets.push({
-          label: contentAgeGroup,
-          data,
-          backgroundColor: color,
-          borderColor: color,
-          borderWidth: 1
-        })
-      })
-      charts.push({ format, labels, datasets, options })
-    })
-
-    setCharts(charts)
-  }, [filteredServices, serviceLookup, loans])
+    setComputerChart(computerChart)
+  }, [filteredServices, computers, wifi])
   return (
     <Box>
-      {charts.map((chart, index) => (
-        <Box key={index} sx={{ mb: 4 }}>
-          <h3>{chart.format}</h3>
-          <Line
-            options={chart.options}
-            data={{ labels: chart.labels, datasets: chart.datasets }}
-          />
-        </Box>
-      ))}
+      <h3>Public computers and WiFi usage</h3>
+      {computerChart && <Line options={chartOptions} data={computerChart} />}
     </Box>
   )
 }

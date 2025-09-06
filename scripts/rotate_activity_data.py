@@ -18,8 +18,8 @@ MEMBERS = './data/members.csv'
 VISITS = './data/visits.csv'
 EVENTS = './data/events.csv'
 ATTENDANCE = './data/event_attendance.csv'
-COMPUTER_USAGE = './data/computer_usage.csv'
-WIFI_SESSIONS = './data/wifi_sessions.csv'
+COMPUTER_USAGE = './data/computers.csv'
+WIFI_SESSIONS = './data/wifi.csv'
 CLICK_COLLECT = './data/click_and_collect.csv'
 
 SERVICES_JSON = './public/services.json'
@@ -28,8 +28,8 @@ MEMBERS_JSON = './public/members.json'
 VISITS_JSON = './public/visits.json'
 EVENTS_JSON = './public/events.json'
 ATTENDANCE_JSON = './public/attendance.json'
-COMPUTER_USAGE_JSON = './public/computer_usage.json'
-WIFI_SESSIONS_JSON = './public/wifi_sessions.json'
+COMPUTER_USAGE_JSON = './public/computers.json'
+WIFI_SESSIONS_JSON = './public/wifi.json'
 
 
 def convert_date_to_quarterly(date_str):
@@ -72,7 +72,7 @@ def convert_values_to_monthly(data):
             original_period = record['Period']
             original_date_obj = datetime.strptime(
                 original_period.split('/')[0], "%Y-%m-%d")
-            
+
             record['Period'] = original_date_obj.strftime("%Y-%m")
 
             original_date_month = original_date_obj.month
@@ -726,31 +726,41 @@ def rotate_activity_data():
 
             # Computer usage: No need to group but convert the period
             computer_usage_frequency = None
-            if len(authority_computer_usage) == 4:
+            if len(authority_computer_usage) == 1:
+                computer_usage_frequency = 'Yearly'
+            elif len(authority_computer_usage) == 4:
                 computer_usage_frequency = 'Quarterly'
             elif len(authority_computer_usage) == 12:
                 computer_usage_frequency = 'Monthly'
+
             for record in authority_computer_usage:
                 period = None
                 if computer_usage_frequency == 'Quarterly':
                     period = convert_date_to_quarterly(record['Period'])
+                elif computer_usage_frequency == 'Yearly':
+                    period = '2023-04-01/P1Y'
                 else:
                     period = record['Period'] + '/P1M'
                 record['Period'] = period
             computer_usage.extend(authority_computer_usage)
 
             # Wifi sessions: No need to group but convert the period
+            print(authority_wifi_sessions)
             wifi_sessions_frequency = None
-            if len(wifi_sessions) == 1:
+            if len(authority_wifi_sessions) == 1:
                 wifi_sessions_frequency = 'Yearly'
-            if len(wifi_sessions) == 4:
+            elif len(authority_wifi_sessions) == 4:
                 wifi_sessions_frequency = 'Quarterly'
-            elif len(wifi_sessions) == 12:
+            elif len(authority_wifi_sessions) == 12:
                 wifi_sessions_frequency = 'Monthly'
+            print(wifi_sessions_frequency)
+
             for record in authority_wifi_sessions:
                 period = None
                 if wifi_sessions_frequency == 'Quarterly':
                     period = convert_date_to_quarterly(record['Period'])
+                elif wifi_sessions_frequency == 'Yearly':
+                    period = '2023-04-01/P1Y'
                 else:
                     period = record['Period'] + '/P1M'
                 record['Period'] = period
@@ -804,7 +814,9 @@ def rotate_activity_data():
         with open(COMPUTER_USAGE_JSON, 'w', encoding='utf-8') as f:
             json.dump(computer_usage_values, f)
 
-        wifi_sessions_values = [list(ws.values()) for ws in wifi_sessions]
+        wifi_sessions_monthly = convert_values_to_monthly(wifi_sessions)
+        wifi_sessions_values = [list(ws.values())
+                                for ws in wifi_sessions_monthly]
         with open(WIFI_SESSIONS_JSON, 'w', encoding='utf-8') as f:
             json.dump(wifi_sessions_values, f)
 

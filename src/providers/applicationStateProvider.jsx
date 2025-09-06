@@ -43,25 +43,25 @@ const applicationReducer = (state, action) => {
         ...state,
         attendance: action.attendance
       }
-    case 'SetComputerUsage':
+    case 'SetComputers':
       return {
         ...state,
-        computerUsage: action.computerUsage
+        computers: action.computers
       }
     case 'SetEvents':
       return {
         ...state,
         events: action.events
       }
-    case 'SetVisists':
+    case 'SetVisits':
       return {
         ...state,
         visits: action.visits
       }
-    case 'SetWifiSessions':
+    case 'SetWiFi':
       return {
         ...state,
-        wifiSessions: action.wifiSessions
+        wifi: action.wifi
       }
     default:
       return state

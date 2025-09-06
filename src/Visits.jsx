@@ -50,7 +50,7 @@ const Visits = () => {
   useEffect(() => {
     const getVisits = async () => {
       const visits = await visitsModel.getVisits()
-      dispatchApplication({ type: 'SetVisists', visits: visits })
+      dispatchApplication({ type: 'SetVisits', visits: visits })
     }
 
     // Trigger download of visit data (if not already done)
