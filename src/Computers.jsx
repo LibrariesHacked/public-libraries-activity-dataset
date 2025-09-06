@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js'
+
 import { Line } from 'react-chartjs-2'
 
 ChartJS.register(
@@ -22,6 +23,10 @@ ChartJS.register(
   Legend
 )
 
+import Markdown from 'react-markdown'
+
+import computersMd from './content/computers.md'
+
 import Box from '@mui/material/Box'
 
 import { useApplicationState } from './hooks/useApplicationState'
@@ -29,7 +34,6 @@ import { useApplicationState } from './hooks/useApplicationState'
 import * as computersModel from './models/computers'
 import * as wifiModel from './models/wifi'
 
-// We neeed a chart js chart of bar with a line for wifi
 const chartOptions = {
   responsive: true,
   plugins: {
@@ -70,7 +74,15 @@ const Computers = () => {
   const [{ filteredServices, services, computers, wifi }, dispatchApplication] =
     useApplicationState()
 
+  const [computersMarkdown, setComputersMarkdown] = useState('')
+
   const [computerChart, setComputerChart] = useState(null)
+
+  useEffect(() => {
+    fetch(computersMd)
+      .then(res => res.text())
+      .then(text => setComputersMarkdown(text))
+  }, [])
 
   useEffect(() => {
     const getComputers = async () => {
@@ -156,6 +168,7 @@ const Computers = () => {
   return (
     <Box>
       <h3>Public computers and WiFi usage</h3>
+      <Markdown>{computersMarkdown}</Markdown>
       {computerChart && <Line options={chartOptions} data={computerChart} />}
     </Box>
   )
