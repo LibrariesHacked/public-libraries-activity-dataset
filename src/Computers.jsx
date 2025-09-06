@@ -107,10 +107,13 @@ const Computers = () => {
         : filteredServices.includes(m.serviceCode)
     )
 
-    const labels = [
-      ...new Set(filteredWifi.map(wifi => wifi.month)),
-      ...new Set(filteredComputers.map(computer => computer.year))
-    ].sort()
+    // Create a new set of labels from both datasets
+    const labels = Array.from(
+      new Set([
+        ...filteredComputers.map(c => c.month),
+        ...filteredWifi.map(w => w.month)
+      ])
+    ).sort()
 
     const datasets = [
       {

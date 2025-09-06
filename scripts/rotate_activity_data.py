@@ -112,7 +112,7 @@ def convert_values_to_monthly(data):
             record['Period'] = '2023-04'
 
             new_records = []
-            for i in range(1, 11):
+            for i in range(1, 12):
                 new_month = (4 + i - 1) % 12 + 1
                 new_year = 2023 + ((4 + i - 1) // 12)
                 new_date_str = f"{new_year}-{new_month:02d}"
