@@ -95,7 +95,7 @@ const Computers = () => {
       dispatchApplication({ type: 'SetWiFi', wifi: wifi })
     }
 
-    // Trigger download of members data (if not already done)
+    // Trigger download of computers and wifi data if not already present
     if (!computers || !wifi) {
       getComputers()
       getWiFi()

@@ -10,7 +10,7 @@ const initialApplicationState = {
   computerUsage: null,
   events: null,
   loans: null,
-  members: null,
+  users: null,
   visits: null,
   wifiSessions: null
 }
@@ -28,10 +28,10 @@ const applicationReducer = (state, action) => {
         ...state,
         filteredServices: action.filteredServices
       }
-    case 'SetMembers':
+    case 'SetUsers':
       return {
         ...state,
-        members: action.members
+        users: action.users
       }
     case 'SetLoans':
       return {

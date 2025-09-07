@@ -62,7 +62,7 @@ const EventsAttendanceTotalCard = () => {
         >
           <Stack sx={{ justifyContent: 'space-between' }}>
             <Typography variant='h3' sx={{ color: 'text.secondary' }}>
-              {membersCount.toLocaleString('en-GB')}
+              {eventsCount.toLocaleString('en-GB')}
             </Typography>
             <Typography variant='h4' sx={{ color: 'text.secondary' }}>
               {Math.round(percentageMembers)}%

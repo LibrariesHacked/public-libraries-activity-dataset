@@ -1,7 +1,7 @@
 """"
 This script reads a CSV file containing library activity data for the year 2023-2024,
 rotates the data into multiple output files, and handles various aspects such as authorities,
-members, events, attendance, loans, visits, computer usage, and metadata.
+users, events, attendance, loans, visits, computer usage, and metadata.
 """
 
 import csv
@@ -14,7 +14,7 @@ AUTHORITIES = './data/uk_local_authorities.csv'
 
 SERVICES = './data/services.csv'
 LOANS = './data/loans.csv'
-MEMBERS = './data/members.csv'
+USERS = './data/users.csv'
 VISITS = './data/visits.csv'
 EVENTS = './data/events.csv'
 ATTENDANCE = './data/event_attendance.csv'
@@ -24,7 +24,7 @@ CLICK_COLLECT = './data/click_and_collect.csv'
 
 SERVICES_JSON = './public/services.json'
 LOANS_JSON = './public/loans.json'
-MEMBERS_JSON = './public/members.json'
+USERS_JSON = './public/users.json'
 VISITS_JSON = './public/visits.json'
 EVENTS_JSON = './public/events.json'
 ATTENDANCE_JSON = './public/attendance.json'
@@ -130,7 +130,7 @@ def rotate_activity_data():
     with open(INPUT, mode='r', newline='', encoding='utf-8-sig') as infile, \
             open(POPULATION, mode='r', newline='', encoding='utf-8-sig') as population_file, \
             open(AUTHORITIES, mode='r', newline='', encoding='utf-8') as authorities_file, \
-            open(MEMBERS, mode='w', newline='', encoding='utf-8') as members_out, \
+            open(USERS, mode='w', newline='', encoding='utf-8') as users_out, \
             open(EVENTS, mode='w', newline='', encoding='utf-8') as events_out, \
             open(ATTENDANCE, mode='w', newline='', encoding='utf-8') as attendance_out, \
             open(LOANS, mode='w', newline='', encoding='utf-8') as loans_out, \
@@ -184,10 +184,10 @@ def rotate_activity_data():
             authorities[authority_row['nice-name']] = auth_object
             authorities[authority_row['official-name']] = auth_object
 
-        members_writer = csv.DictWriter(members_out, fieldnames=[
-                                        'Authority', 'Period', 'Age group', 'Count'])
-        members_writer.writeheader()
-        members = []
+        users_writer = csv.DictWriter(users_out, fieldnames=[
+            'Authority', 'Period', 'Age group', 'Count'])
+        users_writer.writeheader()
+        users = []
 
         events_writer = csv.DictWriter(events_out, fieldnames=[
             'Authority', 'Event type', 'Age group', 'Period', 'Count'])
@@ -227,7 +227,7 @@ def rotate_activity_data():
         service_writer = csv.DictWriter(services_out, fieldnames=['Authority code',
                                                                   'Authority nice name',
                                                                   'Library service',
-                                                                  'Period', 'Members', 'Events',
+                                                                  'Period', 'Users', 'Events',
                                                                   'Attendance', 'Loans', 'Visits',
                                                                   'Computer hours', 'Wifi sessions',
                                                                   'Population under 12',
@@ -245,7 +245,7 @@ def rotate_activity_data():
             authority_nice_name = None
             auth_pop = None
 
-            authority_members = []
+            authority_users = []
             authority_events = []
             authority_attendance = []
             authority_loans = []
@@ -316,9 +316,9 @@ def rotate_activity_data():
                 elif 'digital' in header:
                     physical_digital = 'Digital'
 
-                # Members: We want a schema of Authority, Age Group, Count
+                # Users: We want a schema of Authority, Age Group, Count
                 if header.startswith('active_members') and value.isdigit():
-                    authority_members.append({
+                    authority_users.append({
                         'Authority': authority_code,
                         'Period': '2023-04-01/P1Y',
                         'Age group': age_group,
@@ -326,12 +326,12 @@ def rotate_activity_data():
                     })
 
                 if header.startswith('total_active_members'):
-                    # We record the total members IF there is no data for the individual age groups.
-                    if row.get('active_members_11_under') == "" and \
-                       row.get('active_members_adults') == "" and \
-                       row.get('active_members_12_17') == "" and \
+                    # We record the total users IF there is no data for the individual age groups.
+                    if row.get('active_users_11_under') == "" and \
+                       row.get('active_users_adults') == "" and \
+                       row.get('active_users_12_17') == "" and \
                             value.isdigit():
-                        authority_members.append({
+                        authority_users.append({
                             'Authority': authority_code,
                             'Period': '2023-04-01/P1Y',
                             'Age group': 'Unknown',
@@ -536,8 +536,8 @@ def rotate_activity_data():
                         })
 
             # Add the authority's data to the services list
-            members_count = sum(
-                int(record['Count']) for record in authority_members)
+            users_count = sum(
+                int(record['Count']) for record in authority_users)
             events_count = sum(
                 int(record['Count']) for record in authority_events)
             attendance_count = sum(
@@ -556,7 +556,7 @@ def rotate_activity_data():
                 'Authority nice name': authority_nice_name,
                 'Library service': library_service,
                 'Period': '2023-04-01/P1Y',
-                'Members': members_count,
+                'Users': users_count,
                 'Events': events_count,
                 'Attendance': attendance_count,
                 'Loans': loans_count,
@@ -568,7 +568,7 @@ def rotate_activity_data():
                 'Population adult': auth_pop['adult']
             })
 
-            members.extend(authority_members)
+            users.extend(authority_users)
 
             # Events: split the array into arrays grouped by just event type and age group
             events_dict = {}
@@ -745,7 +745,6 @@ def rotate_activity_data():
             computer_usage.extend(authority_computer_usage)
 
             # Wifi sessions: No need to group but convert the period
-            print(authority_wifi_sessions)
             wifi_sessions_frequency = None
             if len(authority_wifi_sessions) == 1:
                 wifi_sessions_frequency = 'Yearly'
@@ -753,7 +752,6 @@ def rotate_activity_data():
                 wifi_sessions_frequency = 'Quarterly'
             elif len(authority_wifi_sessions) == 12:
                 wifi_sessions_frequency = 'Monthly'
-            print(wifi_sessions_frequency)
 
             for record in authority_wifi_sessions:
                 period = None
@@ -768,7 +766,7 @@ def rotate_activity_data():
 
         # Write the aggregated data to the respective CSV files
         attendance_writer.writerows(attendance)
-        members_writer.writerows(members)
+        users_writer.writerows(users)
         events_writer.writerows(events)
         loans_writer.writerows(loans)
         visits_writer.writerows(visits)
@@ -782,10 +780,10 @@ def rotate_activity_data():
         with open(SERVICES_JSON, 'w', encoding='utf-8') as f:
             json.dump(service_values, f)
 
-        membership_values = [list(membership.values())
-                             for membership in members]
-        with open(MEMBERS_JSON, 'w', encoding='utf-8') as f:
-            json.dump(membership_values, f)
+        user_values = [list(user.values())
+                       for user in users]
+        with open(USERS_JSON, 'w', encoding='utf-8') as f:
+            json.dump(user_values, f)
 
         loans_monthly = convert_values_to_monthly(loans)
         loans_values = [list(loan.values()) for loan in loans_monthly]

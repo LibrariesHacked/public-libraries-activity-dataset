@@ -23,7 +23,7 @@ const NavTabs = () => {
   const routeMatch = useRouteMatch([
     '/',
     '/loans',
-    '/members',
+    '/users',
     '/visits',
     '/events',
     '/computers'
@@ -34,7 +34,7 @@ const NavTabs = () => {
       <Tabs value={currentTab}>
         <Tab label='Home' value='/' to='/' component={Link} />
         <Tab label='Loans' value='/loans' to='/loans' component={Link} />
-        <Tab label='Members' value='/members' to='/members' component={Link} />
+        <Tab label='Users' value='/users' to='/users' component={Link} />
         <Tab label='Visits' value='/visits' to='/visits' component={Link} />
         <Tab label='Events' value='/events' to='/events' component={Link} />
         <Tab

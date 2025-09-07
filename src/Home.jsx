@@ -1,14 +1,23 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import Box from '@mui/material/Box'
 import Grid from '@mui/material/Grid'
 
+import Markdown from 'react-markdown'
+
+import homeMd from './content/home.md'
+
 import LoansTotalCard from './components/LoansTotalCard'
-import LoansByTypeCard from './components/LoansByTypeCard'
-import MembersTotalCard from './components/MembersTotalCard'
+import UsersTotalCard from './components/UsersTotalCard'
 import VisitsTotalCard from './components/VisitsTotalCard'
 
 const Home = () => {
+  const [homeMarkdown, setHomeMarkdown] = useState('')
+  useEffect(() => {
+    fetch(homeMd)
+      .then(res => res.text())
+      .then(text => setHomeMarkdown(text))
+  }, [])
   return (
     <Box>
       <Grid container spacing={2}>
@@ -19,7 +28,7 @@ const Home = () => {
             lg: 3
           }}
         >
-          <MembersTotalCard />
+          <UsersTotalCard />
         </Grid>
         <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <LoansTotalCard />
@@ -33,12 +42,11 @@ const Home = () => {
             md: 6,
             lg: 3
           }}
-        >
-          <LoansByTypeCard />
-        </Grid>
+        ></Grid>
         <Grid size={{ xs: 12, md: 6, lg: 3 }}></Grid>
         <Grid size={{ xs: 12, md: 6, lg: 3 }}></Grid>
       </Grid>
+      <Markdown>{homeMarkdown}</Markdown>
     </Box>
   )
 }

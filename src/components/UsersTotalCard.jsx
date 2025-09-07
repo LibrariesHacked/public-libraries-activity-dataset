@@ -8,12 +8,12 @@ import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
-const MembersTotalCard = () => {
+const UsersTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
 
-  const [membersCount, setMembersCount] = useState(0)
+  const [usersCount, setUsersCount] = useState(0)
   const [totalPopulation, setTotalPopulation] = useState(0)
-  const [percentageMembers, setPercentageMembers] = useState(0)
+  const [percentageUsers, setPercentageUsers] = useState(0)
 
   useEffect(() => {
     // The active services are either the ones where the service code is in the filteredServices array
@@ -23,12 +23,10 @@ const MembersTotalCard = () => {
         ? services.filter(s => filteredServices.includes(s.code))
         : services
 
-    // The membership count is the sum of the members integer from each service object
-    const totalMembers =
-      activeServices?.reduce(
-        (acc, service) => acc + (service.members || 0),
-        0
-      ) || 0
+    // The user count is the sum of the users integer from each service object
+    const totalUsers =
+      activeServices?.reduce((acc, service) => acc + (service.users || 0), 0) ||
+      0
 
     // The population is the sum of populationUnder12, population_12_17, population_adult
     const totalPopulation =
@@ -41,19 +39,19 @@ const MembersTotalCard = () => {
         0
       ) || 0
 
-    const percentageMembers =
-      totalPopulation > 0 ? (totalMembers / totalPopulation) * 100 : 0
+    const percentageUsers =
+      totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
 
-    setMembersCount(totalMembers)
+    setUsersCount(totalUsers)
     setTotalPopulation(totalPopulation)
-    setPercentageMembers(percentageMembers)
+    setPercentageUsers(percentageUsers)
   }, [services, filteredServices])
 
   return (
     <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
       <CardContent>
         <Typography component='h2' variant='h6' gutterBottom>
-          Members
+          Users
         </Typography>
         <Stack
           direction='column'
@@ -61,10 +59,10 @@ const MembersTotalCard = () => {
         >
           <Stack sx={{ justifyContent: 'space-between' }}>
             <Typography variant='h3' sx={{ color: 'text.secondary' }}>
-              {membersCount.toLocaleString('en-GB')}
+              {usersCount.toLocaleString('en-GB')}
             </Typography>
             <Typography variant='h4' sx={{ color: 'text.secondary' }}>
-              {Math.round(percentageMembers)}%
+              {Math.round(percentageUsers)}%
             </Typography>
           </Stack>
           <Box sx={{ width: '100%', height: 50 }}></Box>
@@ -74,4 +72,4 @@ const MembersTotalCard = () => {
   )
 }
 
-export default MembersTotalCard
+export default UsersTotalCard

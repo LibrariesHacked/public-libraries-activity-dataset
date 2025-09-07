@@ -18,7 +18,7 @@ const options = {
   plugins: {
     title: {
       display: true,
-      text: 'Membership by age group'
+      text: 'Active users by age group'
     }
   },
   responsive: true,
@@ -37,11 +37,11 @@ import Box from '@mui/material/Box'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
-import * as membershipModel from './models/membership'
+import * as usersModel from './models/users'
 
-const Members = () => {
+const Users = () => {
   const [
-    { filteredServices, services, serviceLookup, members },
+    { filteredServices, services, serviceLookup, users },
     dispatchApplication
   ] = useApplicationState()
 
@@ -51,30 +51,30 @@ const Members = () => {
   })
 
   useEffect(() => {
-    const getMembers = async () => {
-      const members = await membershipModel.getMembership()
-      dispatchApplication({ type: 'SetMembers', members: members })
+    const getUsers = async () => {
+      const users = await usersModel.getUsers()
+      dispatchApplication({ type: 'SetUsers', users: users })
     }
 
-    // Trigger download of members data (if not already done)
-    if (!members) getMembers()
-  }, [services, members, dispatchApplication])
+    // Trigger download of users data (if not already done)
+    if (!users) getUsers()
+  }, [services, users, dispatchApplication])
 
   useEffect(() => {
-    if (!members || !serviceLookup) return
+    if (!users || !serviceLookup) return
     let labels = []
     let datasets = []
     // The labels are the periods
-    labels = [...new Set(members.map(m => m.period))].sort()
+    labels = [...new Set(users.map(m => m.period))].sort()
     // We have a dataset for each age group
-    const ageGroups = [...new Set(members.map(m => m.ageGroup))].sort()
-    ageGroups.push('Non-members') // Add non-members as an age group
+    const ageGroups = [...new Set(users.map(m => m.ageGroup))].sort()
+    ageGroups.push('Non-users') // Add non-users as an age group
     datasets = ageGroups.map((ageGroup, i) => {
       // For each age group we need the data for each period
       const data = labels.map(label => {
-        // For each period we need the total members in that age group
+        // For each period we need the total users in that age group
         let total = 0
-        members.forEach(m => {
+        users.forEach(m => {
           if (m.period === label && m.ageGroup === ageGroup) {
             // If we are filtering by service, only include if the service is in the filtered list
             if (
@@ -82,14 +82,14 @@ const Members = () => {
               filteredServices.length === 0 ||
               filteredServices.includes(m.serviceCode)
             ) {
-              total += m.countMembers
+              total += m.countUsers
             }
           }
         })
 
-        if (ageGroup === 'Non-members') {
-          // We need to add in the non-members for this period.
-          // Non-members are the total population for the period minus the members
+        if (ageGroup === 'Non-users') {
+          // We need to add in the non-users for this period.
+          // Non-users are the total population for the period minus the users
           let totalPopulation = 0
           Object.values(serviceLookup).forEach(service => {
             if (service.period === label) {
@@ -103,8 +103,8 @@ const Members = () => {
               }
             }
           })
-          // The total non members are the total population minus the total members
-          total = totalPopulation // We'll change this later to subtract members
+          // The total non-users are the total population minus the total users
+          total = totalPopulation // We'll change this later to subtract users
         }
         return total
       })
@@ -116,25 +116,25 @@ const Members = () => {
       }
     })
 
-    // Now we need to adjust the non-members to be total population minus members
-    const nonMemberIndex = ageGroups.indexOf('Non-members')
-    if (nonMemberIndex !== -1) {
-      datasets[nonMemberIndex].data = datasets[nonMemberIndex].data.map((
-        (totalNonMembers, index) => {
-          // Total members for this period is the sum of all other datasets for this index
-          const totalMembers = datasets.reduce((sum, dataset, dsIndex) => {
-            if (dsIndex !== nonMemberIndex) {
+    // Now we need to adjust the non-users to be total population minus users
+    const nonUserIndex = ageGroups.indexOf('Non-users')
+    if (nonUserIndex !== -1) {
+      datasets[nonUserIndex].data = datasets[nonUserIndex].data.map(
+        (totalNonUsers, index) => {
+          // Total users for this period is the sum of all other datasets for this index
+          const totalUsers = datasets.reduce((sum, dataset, dsIndex) => {
+            if (dsIndex !== nonUserIndex) {
               return sum + dataset.data[index]
             }
             return sum
           }, 0)
-          return Math.max(0, totalNonMembers - totalMembers)
+          return Math.max(0, totalNonUsers - totalUsers)
         }
-      ))
+      )
     }
 
     setData({ labels, datasets })
-  }, [members, filteredServices, serviceLookup])
+  }, [users, filteredServices, serviceLookup])
   return (
     <Box>
       <Bar options={options} data={data} />
@@ -142,4 +142,4 @@ const Members = () => {
   )
 }
 
-export default Members
+export default Users

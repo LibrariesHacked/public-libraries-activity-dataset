@@ -10,7 +10,7 @@ export class Service {
     this.niceName = json[1]
     this.libraryService = json[2]
     this.period = json[3]
-    this.members = json[4]
+    this.users = json[4]
     this.events = json[5]
     this.attendance = json[6]
     this.loans = json[7]

@@ -19,7 +19,7 @@ import NavTabs from './components/NavTabs'
 
 import Home from './Home'
 import Loans from './Loans'
-import Members from './Members'
+import Users from './Users'
 import Visits from './Visits'
 import Events from './Events'
 import Computers from './Computers'
@@ -149,7 +149,7 @@ function App () {
             <Routes>
               <Route path='/' element={<Home />} />
               <Route path='/loans' element={<Loans />} />
-              <Route path='/members' element={<Members />} />
+              <Route path='/users' element={<Users />} />
               <Route path='/visits' element={<Visits />} />
               <Route path='/events' element={<Events />} />
               <Route path='/computers' element={<Computers />} />
