@@ -12,14 +12,11 @@ import {
 
 import { Bar } from 'react-chartjs-2'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+
+import Markdown from 'react-markdown'
+
+import eventsMd from './content/events.md'
 
 import Box from '@mui/material/Box'
 
@@ -44,6 +41,14 @@ const Events = () => {
     useApplicationState()
 
   const [chartData, setChartData] = useState([])
+
+  const [eventsMarkdown, setEventsMarkdown] = useState('')
+
+  useEffect(() => {
+    fetch(eventsMd)
+      .then(res => res.text())
+      .then(text => setEventsMarkdown(text))
+  }, [])
 
   useEffect(() => {
     const getEvents = async () => {
@@ -93,7 +98,7 @@ const Events = () => {
               (eventTypeIndex * 360) / Object.keys(eventTypes).length
             }, 70%, 50%, ${0.5 + (ageGroupIndex / ageGroups.length) * 0.5})`,
             yAxisID: 'y1',
-            type: 'line',
+            type: 'line'
           },
           {
             label: `Events - ${ageGroup}`,
@@ -103,7 +108,7 @@ const Events = () => {
             }, 70%, 50%, ${0.5 + (ageGroupIndex / ageGroups.length) * 0.5})`,
             data: [],
             yAxisID: 'y',
-            stack: 'Stack 0',
+            stack: 'Stack 0'
           }
         ]
         labels.forEach(label => {
@@ -160,7 +165,7 @@ const Events = () => {
                 display: true,
                 text: 'Number of events (bars)'
               },
-              stacked: true,
+              stacked: true
             },
             y1: {
               type: 'linear',
@@ -173,7 +178,7 @@ const Events = () => {
               grid: {
                 drawOnChartArea: false
               },
-              stacked: true,
+              stacked: true
             }
           }
         }
@@ -184,6 +189,7 @@ const Events = () => {
   }, [filteredServices, events, attendance])
   return (
     <Box>
+      <Markdown>{eventsMarkdown}</Markdown>
       {chartData.map((chart, index) => (
         <Box key={index} sx={{ mb: 4 }}>
           <Bar data={chart.data} options={chart.options} />

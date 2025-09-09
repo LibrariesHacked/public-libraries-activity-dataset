@@ -14,6 +14,16 @@ import { Bar } from 'react-chartjs-2'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
+import Markdown from 'react-markdown'
+
+import usersMd from './content/users.md'
+
+import Box from '@mui/material/Box'
+
+import { useApplicationState } from './hooks/useApplicationState'
+
+import * as usersModel from './models/users'
+
 const options = {
   plugins: {
     title: {
@@ -33,12 +43,6 @@ const options = {
   }
 }
 
-import Box from '@mui/material/Box'
-
-import { useApplicationState } from './hooks/useApplicationState'
-
-import * as usersModel from './models/users'
-
 const Users = () => {
   const [
     { filteredServices, services, serviceLookup, users },
@@ -49,6 +53,14 @@ const Users = () => {
     labels: [],
     datasets: []
   })
+
+  const [usersMarkdown, setUsersMarkdown] = useState('')
+
+  useEffect(() => {
+    fetch(usersMd)
+      .then(res => res.text())
+      .then(text => setUsersMarkdown(text))
+  }, [])
 
   useEffect(() => {
     const getUsers = async () => {
@@ -137,6 +149,7 @@ const Users = () => {
   }, [users, filteredServices, serviceLookup])
   return (
     <Box>
+      <Markdown>{usersMarkdown}</Markdown>
       <Bar options={options} data={data} />
     </Box>
   )

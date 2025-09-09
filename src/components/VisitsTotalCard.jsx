@@ -63,7 +63,6 @@ const LoansTotalCard = () => {
               ~{formatCompactNumber(visitsPerCapita)} per person
             </Typography>
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}></Box>
         </Stack>
       </CardContent>
     </Card>

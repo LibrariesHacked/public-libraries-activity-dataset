@@ -4,6 +4,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 
+import { blueGrey, brown } from '@mui/material/colors'
+
 import Box from '@mui/material/Box'
 import OutlinedInput from '@mui/material/OutlinedInput'
 import InputLabel from '@mui/material/InputLabel'
@@ -31,9 +33,16 @@ import * as serviceModel from './models/service'
 const theme = createTheme({
   palette: {
     background: {
-      default: 'hsl(0, 0%, 99%)',
-      paper: 'hsl(220, 35%, 97%)'
-    }
+      default: brown[50],
+      paper: '#fff'
+    },
+    // Set typography to dark grey
+    text: {
+      primary: blueGrey[900],
+      secondary: blueGrey[600]
+    },
+    primary: { main: 'rgb(54, 162, 235)' },
+    secondary: { main: 'rgb(255, 99, 132)' }
   },
   shape: {
     borderRadius: 8
@@ -95,19 +104,10 @@ function App () {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <Container
-          maxWidth='lg'
-          sx={{
-            bgcolor: 'background.default',
-            p: 2
-          }}
-        >
+        <Container maxWidth='lg'>
           <main>
             <Typography component='h1' variant='h3'>
               Library activity
-            </Typography>
-            <Typography component='h1' variant='h5' gutterBottom>
-              Hello
             </Typography>
             <div>
               <FormControl sx={{ width: '100%', mb: 2 }}>

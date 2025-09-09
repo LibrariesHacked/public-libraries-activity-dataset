@@ -22,6 +22,10 @@ ChartJS.register(
   Legend
 )
 
+import Markdown from 'react-markdown'
+
+import loansMd from './content/loans.md'
+
 import Box from '@mui/material/Box'
 
 import { useApplicationState } from './hooks/useApplicationState'
@@ -33,6 +37,14 @@ const Loans = () => {
     useApplicationState()
 
   const [charts, setCharts] = useState([])
+
+  const [loansMarkdown, setLoansMarkdown] = useState('')
+
+  useEffect(() => {
+    fetch(loansMd)
+      .then(res => res.text())
+      .then(text => setLoansMarkdown(text))
+  }, [])
 
   useEffect(() => {
     const getLoans = async () => {
@@ -111,6 +123,7 @@ const Loans = () => {
   }, [filteredServices, loans])
   return (
     <Box>
+      <Markdown>{loansMarkdown}</Markdown>
       {charts.map((chart, index) => (
         <Box key={index} sx={{ mb: 4 }}>
           <h3>{chart.format}</h3>

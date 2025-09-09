@@ -22,6 +22,10 @@ ChartJS.register(
   Legend
 )
 
+import Markdown from 'react-markdown'
+
+import visitsMd from './content/visits.md'
+
 import Box from '@mui/material/Box'
 
 import { useApplicationState } from './hooks/useApplicationState'
@@ -46,6 +50,14 @@ const Visits = () => {
     useApplicationState()
 
   const [visitData, setVisitData] = useState(null)
+
+  const [visitsMarkdown, setVisitsMarkdown] = useState('')
+
+  useEffect(() => {
+    fetch(visitsMd)
+      .then(res => res.text())
+      .then(text => setVisitsMarkdown(text))
+  }, [])
 
   useEffect(() => {
     const getVisits = async () => {
@@ -96,7 +108,7 @@ const Visits = () => {
   }, [filteredServices, visits])
   return (
     <Box>
-      <h3>Visits by location type</h3>
+      <Markdown>{visitsMarkdown}</Markdown>
       {visitData && <Line options={mapOptions} data={visitData} />}
     </Box>
   )

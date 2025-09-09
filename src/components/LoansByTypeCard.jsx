@@ -72,7 +72,6 @@ const LoansByTypeCard = () => {
           <Stack sx={{ justifyContent: 'space-between' }}>
             {loansData && <Doughnut data={loansData} />}
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}></Box>
         </Stack>
       </CardContent>
     </Card>

@@ -74,9 +74,9 @@ const Computers = () => {
   const [{ filteredServices, services, computers, wifi }, dispatchApplication] =
     useApplicationState()
 
-  const [computersMarkdown, setComputersMarkdown] = useState('')
-
   const [computerChart, setComputerChart] = useState(null)
+
+  const [computersMarkdown, setComputersMarkdown] = useState('')
 
   useEffect(() => {
     fetch(computersMd)

@@ -18,6 +18,7 @@ const Home = () => {
       .then(res => res.text())
       .then(text => setHomeMarkdown(text))
   }, [])
+
   return (
     <Box>
       <Grid container spacing={2}>

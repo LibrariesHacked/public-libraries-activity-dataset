@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 
-import Box from '@mui/material/Box'
+import { Colors } from 'chart.js'
+
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from '../hooks/useApplicationState'
+import { ListSubheader } from '@mui/material'
 
 const UsersTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
@@ -50,7 +52,7 @@ const UsersTotalCard = () => {
   return (
     <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
       <CardContent>
-        <Typography component='h2' variant='h6' gutterBottom>
+        <Typography component='h4' variant='subtitle1'>
           Users
         </Typography>
         <Stack
@@ -65,7 +67,6 @@ const UsersTotalCard = () => {
               {Math.round(percentageUsers)}%
             </Typography>
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}></Box>
         </Stack>
       </CardContent>
     </Card>

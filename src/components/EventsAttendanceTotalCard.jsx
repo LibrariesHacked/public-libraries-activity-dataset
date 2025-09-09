@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 
-import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Stack from '@mui/material/Stack'
@@ -68,7 +67,6 @@ const EventsAttendanceTotalCard = () => {
               {Math.round(percentageMembers)}%
             </Typography>
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}></Box>
         </Stack>
       </CardContent>
     </Card>
