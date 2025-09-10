@@ -8,7 +8,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import NumberCard from './NumberCard'
 
-const WifiSessionsTotalCard = () => {
+const WiFiTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
 
   const [wifiSessionsCount, setWifiSessionsCount] = useState(0)
@@ -47,4 +47,4 @@ const WifiSessionsTotalCard = () => {
   )
 }
 
-export default WifiSessionsTotalCard
+export default WiFiTotalCard

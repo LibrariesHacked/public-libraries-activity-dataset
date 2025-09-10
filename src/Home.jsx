@@ -8,10 +8,12 @@ import Markdown from 'react-markdown'
 import homeMd from './content/home.md'
 
 import AttendanceTotalCard from './components/AttendanceTotalCard'
+import ComputerTotalCard from './components/ComputerTotalCard'
 import EventsTotalCard from './components/EventsTotalCard'
 import LoansTotalCard from './components/LoansTotalCard'
 import UsersTotalCard from './components/UsersTotalCard'
 import VisitsTotalCard from './components/VisitsTotalCard'
+import WiFiTotalCard from './components/WiFiTotalCard'
 
 const Home = () => {
   const [homeMarkdown, setHomeMarkdown] = useState('')
@@ -39,6 +41,12 @@ const Home = () => {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <AttendanceTotalCard />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <ComputerTotalCard />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <WiFiTotalCard />
         </Grid>
       </Grid>
     </Box>
