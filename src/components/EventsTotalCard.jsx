@@ -29,7 +29,7 @@ const EventsTotalCard = () => {
 
   return (
     <NumberCard
-      title='Total Events'
+      title='Events'
       number={formatCompactNumber(eventsCount)}
       description={`${formatCompactNumber(eventsPerDay)} events per day`}
     />
