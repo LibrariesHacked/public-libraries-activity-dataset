@@ -71,8 +71,12 @@ function App () {
                 textAlign: 'center'
               }}
             >
-              <Typography component='h1' variant='h3'>
+              <Typography component='h1' variant='h2'>
                 Library activity
+              </Typography>
+              <Typography gutterBottom color='textSecondary'>
+                By default all services are shown. Use the selector to construct
+                your own comparison group.
               </Typography>
               <ServiceSelection />
             </Box>

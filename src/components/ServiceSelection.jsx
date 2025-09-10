@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Menu from '@mui/material/Menu'
@@ -47,6 +48,14 @@ const ServiceSelection = () => {
     closeServiceMenu()
   }
 
+  const deleteService = service => {
+    const newFilteredServices = filteredServices.filter(fs => fs !== service)
+    dispatchApplication({
+      type: 'SetFilteredServices',
+      filteredServices: newFilteredServices
+    })
+  }
+
   return (
     <>
       <Tooltip title='Add library service to comparison group'>
@@ -80,6 +89,21 @@ const ServiceSelection = () => {
               )
             })}
       </Menu>
+      <Box>
+        {filteredServices &&
+          filteredServices.length > 0 &&
+          filteredServices.map(s => {
+            return (
+              <Chip
+                key={'chip_itm_org_' + s}
+                label={serviceLookup[s] ? serviceLookup[s].niceName : s}
+                onDelete={() => deleteService(s)}
+                color='primary'
+                variant='outlined'
+              />
+            )
+          })}
+      </Box>
     </>
   )
 }

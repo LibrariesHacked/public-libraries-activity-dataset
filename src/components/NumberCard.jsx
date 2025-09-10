@@ -1,6 +1,6 @@
 import React from 'react'
 
-import InsightsIcon from '@mui/icons-material/Insights'
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded'
 
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
@@ -46,7 +46,7 @@ const NumberCard = props => {
               <Chip
                 color='secondary'
                 variant='outlined'
-                icon={descriptionIcon || <InsightsIcon />}
+                icon={descriptionIcon || <AutoAwesomeRoundedIcon />}
                 label={description}
               />
             </Box>

@@ -8,19 +8,19 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import NumberCard from './NumberCard'
 
-const VisitsTotalCard = () => {
+const WifiSessionsTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
 
-  const [visitsCount, setVisitsCount] = useState(0)
-  const [visitsPerCapita, setVisitsPerCapita] = useState(0)
+  const [wifiSessionsCount, setWifiSessionsCount] = useState(0)
+  const [wifiSessionsPerCapita, setWifiSessionsPerCapita] = useState(0)
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
 
-    // The visits count is the sum of the visits integer from each service object
-    const totalVisits =
+    // The wifi sessions count is the sum of the wifiSessions integer from each service object
+    const totalWifiSessions =
       activeServices?.reduce(
-        (acc, service) => acc + (service.visits || 0),
+        (acc, service) => acc + (service.wifiSessions || 0),
         0
       ) || 0
 
@@ -31,22 +31,20 @@ const VisitsTotalCard = () => {
         0
       ) || 0
 
-    const visitsPerCapita =
-      totalPopulation > 0 ? Math.round(totalVisits / totalPopulation) : 0
+    const wifiSessionsPerCapita =
+      totalPopulation > 0 ? Math.round(totalWifiSessions / totalPopulation) : 0
 
-    setVisitsCount(totalVisits)
-    setVisitsPerCapita(visitsPerCapita)
+    setWifiSessionsCount(totalWifiSessions)
+    setWifiSessionsPerCapita(wifiSessionsPerCapita)
   }, [services, filteredServices])
 
   return (
     <NumberCard
-      title='Visits'
-      number={formatCompactNumber(visitsCount)}
-      description={`${formatCompactNumber(
-        visitsPerCapita
-      )} per resident per year`}
+      title='WiFi sessions'
+      number={formatCompactNumber(wifiSessionsCount)}
+      description={`${Math.round(wifiSessionsPerCapita)} per resident per year`}
     />
   )
 }
 
-export default VisitsTotalCard
+export default WifiSessionsTotalCard

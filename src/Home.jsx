@@ -25,19 +25,19 @@ const Home = () => {
     <Box>
       <Markdown>{homeMarkdown}</Markdown>
       <Grid container spacing={2}>
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <UsersTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <LoansTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <VisitsTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <EventsTotalCard />
         </Grid>
-        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <AttendanceTotalCard />
         </Grid>
       </Grid>

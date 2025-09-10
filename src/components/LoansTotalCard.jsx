@@ -41,7 +41,7 @@ const LoansTotalCard = () => {
     <NumberCard
       title='Loans'
       number={formatCompactNumber(loansCount)}
-      description={`${Math.round(loansPerCapita)} per resident`}
+      description={`${Math.round(loansPerCapita)} per resident per year`}
     />
   )
 }
