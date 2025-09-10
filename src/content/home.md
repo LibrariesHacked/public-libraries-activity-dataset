@@ -1,3 +1,3 @@
-The Libraries Activity Dataset is published by Arts Council England and "captures activity within public libraries in England between April 2023 to March 2024. The dataset is collected from library services and contains metrics such as the number of active users, the number of and attendance at events, and information on loans and PC use. Data accurate as of August 2025."
+The Libraries Activity Dataset is [published by Arts Council England](https://www.artscouncil.org.uk/supporting-arts-museums-and-libraries/supporting-libraries) and _"captures activity within public libraries in England_"...It is _"collected from library services and contains metrics such as the number of active users, the number of and attendance at events, and information on loans and PC use"_
 
-The data is described as being available under an open licence. As ACE are a public organisation, it would be best to consider this as [available under the Open Government Licence v3](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+This site visualises the dataset and provides an interface to explore it.

@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 
-import { blueGrey, brown } from '@mui/material/colors'
+import { blue, blueGrey } from '@mui/material/colors'
 
 import Box from '@mui/material/Box'
 import OutlinedInput from '@mui/material/OutlinedInput'
@@ -33,16 +33,15 @@ import * as serviceModel from './models/service'
 const theme = createTheme({
   palette: {
     background: {
-      default: brown[50],
+      default: 'rgb(245, 245, 245)',
       paper: '#fff'
     },
-    // Set typography to dark grey
     text: {
-      primary: blueGrey[900],
-      secondary: blueGrey[600]
+      primary: blueGrey[700],
+      secondary: blueGrey[500]
     },
-    primary: { main: 'rgb(54, 162, 235)' },
-    secondary: { main: 'rgb(255, 99, 132)' }
+    primary: { main: blue[700] },
+    secondary: { main: blueGrey[500] }
   },
   shape: {
     borderRadius: 8

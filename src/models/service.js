@@ -35,3 +35,9 @@ export async function getServices () {
     return []
   }
 }
+
+export const getActiveServices = (services, filteredServices) => {
+  return filteredServices?.length > 0
+    ? services.filter(s => filteredServices.includes(s.code))
+    : services
+}

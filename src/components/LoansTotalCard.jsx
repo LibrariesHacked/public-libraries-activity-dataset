@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react'
 
-import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-
 import { useApplicationState } from '../hooks/useApplicationState'
+
+import { formatCompactNumber } from '../helpers/numbers'
+
+import NumberCard from './NumberCard'
 
 const LoansTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
 
   const [loansCount, setLoansCount] = useState(0)
-  const [totalPopulation, setTotalPopulation] = useState(0)
   const [loansPerCapita, setLoansPerCapita] = useState(0)
 
   useEffect(() => {
@@ -37,31 +34,15 @@ const LoansTotalCard = () => {
       totalPopulation > 0 ? Math.round(totalLoans / totalPopulation) : 0
 
     setLoansCount(totalLoans)
-    setTotalPopulation(totalPopulation)
     setLoansPerCapita(loansPerCapita)
   }, [services, filteredServices])
 
   return (
-    <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
-      <CardContent>
-        <Typography component='h2' variant='h6' gutterBottom>
-          Loans
-        </Typography>
-        <Stack
-          direction='column'
-          sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 1 }}
-        >
-          <Stack sx={{ justifyContent: 'space-between' }}>
-            <Typography variant='h3' sx={{ color: 'text.secondary' }}>
-              {loansCount.toLocaleString('en-GB')}
-            </Typography>
-            <Typography variant='h4' sx={{ color: 'text.secondary' }}>
-              ~{Math.round(loansPerCapita)} per person
-            </Typography>
-          </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
+    <NumberCard
+      title='Loans'
+      number={formatCompactNumber(loansCount)}
+      description={`${Math.round(loansPerCapita)} per resident`}
+    />
   )
 }
 

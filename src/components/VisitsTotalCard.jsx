@@ -1,20 +1,15 @@
 import React, { useEffect, useState } from 'react'
 
-import Box from '@mui/material/Box'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
-
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-const LoansTotalCard = () => {
+import NumberCard from './NumberCard'
+
+const VisitsTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
 
   const [visitsCount, setVisitsCount] = useState(0)
-  const [totalPopulation, setTotalPopulation] = useState(0)
   const [visitsPerCapita, setVisitsPerCapita] = useState(0)
 
   useEffect(() => {
@@ -41,32 +36,16 @@ const LoansTotalCard = () => {
       totalPopulation > 0 ? Math.round(totalVisits / totalPopulation) : 0
 
     setVisitsCount(totalVisits)
-    setTotalPopulation(totalPopulation)
     setVisitsPerCapita(visitsPerCapita)
   }, [services, filteredServices])
 
   return (
-    <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
-      <CardContent>
-        <Typography component='h2' variant='h6' gutterBottom>
-          Loans
-        </Typography>
-        <Stack
-          direction='column'
-          sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 1 }}
-        >
-          <Stack sx={{ justifyContent: 'space-between' }}>
-            <Typography variant='h3' sx={{ color: 'text.secondary' }}>
-              {formatCompactNumber(visitsCount)}
-            </Typography>
-            <Typography variant='h4' sx={{ color: 'text.secondary' }}>
-              ~{formatCompactNumber(visitsPerCapita)} per person
-            </Typography>
-          </Stack>
-        </Stack>
-      </CardContent>
-    </Card>
+    <NumberCard
+      title='Visits'
+      number={formatCompactNumber(visitsCount)}
+      description={`${formatCompactNumber(visitsPerCapita)} per resident`}
+    />
   )
 }
 
-export default LoansTotalCard
+export default VisitsTotalCard
