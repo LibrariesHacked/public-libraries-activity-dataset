@@ -29,7 +29,7 @@ const ComputerTotalCard = () => {
 
   return (
     <NumberCard
-      title='Computer Hours'
+      title='Computer hours'
       number={formatCompactNumber(computerHoursCount)}
       description={`${formatCompactNumber(
         computerHoursPerDay

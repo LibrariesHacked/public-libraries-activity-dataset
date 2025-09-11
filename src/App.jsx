@@ -93,8 +93,7 @@ function App () {
             <Box sx={{ textAlign: 'center', marginBottom: 2 }}>
               <Typography color='textSecondary'>
                 Made with ❤️ by{' '}
-                <a href='https://example.com'>Libraries Hacked</a>. If you have
-                found it useful please donate to Mind
+                <a href='https://example.com'>Libraries Hacked</a>.
               </Typography>
             </Box>
           </main>

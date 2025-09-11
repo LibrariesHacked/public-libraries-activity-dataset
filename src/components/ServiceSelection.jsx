@@ -65,7 +65,7 @@ const ServiceSelection = () => {
           onClick={e => openServiceMenu(e.currentTarget)}
           startIcon={<BusinessIcon />}
         >
-          Select library authority
+          Select library service
         </Button>
       </Tooltip>
       <Menu
@@ -98,7 +98,7 @@ const ServiceSelection = () => {
                 key={'chip_itm_org_' + s}
                 label={serviceLookup[s] ? serviceLookup[s].niceName : s}
                 onDelete={() => deleteService(s)}
-                color='primary'
+                color='secondary'
                 variant='outlined'
               />
             )

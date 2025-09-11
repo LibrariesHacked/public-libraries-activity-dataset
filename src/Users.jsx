@@ -24,7 +24,7 @@ import { useApplicationState } from './hooks/useApplicationState'
 
 import * as usersModel from './models/users'
 
-const options = {
+const ageGroupChartOptions = {
   plugins: {
     title: {
       display: true,
@@ -150,7 +150,10 @@ const Users = () => {
   return (
     <Box>
       <Markdown>{usersMarkdown}</Markdown>
-      <Bar options={options} data={data} />
+      <Typography variant='h6' gutterBottom>
+        Active users by age group
+      </Typography>
+      <Bar options={ageGroupChartOptions} data={data} />
     </Box>
   )
 }

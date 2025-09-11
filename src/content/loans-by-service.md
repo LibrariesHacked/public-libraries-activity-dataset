@@ -1,0 +1,1 @@
+Loans data is grouped by format and month. These charts take each format and show the number of loans per month, separated by adult, young children (under 12) and young people’s (12-17) books. This is an age rating of the content, regardless of who is borrowing the book. 'Adult' means not specifically designed for chidren rather than restricted to adults only.

@@ -3,19 +3,24 @@ import React, { useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
+  Colors,
   LinearScale,
   PointElement,
+  BarElement,
   LineElement,
   Title,
   Tooltip,
   Legend
 } from 'chart.js'
-import { Line } from 'react-chartjs-2'
+
+import { Bar, Line } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
+  Colors,
   LinearScale,
   PointElement,
+  BarElement,
   LineElement,
   Title,
   Tooltip,
@@ -24,26 +29,60 @@ ChartJS.register(
 
 import Markdown from 'react-markdown'
 
-import loansMd from './content/loans.md'
-
 import Box from '@mui/material/Box'
+import ListSubheader from '@mui/material/ListSubheader'
+import Typography from '@mui/material/Typography'
+
+import loansMd from './content/loans.md'
+import loansByTypeMd from './content/loans-by-type.md'
+
+import { getActiveServices } from './models/service'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import * as loansModel from './models/loans'
 
+const serviceChartOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top'
+    },
+    title: {
+      display: true,
+      text: `Loans by service and format`
+    }
+  },
+  scales: {
+    x: {
+      stacked: true
+    },
+    y: {
+      stacked: true
+    }
+  }
+}
+
 const Loans = () => {
   const [{ filteredServices, services, loans }, dispatchApplication] =
     useApplicationState()
 
-  const [charts, setCharts] = useState([])
+  const [formatCharts, setFormatCharts] = useState([])
+
+  const [serviceChart, setServiceChart] = useState([])
 
   const [loansMarkdown, setLoansMarkdown] = useState('')
+  const [loansByTypeMarkdown, setLoansByTypeMarkdown] = useState('')
 
   useEffect(() => {
     fetch(loansMd)
       .then(res => res.text())
       .then(text => setLoansMarkdown(text))
+    fetch(loansByTypeMd)
+      .then(res => res.text())
+      .then(text => setLoansByTypeMarkdown(text))
   }, [])
 
   useEffect(() => {
@@ -59,10 +98,20 @@ const Loans = () => {
   useEffect(() => {
     if (!loans) return
 
-    let charts = []
+    const activeServices = getActiveServices(services, filteredServices)
+
+    let formatCharts = []
 
     // We want a chart for each format
-    const itemFormats = [...new Set(loans.map(m => m.format))].sort()
+    const itemFormats = [...new Set(loans.map(m => m.format))].sort((a, b) => {
+      const order = ['Physical book', 'Ebook', 'Physical audiobook', 'Eaudio']
+      const aIndex = order.indexOf(a)
+      const bIndex = order.indexOf(b)
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex
+      }
+      return a.localeCompare(b)
+    })
 
     itemFormats.forEach(format => {
       const options = {
@@ -73,16 +122,16 @@ const Loans = () => {
           },
           title: {
             display: true,
-            text: 'Chart.js Line Chart'
+            text: `Loans per month of ${format} format by content age group`
           }
         }
       }
       const formatLoans = loans.filter(m => m.format === format)
 
-      let labels = []
+      let formatLabels = []
       let datasets = []
       // The labels are the months in the data. The months are already formattted as YYYY-MM
-      labels = [...new Set(formatLoans.map(loan => loan.month))].sort()
+      formatLabels = [...new Set(formatLoans.map(loan => loan.month))].sort()
 
       // We want a dataset for each content age group
       const contentAgeGroups = [
@@ -91,7 +140,7 @@ const Loans = () => {
       contentAgeGroups.forEach(contentAgeGroup => {
         // We want a dataset for each age group
         const data = []
-        labels.forEach(label => {
+        formatLabels.forEach(label => {
           // For each label (month) we need to count the number of loans for this age group
           let count = 0
           formatLoans.forEach(loan => {
@@ -107,32 +156,89 @@ const Loans = () => {
           })
           data.push(count)
         })
-        const color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 50%)`
         datasets.push({
           label: contentAgeGroup,
           data,
-          backgroundColor: color,
-          borderColor: color,
           borderWidth: 1
         })
       })
-      charts.push({ format, labels, datasets, options })
+      formatCharts.push({ format, labels: formatLabels, datasets, options })
     })
 
-    setCharts(charts)
-  }, [filteredServices, loans])
+    setFormatCharts(formatCharts)
+
+    const serviceLabels = activeServices.map(s => s.niceName).sort()
+
+    let datasets = itemFormats.map((format, i) => {
+      const data = []
+      serviceLabels.forEach(serviceLabel => {
+        const serviceCode = services.find(
+          s => s.niceName === serviceLabel
+        )?.code
+        if (!serviceCode) return null
+
+        const serviceFormatLoans = loans.filter(
+          m => m.serviceCode === serviceCode && m.format === format
+        )
+        data.push(
+          serviceFormatLoans.reduce(
+            (acc, loan) => acc + (loan.countLoans || 0),
+            0
+          )
+        )
+      })
+      return {
+        label: format,
+        data,
+        barThickness: 10
+      }
+    })
+
+    setServiceChart({
+      labels: serviceLabels,
+      datasets,
+      options: serviceChartOptions
+    })
+  }, [filteredServices, loans, services])
   return (
     <Box>
+      <Typography variant='h3' gutterBottom>
+        Loans
+      </Typography>
       <Markdown>{loansMarkdown}</Markdown>
-      {charts.map((chart, index) => (
+      <Typography variant='h4' gutterBottom>
+        Formats
+      </Typography>
+      <Markdown>{loansByTypeMarkdown}</Markdown>
+      {formatCharts.map((chart, index) => (
         <Box key={index} sx={{ mb: 4 }}>
-          <h3>{chart.format}</h3>
+          <ListSubheader component='div' disableSticky disableGutters>
+            {chart.format}
+          </ListSubheader>
           <Line
             options={chart.options}
             data={{ labels: chart.labels, datasets: chart.datasets }}
           />
         </Box>
       ))}
+      <Typography>Service comparison</Typography>
+      {serviceChart && serviceChart.labels && (
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            height: `${serviceChart.labels.length * 20 + 100}px`
+          }}
+        >
+          <Bar
+            options={serviceChart.options}
+            data={{
+              labels: serviceChart.labels,
+              datasets: serviceChart.datasets
+            }}
+          />
+        </Box>
+      )}
     </Box>
   )
 }

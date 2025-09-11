@@ -28,10 +28,10 @@ const Home = () => {
       <Markdown>{homeMarkdown}</Markdown>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <UsersTotalCard />
+          <LoansTotalCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <LoansTotalCard />
+          <UsersTotalCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <VisitsTotalCard />
