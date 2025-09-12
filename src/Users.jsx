@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
+  Colors,
   LinearScale,
   BarElement,
   Title,
@@ -12,13 +13,22 @@ import {
 
 import { Bar } from 'react-chartjs-2'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  Colors,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 import Markdown from 'react-markdown'
 
 import usersMd from './content/users.md'
 
 import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
@@ -35,10 +45,12 @@ const ageGroupChartOptions = {
   indexAxis: 'y',
   scales: {
     x: {
-      stacked: true
+      stacked: true,
+      title: { display: true, text: 'Number of users' }
     },
     y: {
-      stacked: true
+      stacked: true,
+      title: { display: true, text: 'Age group' }
     }
   }
 }
@@ -120,11 +132,9 @@ const Users = () => {
         }
         return total
       })
-      const color = `hsl(${(i * 360) / ageGroups.length}, 70%, 50%)`
       return {
         label: ageGroup,
-        data,
-        backgroundColor: color
+        data
       }
     })
 

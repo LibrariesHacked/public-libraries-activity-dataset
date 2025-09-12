@@ -35,6 +35,7 @@ import Typography from '@mui/material/Typography'
 
 import loansMd from './content/loans.md'
 import loansByTypeMd from './content/loans-by-type.md'
+import loansByServiceMd from './content/loans-by-service.md'
 
 import { getActiveServices } from './models/service'
 
@@ -57,7 +58,12 @@ const serviceChartOptions = {
   },
   scales: {
     x: {
-      stacked: true
+      title: {
+        display: true,
+        text: 'Count of loans'
+      },
+      stacked: true,
+      beginAtZero: true
     },
     y: {
       stacked: true
@@ -75,6 +81,7 @@ const Loans = () => {
 
   const [loansMarkdown, setLoansMarkdown] = useState('')
   const [loansByTypeMarkdown, setLoansByTypeMarkdown] = useState('')
+  const [loansByServiceMarkdown, setLoansByServiceMarkdown] = useState('')
 
   useEffect(() => {
     fetch(loansMd)
@@ -83,6 +90,9 @@ const Loans = () => {
     fetch(loansByTypeMd)
       .then(res => res.text())
       .then(text => setLoansByTypeMarkdown(text))
+    fetch(loansByServiceMd)
+      .then(res => res.text())
+      .then(text => setLoansByServiceMarkdown(text))
   }, [])
 
   useEffect(() => {
@@ -102,7 +112,6 @@ const Loans = () => {
 
     let formatCharts = []
 
-    // We want a chart for each format
     const itemFormats = [...new Set(loans.map(m => m.format))].sort((a, b) => {
       const order = ['Physical book', 'Ebook', 'Physical audiobook', 'Eaudio']
       const aIndex = order.indexOf(a)
@@ -114,7 +123,7 @@ const Loans = () => {
     })
 
     itemFormats.forEach(format => {
-      const options = {
+      const formatChartOptions = {
         responsive: true,
         plugins: {
           legend: {
@@ -122,7 +131,22 @@ const Loans = () => {
           },
           title: {
             display: true,
-            text: `Loans per month of ${format} format by content age group`
+            text: `Loans per month of ${format}s by content age group`
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Month'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Count of loans'
+            },
+            beginAtZero: true
           }
         }
       }
@@ -159,10 +183,15 @@ const Loans = () => {
         datasets.push({
           label: contentAgeGroup,
           data,
-          borderWidth: 1
+          borderWidth: 2
         })
       })
-      formatCharts.push({ format, labels: formatLabels, datasets, options })
+      formatCharts.push({
+        format,
+        labels: formatLabels,
+        datasets,
+        options: formatChartOptions
+      })
     })
 
     setFormatCharts(formatCharts)
@@ -190,7 +219,7 @@ const Loans = () => {
       return {
         label: format,
         data,
-        barThickness: 10
+        barThickness: 8
       }
     })
 
@@ -221,13 +250,16 @@ const Loans = () => {
           />
         </Box>
       ))}
-      <Typography>Service comparison</Typography>
+      <Typography variant='h4' gutterBottom>
+        Service comparison
+      </Typography>
+      <Markdown>{loansByServiceMarkdown}</Markdown>
       {serviceChart && serviceChart.labels && (
         <Box
           sx={{
             position: 'relative',
             width: '100%',
-            height: `${serviceChart.labels.length * 20 + 100}px`
+            height: `${serviceChart.labels.length * 18 + 80}px`
           }}
         >
           <Bar

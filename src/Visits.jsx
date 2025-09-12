@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
+  Colors,
   LinearScale,
   PointElement,
   LineElement,
@@ -14,6 +15,7 @@ import { Line } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
+  Colors,
   LinearScale,
   PointElement,
   LineElement,
@@ -93,13 +95,7 @@ const Visits = () => {
               filteredVisits
                 .filter(v => v.location === location && v.month === month)
                 .reduce((sum, v) => sum + (v.countVisits || 0), 0) || 0
-          ),
-          borderColor: `hsl(${
-            (index * 360) / visitLocations.length
-          }, 70%, 50%)`,
-          backgroundColor: `hsla(${
-            (index * 360) / visitLocations.length
-          }, 70%, 50%, 0.5)`
+          )
         }
       })
     }

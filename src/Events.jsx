@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
+  Colors,
   LinearScale,
   BarElement,
   Title,
@@ -12,7 +13,15 @@ import {
 
 import { Bar } from 'react-chartjs-2'
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+ChartJS.register(
+  CategoryScale,
+  Colors,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 import Markdown from 'react-markdown'
 
@@ -27,12 +36,10 @@ import * as attendanceModel from './models/attendance'
 
 const eventTypes = {
   Physical: {
-    label: 'Physical',
-    color: 'hsl(210, 70%, 50%)'
+    label: 'Physical'
   },
   Digital: {
-    label: 'Virtual',
-    color: 'hsl(120, 70%, 50%)'
+    label: 'Virtual'
   }
 }
 
@@ -69,7 +76,6 @@ const Events = () => {
   useEffect(() => {
     if (!events || !attendance) return
     let labels = []
-    let datasets = []
     // The labels are the periods and we want all the periods from events and attendance
     labels = [
       ...new Set([...events.map(e => e.month), ...attendance.map(a => a.month)])
@@ -93,19 +99,11 @@ const Events = () => {
           {
             label: `Attendance - ${ageGroup}`,
             data: [],
-            borderColor: eventTypes[eventType].color,
-            backgroundColor: `hsla(${
-              (eventTypeIndex * 360) / Object.keys(eventTypes).length
-            }, 70%, 50%, ${0.5 + (ageGroupIndex / ageGroups.length) * 0.5})`,
             yAxisID: 'y1',
             type: 'line'
           },
           {
             label: `Events - ${ageGroup}`,
-            borderColor: eventTypes[eventType].color,
-            backgroundColor: `hsla(${
-              (eventTypeIndex * 360) / Object.keys(eventTypes).length
-            }, 70%, 50%, ${0.5 + (ageGroupIndex / ageGroups.length) * 0.5})`,
             data: [],
             yAxisID: 'y',
             stack: 'Stack 0'
