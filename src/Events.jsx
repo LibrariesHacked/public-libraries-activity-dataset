@@ -26,8 +26,14 @@ ChartJS.register(
 import Markdown from 'react-markdown'
 
 import eventsMd from './content/events.md'
+import eventsAttendanceMd from './content/events-attendance.md'
+import eventsAttendanceByServiceMd from './content/events-attendance-by-service.md'
 
 import Box from '@mui/material/Box'
+import ListSubheader from '@mui/material/ListSubheader'
+import Typography from '@mui/material/Typography'
+
+import { getActiveServices } from './models/service'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
@@ -43,18 +49,52 @@ const eventTypes = {
   }
 }
 
-const Events = () => {
-  const [{ filteredServices, events, attendance }, dispatchApplication] =
-    useApplicationState()
+const serviceChartOptions = {
+  indexAxis: 'y',
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top'
+    },
+    title: {
+      display: true,
+      text: `Events/attendance by service`
+    }
+  },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Count of loans'
+      },
+      stacked: true,
+      beginAtZero: true
+    },
+    y: {
+      stacked: true
+    }
+  }
+}
 
-  const [chartData, setChartData] = useState([])
+const Events = () => {
+  const [
+    { services, filteredServices, events, attendance },
+    dispatchApplication
+  ] = useApplicationState()
+
+  const [eventsAttendanceChartData, setEventsAttendanceChartData] = useState([])
 
   const [eventsMarkdown, setEventsMarkdown] = useState('')
+  const [eventsAttendanceMarkdown, setEventsAttendanceMarkdown] = useState('')
 
   useEffect(() => {
     fetch(eventsMd)
       .then(res => res.text())
       .then(text => setEventsMarkdown(text))
+    fetch(eventsAttendanceMd)
+      .then(res => res.text())
+      .then(text => setEventsAttendanceMarkdown(text))
   }, [])
 
   useEffect(() => {
@@ -75,11 +115,13 @@ const Events = () => {
 
   useEffect(() => {
     if (!events || !attendance) return
-    let labels = []
-    // The labels are the periods and we want all the periods from events and attendance
-    labels = [
+
+    const activeServices = getActiveServices(services, filteredServices)
+
+    const monthLabels = [
       ...new Set([...events.map(e => e.month), ...attendance.map(a => a.month)])
     ].sort()
+
     // We have a dataset for each age group from events and attendance
     const ageGroups = [
       ...new Set([
@@ -88,56 +130,52 @@ const Events = () => {
       ])
     ].sort()
 
-    const charts = []
+    const eventAttendanceCharts = []
 
     // We want a chart for each event type
-    Object.keys(eventTypes).forEach((eventType, eventTypeIndex) => {
-      const datasets = []
-      ageGroups.forEach((ageGroup, ageGroupIndex) => {
-        const ageGroupDatasets = [
-          // One dataset for attendance and one for events
-          {
-            label: `Attendance - ${ageGroup}`,
-            data: [],
-            yAxisID: 'y1',
-            type: 'line'
-          },
-          {
-            label: `Events - ${ageGroup}`,
-            data: [],
-            yAxisID: 'y',
-            stack: 'Stack 0'
-          }
-        ]
-        labels.forEach(label => {
-          // Get the count of events for this event type, age group and month
-          const eventCount = events
-            .filter(
-              e =>
-                e.type === eventType &&
-                e.ageGroup === ageGroup &&
-                e.month === label
-            )
-            .reduce((sum, e) => sum + (e.countEvents || 0), 0)
-          ageGroupDatasets[1].data.push(eventCount)
-          // Get the count of attendance for this event type, age group and month
-          const attendanceCount = attendance
-            .filter(
-              a =>
-                a.type === eventType &&
-                a.ageGroup === ageGroup &&
-                a.month === label
-            )
-            .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
-          ageGroupDatasets[0].data.push(attendanceCount)
-        })
-        datasets.push(...ageGroupDatasets)
-      })
-      charts.push({
+    Object.keys(eventTypes).forEach(eventType => {
+      const datasets = [
+        // One dataset for attendance and one for events
+        {
+          label: `Attendance - ${eventType}`,
+          data: monthLabels.map(month => {
+            // Get the count of attendance for this event type and month
+            return attendance
+              .filter(
+                a =>
+                  a.type === eventType &&
+                  a.month === month &&
+                  activeServices.find(s => s.code === a.serviceCode)
+              )
+              .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
+          }),
+          yAxisID: 'y1',
+          type: 'line'
+        },
+        {
+          label: `Events - ${eventType}`,
+          data: monthLabels.map(month => {
+            // Get the count of events for this event type and month
+            return events
+              .filter(
+                e =>
+                  e.type === eventType &&
+                  e.month === month &&
+                  activeServices.find(s => s.code === e.serviceCode)
+              )
+              .reduce((sum, e) => sum + (e.countEvents || 0), 0)
+          }),
+          yAxisID: 'y',
+          stack: 'Stack 0'
+        }
+      ]
+
+      eventAttendanceCharts.push({
         data: {
-          labels,
+          labels: monthLabels,
           datasets
         },
+        eventType,
         options: {
           responsive: true,
           interaction: {
@@ -183,13 +221,20 @@ const Events = () => {
       })
     })
 
-    setChartData(charts)
-  }, [filteredServices, events, attendance])
+    setEventsAttendanceChartData(eventAttendanceCharts)
+  }, [filteredServices, services, events, attendance])
+
   return (
     <Box>
+      <Typography variant='h3' gutterBottom>
+        Events and attendance
+      </Typography>
       <Markdown>{eventsMarkdown}</Markdown>
-      {chartData.map((chart, index) => (
+      {eventsAttendanceChartData.map((chart, index) => (
         <Box key={index} sx={{ mb: 4 }}>
+          <ListSubheader component='div' disableSticky disableGutters>
+            {chart.eventType}
+          </ListSubheader>
           <Bar data={chart.data} options={chart.options} />
         </Box>
       ))}
