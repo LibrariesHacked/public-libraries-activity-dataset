@@ -65,9 +65,6 @@ const serviceChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: {
-      position: 'top'
-    },
     title: {
       display: true,
       text: `Active users % population by service`
@@ -79,11 +76,7 @@ const serviceChartOptions = {
         display: true,
         text: 'Active users as % of population'
       },
-      stacked: true,
       beginAtZero: true
-    },
-    y: {
-      stacked: true
     }
   }
 }
