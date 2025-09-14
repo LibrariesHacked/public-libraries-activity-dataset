@@ -225,8 +225,7 @@ const Loans = () => {
 
     setServiceChart({
       labels: serviceLabels,
-      datasets,
-      options: serviceChartOptions
+      datasets
     })
   }, [filteredServices, loans, services])
   return (
@@ -259,16 +258,10 @@ const Loans = () => {
           sx={{
             position: 'relative',
             width: '100%',
-            height: `${serviceChart.labels.length * 18 + 80}px`
+            height: `${serviceChart.labels.length * 18 + 120}px`
           }}
         >
-          <Bar
-            options={serviceChart.options}
-            data={{
-              labels: serviceChart.labels,
-              datasets: serviceChart.datasets
-            }}
-          />
+          <Bar options={serviceChartOptions} data={serviceChart} />
         </Box>
       )}
     </Box>

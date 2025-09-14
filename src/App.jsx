@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 
-import { blue, blueGrey } from '@mui/material/colors'
+import { blue, grey, blueGrey } from '@mui/material/colors'
 
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
@@ -30,8 +30,8 @@ const theme = createTheme({
       paper: '#fff'
     },
     text: {
-      primary: blueGrey[700],
-      secondary: blueGrey[500]
+      primary: grey[600],
+      secondary: blueGrey[700]
     },
     primary: { main: blue[700] },
     secondary: { main: blueGrey[500] }
@@ -75,8 +75,8 @@ function App () {
                 Library activity
               </Typography>
               <Typography gutterBottom color='textSecondary'>
-                By default all services are shown. Use the selector to construct
-                your own comparison group.
+                By default all library services are shown. Use the selector to
+                construct your own comparison group.
               </Typography>
               <ServiceSelection />
             </Box>
@@ -93,9 +93,9 @@ function App () {
             </Routes>
             <Divider sx={{ marginY: 2 }} />
             <Box sx={{ textAlign: 'center', marginBottom: 2 }}>
-              <Typography color='textSecondary'>
+              <Typography variant='body1'>
                 Made with ❤️ by{' '}
-                <a href='https://example.com'>Libraries Hacked</a>.
+                <a href='https://example.com'>Libraries Hacked</a>
               </Typography>
             </Box>
           </main>

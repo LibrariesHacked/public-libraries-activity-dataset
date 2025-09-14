@@ -65,7 +65,7 @@ const ServiceSelection = () => {
           onClick={e => openServiceMenu(e.currentTarget)}
           startIcon={<BusinessIcon />}
         >
-          Select library service
+          Select service
         </Button>
       </Tooltip>
       <Menu
