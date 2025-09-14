@@ -59,7 +59,7 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: `Events/attendance by service`
+      text: `Event counts and attendance by service`
     }
   },
   scales: {
@@ -68,11 +68,7 @@ const serviceChartOptions = {
         display: true,
         text: 'Count of loans'
       },
-      stacked: true,
       beginAtZero: true
-    },
-    y: {
-      stacked: true
     }
   }
 }
@@ -84,9 +80,14 @@ const Events = () => {
   ] = useApplicationState()
 
   const [eventsAttendanceChartData, setEventsAttendanceChartData] = useState([])
+  const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
 
   const [eventsMarkdown, setEventsMarkdown] = useState('')
   const [eventsAttendanceMarkdown, setEventsAttendanceMarkdown] = useState('')
+  const [
+    eventsAttendanceByServiceMarkdown,
+    setEventsAttendanceByServiceMarkdown
+  ] = useState('')
 
   useEffect(() => {
     fetch(eventsMd)
@@ -95,6 +96,9 @@ const Events = () => {
     fetch(eventsAttendanceMd)
       .then(res => res.text())
       .then(text => setEventsAttendanceMarkdown(text))
+    fetch(eventsAttendanceByServiceMd)
+      .then(res => res.text())
+      .then(text => setEventsAttendanceByServiceMarkdown(text))
   }, [])
 
   useEffect(() => {
@@ -222,14 +226,56 @@ const Events = () => {
     })
 
     setEventsAttendanceChartData(eventAttendanceCharts)
+
+    const serviceLabels = activeServices.map(s => s.niceName).sort()
+
+    const datasets = ['Events', 'Attendance'].map((label, i) => {
+      const data = serviceLabels.map(serviceLabel => {
+        const serviceCode = services.find(
+          s => s.niceName === serviceLabel
+        )?.code
+        if (!serviceCode) return 0
+
+        if (label === 'Events') {
+          return events
+            .filter(
+              e =>
+                activeServices.find(s => s.code === e.serviceCode) &&
+                e.serviceCode === serviceCode
+            )
+            .reduce((sum, e) => sum + (e.countEvents || 0), 0)
+        } else {
+          return attendance
+            .filter(
+              a =>
+                activeServices.find(s => s.code === a.serviceCode) &&
+                a.serviceCode === serviceCode
+            )
+            .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
+        }
+      })
+      return {
+        label,
+        data
+      }
+    })
+
+    setServiceChart({
+      labels: serviceLabels,
+      datasets
+    })
   }, [filteredServices, services, events, attendance])
 
   return (
     <Box>
-      <Typography variant='h3' gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Events and attendance
       </Typography>
       <Markdown>{eventsMarkdown}</Markdown>
+      <Typography variant='h5' gutterBottom>
+        Event count and attendance by type
+      </Typography>
+      <Markdown>{eventsAttendanceMarkdown}</Markdown>
       {eventsAttendanceChartData.map((chart, index) => (
         <Box key={index} sx={{ mb: 4 }}>
           <ListSubheader component='div' disableSticky disableGutters>
@@ -238,6 +284,19 @@ const Events = () => {
           <Bar data={chart.data} options={chart.options} />
         </Box>
       ))}
+      <Typography variant='h5' gutterBottom>
+        Events and attendance by service
+      </Typography>
+      <Markdown>{eventsAttendanceByServiceMarkdown}</Markdown>
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          height: `${(serviceChart?.labels?.length || 1) * 18 + 120}px`
+        }}
+      >
+        <Bar options={serviceChartOptions} data={serviceChart} />
+      </Box>
     </Box>
   )
 }

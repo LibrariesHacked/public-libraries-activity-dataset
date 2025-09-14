@@ -1,1 +1,1 @@
-We can plot events and attendance over time in a single chart to see how they relate to each other.
+Events are separated into physical and virtual events. These charts show the split of the count of events held, and attendance of thoe events by each type per month. It can be interesting to see how the events and attendance change over time, and whether the trend of attendance is similar to that of events held.

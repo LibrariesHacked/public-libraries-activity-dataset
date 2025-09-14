@@ -187,17 +187,17 @@ const Visits = () => {
 
   return (
     <Box>
-      <Typography variant='h3' gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Visits
       </Typography>
       <Markdown>{visitsMarkdown}</Markdown>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h5' gutterBottom>
         Visits by location
       </Typography>
       <Markdown>{visitsByLocationMarkdown}</Markdown>
       {visitData && <Line options={visitsChartOptions} data={visitData} />}
-      <Typography variant='h4' gutterBottom>
-        Service comparisons
+      <Typography variant='h5' gutterBottom>
+        Visits types by service
       </Typography>
       <Markdown>{visitsByServiceMarkdown}</Markdown>
       <Box

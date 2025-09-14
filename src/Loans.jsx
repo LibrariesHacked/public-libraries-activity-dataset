@@ -198,7 +198,7 @@ const Loans = () => {
 
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
-    let datasets = itemFormats.map((format, i) => {
+    const datasets = itemFormats.map((format, i) => {
       const data = []
       serviceLabels.forEach(serviceLabel => {
         const serviceCode = services.find(
@@ -230,16 +230,16 @@ const Loans = () => {
   }, [filteredServices, loans, services])
   return (
     <Box>
-      <Typography variant='h3' gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Loans
       </Typography>
       <Markdown>{loansMarkdown}</Markdown>
-      <Typography variant='h4' gutterBottom>
-        Formats
+      <Typography variant='h5' gutterBottom>
+        Loans by format
       </Typography>
       <Markdown>{loansByTypeMarkdown}</Markdown>
       {formatCharts.map((chart, index) => (
-        <Box key={index} sx={{ mb: 4 }}>
+        <Box key={index} sx={{ mb: 2 }}>
           <ListSubheader component='div' disableSticky disableGutters>
             {chart.format}
           </ListSubheader>
@@ -249,8 +249,8 @@ const Loans = () => {
           />
         </Box>
       ))}
-      <Typography variant='h4' gutterBottom>
-        Service comparison
+      <Typography variant='h5' gutterBottom>
+        Loans by service and format
       </Typography>
       <Markdown>{loansByServiceMarkdown}</Markdown>
       {serviceChart && serviceChart.labels && (

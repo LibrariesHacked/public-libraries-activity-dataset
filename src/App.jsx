@@ -31,7 +31,7 @@ const theme = createTheme({
     },
     text: {
       primary: grey[600],
-      secondary: blueGrey[700]
+      secondary: blueGrey[500]
     },
     primary: { main: blue[700] },
     secondary: { main: blueGrey[500] }

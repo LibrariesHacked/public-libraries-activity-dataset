@@ -227,12 +227,12 @@ const Users = () => {
 
   return (
     <Box>
-      <Typography variant='h3' gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Active users
       </Typography>
       <Markdown>{usersMarkdown}</Markdown>
-      <Typography variant='h4' gutterBottom>
-        Users by age group
+      <Typography variant='h5' gutterBottom>
+        Active users by age group
       </Typography>
       <Markdown>{usersByAgeGroupMarkdown}</Markdown>
       <Box
@@ -244,8 +244,8 @@ const Users = () => {
       >
         <Bar options={ageGroupChartOptions} data={ageGroupChart} />
       </Box>
-      <Typography variant='h4' gutterBottom>
-        Service comparisons
+      <Typography variant='h5' gutterBottom>
+        Active users by service
       </Typography>
       <Markdown>{usersByServiceMarkdown}</Markdown>
       <Box
