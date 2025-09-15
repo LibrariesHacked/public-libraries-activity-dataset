@@ -45,6 +45,7 @@ const VisitsTotalCard = () => {
       description={`${formatCompactNumber(
         visitsPerCapita
       )} per resident per year`}
+      colour='chartBlue'
     />
   )
 }

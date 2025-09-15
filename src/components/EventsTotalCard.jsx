@@ -32,6 +32,7 @@ const EventsTotalCard = () => {
       title='Events'
       number={formatCompactNumber(eventsCount)}
       description={`${formatCompactNumber(eventsPerDay)} events per day`}
+      colour='chartOrange'
     />
   )
 }

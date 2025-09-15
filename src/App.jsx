@@ -34,7 +34,15 @@ const theme = createTheme({
       secondary: blueGrey[500]
     },
     primary: { main: blue[700] },
-    secondary: { main: blueGrey[500] }
+    secondary: { main: blueGrey[500] },
+    // Add a custom set of colors that match the chart.js 7 defaults.
+    chartRed: '#ff6384',
+    chartOrange: '#ff9f40',
+    chartYellow: '#ffcd56',
+    chartGreen: '#4bc0c0',
+    chartBlue: '#36a2eb',
+    chartPurple: '#9966ff',
+    chartGrey: '#c9cbcf'
   },
   shape: {
     borderRadius: 8

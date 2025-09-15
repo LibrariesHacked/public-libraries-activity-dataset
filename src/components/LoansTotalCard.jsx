@@ -42,6 +42,7 @@ const LoansTotalCard = () => {
       title='Loans'
       number={formatCompactNumber(loansCount)}
       description={`${Math.round(loansPerCapita)} per resident per year`}
+      colour='chartGreen'
     />
   )
 }

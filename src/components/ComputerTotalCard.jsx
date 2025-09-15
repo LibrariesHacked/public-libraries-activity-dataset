@@ -34,6 +34,7 @@ const ComputerTotalCard = () => {
       description={`${formatCompactNumber(
         computerHoursPerDay
       )} computer hours per day`}
+      colour='chartBlue'
     />
   )
 }

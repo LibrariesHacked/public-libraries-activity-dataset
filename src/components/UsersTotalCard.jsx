@@ -48,6 +48,7 @@ const UsersTotalCard = () => {
       title='Active users'
       number={formatCompactNumber(usersCount)}
       description={`${Math.round(percentageUsers)}% of residents`}
+      colour='chartPurple'
     />
   )
 }

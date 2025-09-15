@@ -277,7 +277,7 @@ const Events = () => {
       </Typography>
       <Markdown>{eventsAttendanceMarkdown}</Markdown>
       {eventsAttendanceChartData.map((chart, index) => (
-        <Box key={index} sx={{ mb: 4 }}>
+        <Box key={index} sx={{ mb: 2 }}>
           <ListSubheader component='div' disableSticky disableGutters>
             {chart.eventType}
           </ListSubheader>

@@ -43,6 +43,7 @@ const WiFiTotalCard = () => {
       title='WiFi sessions'
       number={formatCompactNumber(wifiSessionsCount)}
       description={`${Math.round(wifiSessionsPerCapita)} per resident per year`}
+      colour='chartYellow'
     />
   )
 }

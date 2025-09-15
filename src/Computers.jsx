@@ -160,7 +160,7 @@ const Computers = () => {
       ])
     ).sort()
 
-    const datasets = [
+    const computersWiFiDatasets = [
       {
         label: 'Computer hours',
         data: monthLabels.map(label => {
@@ -186,16 +186,56 @@ const Computers = () => {
     const computersWiFiChart = {
       format: 'Computer Usage Hours vs WiFi Sessions',
       labels: monthLabels,
-      datasets: datasets.map((d, index) => ({
+      datasets: computersWiFiDatasets.map((d, index) => ({
         ...d,
-        borderColor: index === 0 ? 'rgb(53, 162, 235)' : 'rgb(255, 99, 132)',
-        backgroundColor:
-          index === 0 ? 'rgba(53, 162, 235, 0.5)' : 'rgba(255, 99, 132, 0.5)',
         yAxisID: index === 0 ? 'y' : 'y1'
       }))
     }
 
     setComputersWiFiChart(computersWiFiChart)
+
+    // The service chart is a total computer hours and wifi sessions by service per capita
+    const serviceLabels = activeServices.map(s => s.niceName).sort()
+
+    const serviceDatasets = [
+      {
+        label: 'Computer hours',
+        data: serviceLabels.map(serviceLabel => {
+          const serviceCode = services.find(
+            s => s.niceName === serviceLabel
+          )?.code
+          if (!serviceCode) return null
+
+          return (
+            filteredComputers
+              .filter(c => c.serviceCode === serviceCode)
+              .reduce((sum, v) => sum + (v.countHours || 0), 0) || 0
+          )
+        }),
+        barThickness: 8
+      },
+      {
+        label: 'WiFi sessions',
+        data: serviceLabels.map(serviceLabel => {
+          const serviceCode = services.find(
+            s => s.niceName === serviceLabel
+          )?.code
+          if (!serviceCode) return null
+
+          return (
+            filteredWifi
+              .filter(w => w.serviceCode === serviceCode)
+              .reduce((sum, v) => sum + (v.countSessions || 0), 0) || 0
+          )
+        }),
+        barThickness: 8
+      }
+    ]
+
+    setServiceChart({
+      labels: serviceLabels,
+      datasets: serviceDatasets
+    })
   }, [filteredServices, services, computers, wifi])
 
   return (
@@ -208,9 +248,11 @@ const Computers = () => {
         Computer and WiFi usage
       </Typography>
       <Markdown>{computersWiFiMarkdown}</Markdown>
-      <Line options={computersWiFiChartOptions} data={computersWiFiChart} />
+      <Box sx={{ mb: 2 }}>
+        <Line options={computersWiFiChartOptions} data={computersWiFiChart} />
+      </Box>
       <Typography variant='h5' gutterBottom>
-        Service comparison
+        Computer hours and WiFi sessions by service
       </Typography>
       <Markdown>{computersWiFiByServiceMarkdown}</Markdown>
       {serviceChart && serviceChart.labels && (
@@ -218,7 +260,7 @@ const Computers = () => {
           sx={{
             position: 'relative',
             width: '100%',
-            height: `${serviceChart.labels.length * 18 + 120}px`
+            height: `${serviceChart.labels.length * 36 + 120}px`
           }}
         >
           <Bar options={serviceChartOptions} data={serviceChart} />

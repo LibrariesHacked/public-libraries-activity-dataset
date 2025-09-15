@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 
 const NumberCard = props => {
-  const { title, number, description, descriptionIcon } = props
+  const { title, number, description, descriptionIcon, colour } = props
 
   return (
     <Card
@@ -39,13 +39,13 @@ const NumberCard = props => {
           <Stack
             sx={{ justifyContent: 'space-between', alignContent: 'center' }}
           >
-            <Typography variant='h3' color='primary' sx={{ fontWeight: 700 }}>
+            <Typography variant='h3' color={colour} sx={{ fontWeight: 700 }}>
               {number}
             </Typography>
             <Box>
               <Chip
-                color='secondary'
-                variant='outlined'
+                sx={{ backgroundColor: 'rgb(245, 245, 245)' }}
+                variant='filled'
                 icon={descriptionIcon || <AutoAwesomeRoundedIcon />}
                 label={description}
               />

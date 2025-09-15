@@ -41,6 +41,7 @@ const AttendanceTotalCard = () => {
       title='Event attendees'
       number={formatCompactNumber(attendanceCount)}
       description={`${formatCompactNumber(attendancePerEvent)} per event`}
+      colour='chartRed'
     />
   )
 }
