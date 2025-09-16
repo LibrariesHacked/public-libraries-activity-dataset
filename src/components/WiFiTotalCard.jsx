@@ -32,7 +32,7 @@ const WiFiTotalCard = () => {
       ) || 0
 
     const wifiSessionsPerCapita =
-      totalPopulation > 0 ? Math.round(totalWifiSessions / totalPopulation) : 0
+      totalPopulation > 0 ? (totalWifiSessions / totalPopulation) : 0
 
     setWifiSessionsCount(totalWifiSessions)
     setWifiSessionsPerCapita(wifiSessionsPerCapita)
@@ -42,7 +42,7 @@ const WiFiTotalCard = () => {
     <NumberCard
       title='WiFi sessions'
       number={formatCompactNumber(wifiSessionsCount)}
-      description={`${Math.round(wifiSessionsPerCapita)} per resident per year`}
+      description={`${Math.round(wifiSessionsPerCapita, 2)} per resident per year`}
       colour='chartYellow'
     />
   )

@@ -13,16 +13,6 @@ import {
 
 import { Bar, Line } from 'react-chartjs-2'
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
 import Markdown from 'react-markdown'
 
 import computersMd from './content/computers.md'
@@ -38,6 +28,16 @@ import { useApplicationState } from './hooks/useApplicationState'
 
 import * as computersModel from './models/computers'
 import * as wifiModel from './models/wifi'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 const computersWiFiChartOptions = {
   responsive: true,
@@ -82,7 +82,7 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: `Loans by service and format`
+      text: 'Loans by service and format'
     }
   },
   scales: {
@@ -127,11 +127,11 @@ const Computers = () => {
   useEffect(() => {
     const getComputers = async () => {
       const computers = await computersModel.getComputers()
-      dispatchApplication({ type: 'SetComputers', computers: computers })
+      dispatchApplication({ type: 'SetComputers', computers })
     }
     const getWiFi = async () => {
       const wifi = await wifiModel.getWiFi()
-      dispatchApplication({ type: 'SetWiFi', wifi: wifi })
+      dispatchApplication({ type: 'SetWiFi', wifi })
     }
     if (!computers || !wifi) {
       getComputers()
@@ -194,7 +194,7 @@ const Computers = () => {
 
     setComputersWiFiChart(computersWiFiChart)
 
-    // The service chart is a total computer hours and wifi sessions by service per capita
+    // The service chart is a total computer hours and wifi sessions by service per resident population
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
     const serviceDatasets = [

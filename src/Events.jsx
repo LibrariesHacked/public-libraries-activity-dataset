@@ -13,16 +13,6 @@ import {
 
 import { Bar } from 'react-chartjs-2'
 
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
 import Markdown from 'react-markdown'
 
 import eventsMd from './content/events.md'
@@ -39,6 +29,16 @@ import { useApplicationState } from './hooks/useApplicationState'
 
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
+
+ChartJS.register(
+  CategoryScale,
+  Colors,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 const eventTypes = {
   Physical: {
@@ -59,7 +59,7 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: `Event counts and attendance by service`
+      text: 'Event counts and attendance by service'
     }
   },
   scales: {

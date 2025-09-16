@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 
-import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Stack from '@mui/material/Stack'
@@ -9,11 +8,11 @@ import Typography from '@mui/material/Typography'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
 
-ChartJS.register(ArcElement, Tooltip, Legend)
-
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import * as loansModel from '../models/loans'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const LoansByTypeCard = () => {
   const [{ filteredServices, services, loans }, dispatchApplication] =
@@ -24,7 +23,7 @@ const LoansByTypeCard = () => {
   useEffect(() => {
     const getLoans = async () => {
       const loans = await loansModel.getLoans()
-      dispatchApplication({ type: 'SetLoans', loans: loans })
+      dispatchApplication({ type: 'SetLoans', loans })
     }
 
     // Trigger download of loans data (if not already done)

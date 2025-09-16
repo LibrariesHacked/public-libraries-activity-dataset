@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 
-import BusinessIcon from '@mui/icons-material/BusinessRounded'
+import AddChartIcon from '@mui/icons-material/AddChartRounded'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -63,9 +63,9 @@ const ServiceSelection = () => {
           size='large'
           color='primary'
           onClick={e => openServiceMenu(e.currentTarget)}
-          startIcon={<BusinessIcon />}
+          startIcon={<AddChartIcon />}
         >
-          Select service
+          Add service
         </Button>
       </Tooltip>
       <Menu
@@ -100,6 +100,7 @@ const ServiceSelection = () => {
                 onDelete={() => deleteService(s)}
                 color='secondary'
                 variant='outlined'
+                sx={{ mx: 0.5 }}
               />
             )
           })}

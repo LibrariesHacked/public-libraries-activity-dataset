@@ -15,18 +15,6 @@ import {
 
 import { Bar, Line } from 'react-chartjs-2'
 
-ChartJS.register(
-  BarElement,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
@@ -41,6 +29,18 @@ import { getActiveServices } from './models/service'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import * as visitsModel from './models/visits'
+
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  Colors,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 const visitsChartOptions = {
   responsive: true,
@@ -74,14 +74,14 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: `Visits by service per capita`
+      text: 'Visits by service per resident population'
     }
   },
   scales: {
     x: {
       title: {
         display: true,
-        text: 'Visits per capita'
+        text: 'Visits per resident population'
       },
       stacked: true,
       beginAtZero: true
@@ -119,7 +119,7 @@ const Visits = () => {
   useEffect(() => {
     const getVisits = async () => {
       const visits = await visitsModel.getVisits()
-      dispatchApplication({ type: 'SetVisits', visits: visits })
+      dispatchApplication({ type: 'SetVisits', visits })
     }
 
     // Trigger download of visit data (if not already done)
@@ -141,7 +141,7 @@ const Visits = () => {
     const labels = [...new Set(filteredVisits.map(m => m.month))].sort()
 
     visitData = {
-      labels: labels,
+      labels,
       datasets: locationTypes.map((location, index) => {
         return {
           label: location,
@@ -182,7 +182,7 @@ const Visits = () => {
       }
     })
 
-    setServiceChart({ labels: serviceLabels, datasets: datasets })
+    setServiceChart({ labels: serviceLabels, datasets })
   }, [visits, filteredServices, services])
 
   return (

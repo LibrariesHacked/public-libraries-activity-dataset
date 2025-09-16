@@ -13,16 +13,6 @@ import {
 
 import { Bar } from 'react-chartjs-2'
 
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
 import Markdown from 'react-markdown'
 
 import usersMd from './content/users.md'
@@ -37,6 +27,16 @@ import { getActiveServices } from './models/service'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import * as usersModel from './models/users'
+
+ChartJS.register(
+  CategoryScale,
+  Colors,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 const ageGroupChartOptions = {
   plugins: {
@@ -67,7 +67,7 @@ const serviceChartOptions = {
   plugins: {
     title: {
       display: true,
-      text: `Active users % population by service`
+      text: 'Active users % population by service'
     }
   },
   scales: {
@@ -113,7 +113,7 @@ const Users = () => {
   useEffect(() => {
     const getUsers = async () => {
       const users = await usersModel.getUsers()
-      dispatchApplication({ type: 'SetUsers', users: users })
+      dispatchApplication({ type: 'SetUsers', users })
     }
 
     // Trigger download of users data (if not already done)

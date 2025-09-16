@@ -15,18 +15,6 @@ import {
 
 import { Bar, Line } from 'react-chartjs-2'
 
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  PointElement,
-  BarElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
@@ -43,6 +31,18 @@ import { useApplicationState } from './hooks/useApplicationState'
 
 import * as loansModel from './models/loans'
 
+ChartJS.register(
+  CategoryScale,
+  Colors,
+  LinearScale,
+  PointElement,
+  BarElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
 const serviceChartOptions = {
   indexAxis: 'y',
   responsive: true,
@@ -53,7 +53,7 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: `Loans by service and format`
+      text: 'Loans by service and format'
     }
   },
   scales: {
@@ -98,7 +98,7 @@ const Loans = () => {
   useEffect(() => {
     const getLoans = async () => {
       const loans = await loansModel.getLoans()
-      dispatchApplication({ type: 'SetLoans', loans: loans })
+      dispatchApplication({ type: 'SetLoans', loans })
     }
 
     // Trigger download of loans data (if not already done)
@@ -110,7 +110,7 @@ const Loans = () => {
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    let formatCharts = []
+    const formatCharts = []
 
     const itemFormats = [...new Set(loans.map(m => m.format))].sort((a, b) => {
       const order = ['Physical book', 'Ebook', 'Physical audiobook', 'Eaudio']
@@ -153,7 +153,7 @@ const Loans = () => {
       const formatLoans = loans.filter(m => m.format === format)
 
       let formatLabels = []
-      let datasets = []
+      const datasets = []
       // The labels are the months in the data. The months are already formattted as YYYY-MM
       formatLabels = [...new Set(formatLoans.map(loan => loan.month))].sort()
 
@@ -235,7 +235,7 @@ const Loans = () => {
       </Typography>
       <Markdown>{loansMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
-        Loans by format
+        Loans by format and age category
       </Typography>
       <Markdown>{loansByTypeMarkdown}</Markdown>
       {formatCharts.map((chart, index) => (
