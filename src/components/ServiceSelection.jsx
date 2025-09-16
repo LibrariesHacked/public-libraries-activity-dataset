@@ -7,7 +7,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 
-import AddChartIcon from '@mui/icons-material/AddChartRounded'
+import AddChartIcon from '@mui/icons-material/AddchartRounded'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
