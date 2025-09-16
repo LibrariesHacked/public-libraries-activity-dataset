@@ -85,7 +85,8 @@ function App () {
               sx={{
                 alignItems: 'center',
                 alignContent: 'center',
-                textAlign: 'center'
+                textAlign: 'center',
+                marginY: 2
               }}
             >
               <Typography component='h1' variant='h2'>
