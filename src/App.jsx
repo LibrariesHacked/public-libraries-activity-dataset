@@ -92,8 +92,8 @@ function App () {
                 Library activity
               </Typography>
               <Typography gutterBottom color='textSecondary'>
-                All available library data is displayed by default. Add services
-                to construct your own comparison group of services.
+                All available data is displayed by default. Add services to
+                construct your own comparison group.
               </Typography>
               <ServiceSelection />
             </Box>

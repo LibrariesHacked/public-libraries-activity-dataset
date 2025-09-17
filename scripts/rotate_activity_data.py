@@ -143,6 +143,14 @@ def convert_values_to_monthly(data):
 
     return data
 
+def convert_values_to_yearly(data):
+    """Convert monthly and quarterly values to yearly and return as years """
+    for record in data:
+        if 'Period' in record and 'P1Y' in record['Period']:
+            record['Period'] = '2023/2024'
+
+    return data
+
 
 def rotate_activity_data():
     """Rotate the activity data from the input CSV file into multiple output files."""
@@ -762,8 +770,9 @@ def rotate_activity_data():
         with open(SERVICES_JSON, 'w', encoding='utf-8') as f:
             json.dump(service_values, f)
 
+        user_yearly = convert_values_to_yearly(users)
         user_values = [list(user.values())
-                       for user in users]
+                       for user in user_yearly]
         with open(USERS_JSON, 'w', encoding='utf-8') as f:
             json.dump(user_values, f)
 

@@ -90,6 +90,14 @@ const ServiceSelection = () => {
             })}
       </Menu>
       <Box>
+        {!filteredServices || filteredServices.length === 0 ? (
+          <Chip
+            label='Displaying all services'
+            color='secondary'
+            variant='outlined'
+            sx={{ mx: 0.5 }}
+          />
+        ) : null}
         {filteredServices &&
           filteredServices.length > 0 &&
           filteredServices.map(s => {
