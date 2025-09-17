@@ -32,6 +32,26 @@ COMPUTER_USAGE_JSON = './public/computers.json'
 WIFI_SESSIONS_JSON = './public/wifi.json'
 
 
+def calculate_record_frequency(records):
+    """
+    Calculate the frequency of records based on their periods.
+    Returns 'Quarterly' if there are 4 unique periods AND they are June, September, December,
+    And March.
+    Returns 'Yearly' if there is 1 unique period AND it is April.
+    Else returns 'Monthly'.
+    """
+    unique_periods = set()
+    for record in records:
+        if 'Period' in record:
+            unique_periods.add(record['Period'])
+
+    if len(unique_periods) == 4 and all(month in unique_periods for month in ['2023-06-01', '2023-09-01', '2023-12-01', '2024-03-01']):
+        return 'Quarterly'
+    elif len(unique_periods) == 1 and ('2024-03-01' in unique_periods or '2023-04-01' in unique_periods):
+        return 'Yearly'
+    else:
+        return 'Monthly'
+
 def convert_date_to_quarterly(date_str):
     """
         Convert a date string in YYYY-MM-DD format to a quarterly period string.
@@ -519,7 +539,7 @@ def rotate_activity_data():
 
                 # Computer usage: Authority, Period, Count (hours)
                 if header.startswith('hours_public_computers'):
-                    if value is not None and value != "":
+                    if value is not None and value != "" and value != '2236995718' and authority_code != 'E08000021' and authority_code != 'E10000031':
                         authority_computer_usage.append({
                             'Authority': authority_code,
                             'Period': period_start,
@@ -582,12 +602,7 @@ def rotate_activity_data():
             # Then for each grouping we need to work out if the dates are monthly or quarterly
             event_frequency = None
             for (event_type, event_age), records in events_dict.items():
-                if len(records) == 1:
-                    event_frequency = 'Yearly'
-                elif len(records) == 4:
-                    event_frequency = 'Quarterly'
-                else:
-                    event_frequency = 'Monthly'
+                event_frequency = calculate_record_frequency(records)
 
                 for record in records:
                     period = None
@@ -616,12 +631,7 @@ def rotate_activity_data():
             # Then for each grouping we need to work out if the dates are monthly or quarterly
             attendance_frequency = None
             for (event_type, event_age), records in attendance_dict.items():
-                if len(records) == 1:
-                    attendance_frequency = 'Yearly'
-                elif len(records) == 4:
-                    attendance_frequency = 'Quarterly'
-                else:
-                    attendance_frequency = 'Monthly'
+                attendance_frequency = calculate_record_frequency(records)
 
                 for record in records:
                     period = None
@@ -650,12 +660,7 @@ def rotate_activity_data():
             # For each grouping work out if the dates are monthly, quarterly, or yearly
             loans_frequency = None
             for (content_format, content_age_group), records in loans_dict.items():
-                if len(records) == 1:
-                    loans_frequency = 'Yearly'
-                elif len(records) == 4:
-                    loans_frequency = 'Quarterly'
-                else:
-                    loans_frequency = 'Monthly'
+                loans_frequency = calculate_record_frequency(records)
 
                 for record in records:
                     period = None
@@ -683,12 +688,7 @@ def rotate_activity_data():
             # Then for each grouping we need to work out if the dates are monthly or quarterly
             visits_frequency = None
             for (location), records in visits_dict.items():
-                if len(records) == 1:
-                    visits_frequency = 'Yearly'
-                if len(records) == 4:
-                    visits_frequency = 'Quarterly'
-                else:
-                    visits_frequency = 'Monthly'
+                visits_frequency = calculate_record_frequency(records)
 
                 for record in records:
                     period = None
@@ -706,13 +706,7 @@ def rotate_activity_data():
             visits.extend(authority_visits)
 
             # Click and collect: No need to group but do convert the period
-            cc_visits_frequency = None
-            if len(authority_click_collect) == 1:
-                cc_visits_frequency = 'Yearly'
-            if len(authority_click_collect) == 4:
-                cc_visits_frequency = 'Quarterly'
-            elif len(authority_click_collect) == 12:
-                cc_visits_frequency = 'Monthly'
+            cc_visits_frequency = calculate_record_frequency(authority_click_collect)
             for record in authority_click_collect:
                 period = None
                 if cc_visits_frequency == 'Quarterly':
@@ -725,13 +719,7 @@ def rotate_activity_data():
             click_collect.extend(authority_click_collect)
 
             # Computer usage: No need to group but convert the period
-            computer_usage_frequency = None
-            if len(authority_computer_usage) == 1:
-                computer_usage_frequency = 'Yearly'
-            elif len(authority_computer_usage) == 4:
-                computer_usage_frequency = 'Quarterly'
-            elif len(authority_computer_usage) == 12:
-                computer_usage_frequency = 'Monthly'
+            computer_usage_frequency = calculate_record_frequency(authority_computer_usage)
 
             for record in authority_computer_usage:
                 period = None
@@ -745,13 +733,7 @@ def rotate_activity_data():
             computer_usage.extend(authority_computer_usage)
 
             # Wifi sessions: No need to group but convert the period
-            wifi_sessions_frequency = None
-            if len(authority_wifi_sessions) == 1:
-                wifi_sessions_frequency = 'Yearly'
-            elif len(authority_wifi_sessions) == 4:
-                wifi_sessions_frequency = 'Quarterly'
-            elif len(authority_wifi_sessions) == 12:
-                wifi_sessions_frequency = 'Monthly'
+            wifi_sessions_frequency = calculate_record_frequency(authority_wifi_sessions)
 
             for record in authority_wifi_sessions:
                 period = None

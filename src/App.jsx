@@ -12,15 +12,14 @@ import CssBaseline from '@mui/material/CssBaseline'
 import GlobalStyles from '@mui/material/GlobalStyles'
 import Typography from '@mui/material/Typography'
 
-import NavTabs from './components/NavTabs'
-
+import Computers from './Computers'
+import Events from './Events'
 import Home from './Home'
 import Loans from './Loans'
 import Users from './Users'
 import Visits from './Visits'
-import Events from './Events'
-import Computers from './Computers'
 
+import NavTabs from './components/NavTabs'
 import ServiceSelection from './components/ServiceSelection'
 
 const theme = createTheme({
