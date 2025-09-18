@@ -1,12 +1,13 @@
 import React from 'react'
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 
 import { lightBlue, grey, blueGrey } from '@mui/material/colors'
 
 import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
 import GlobalStyles from '@mui/material/GlobalStyles'
@@ -77,7 +78,7 @@ function App () {
           }
         }}
       />
-      <BrowserRouter>
+      <HashRouter>
         <Container maxWidth='lg'>
           <main>
             <Box
@@ -88,6 +89,7 @@ function App () {
                 marginY: 2
               }}
             >
+              <Chip color='warning' label='In development' sx={{ fontWeight: 'bold' }} />
               <Typography component='h1' variant='h2'>
                 Library activity
               </Typography>
@@ -116,7 +118,7 @@ function App () {
             </Box>
           </main>
         </Container>
-      </BrowserRouter>
+      </HashRouter>
     </ThemeProvider>
   )
 }
