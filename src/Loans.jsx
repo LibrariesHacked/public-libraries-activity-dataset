@@ -139,6 +139,16 @@ const Loans = () => {
             title: {
               display: true,
               text: 'Month'
+            },
+            ticks: {
+              callback: function (value) {
+                const label = this.getLabelForValue(value)
+                const date = new Date(label + '-01')
+                return date.toLocaleDateString('en-GB', {
+                  month: 'short',
+                  year: '2-digit'
+                })
+              }
             }
           },
           y: {
@@ -165,7 +175,7 @@ const Loans = () => {
         // We want a dataset for each age group
         const data = []
         formatLabels.forEach(label => {
-          // For each label (month) we need to count the number of loans for this age group
+          // For each label (month) we need to count the count of loans for this age group
           let count = 0
           formatLoans.forEach(loan => {
             if (
@@ -201,20 +211,21 @@ const Loans = () => {
     const datasets = itemFormats.map((format, i) => {
       const data = []
       serviceLabels.forEach(serviceLabel => {
-        const serviceCode = services.find(
-          s => s.niceName === serviceLabel
-        )?.code
+        const service = services.find(s => s.niceName === serviceLabel)
+        const serviceCode = service?.code
         if (!serviceCode) return null
 
         const serviceFormatLoans = loans.filter(
           m => m.serviceCode === serviceCode && m.format === format
         )
-        data.push(
-          serviceFormatLoans.reduce(
-            (acc, loan) => acc + (loan.countLoans || 0),
-            0
-          )
+        const totalLoans = serviceFormatLoans.reduce(
+          (acc, loan) => acc + (loan.countLoans || 0),
+          0
         )
+        const servicePopulation = service?.totalPopulation || 1
+        const loansPerCapita = Math.round(totalLoans / servicePopulation)
+
+        data.push(loansPerCapita)
       })
       return {
         label: format,

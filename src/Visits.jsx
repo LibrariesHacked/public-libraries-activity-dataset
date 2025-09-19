@@ -57,9 +57,18 @@ const visitsChartOptions = {
     x: {
       title: {
         display: true,
-        text: 'Count of visits'
+        text: 'Month'
       },
-      beginAtZero: true
+      ticks: {
+        callback: function (value) {
+          const label = this.getLabelForValue(value)
+          const date = new Date(label + '-01')
+          return date.toLocaleDateString('en-GB', {
+            month: 'short',
+            year: '2-digit'
+          })
+        }
+      }
     }
   }
 }
@@ -157,7 +166,6 @@ const Visits = () => {
 
     setVisitData(visitData)
 
-    // Now build the service comparison chart
     const activeServices = getActiveServices(services, filteredServices)
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 

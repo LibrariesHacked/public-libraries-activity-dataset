@@ -195,7 +195,21 @@ const Events = () => {
           },
           scales: {
             x: {
-              stacked: true
+              stacked: true,
+              title: {
+                display: true,
+                text: 'Month'
+              },
+              ticks: {
+                callback: function (value) {
+                  const label = this.getLabelForValue(value)
+                  const date = new Date(label + '-01')
+                  return date.toLocaleDateString('en-GB', {
+                    month: 'short',
+                    year: '2-digit'
+                  })
+                }
+              }
             },
             y: {
               type: 'linear',
@@ -203,7 +217,7 @@ const Events = () => {
               position: 'left',
               title: {
                 display: true,
-                text: 'Number of events (bars)'
+                text: 'Count of events (bars)'
               },
               stacked: true
             },
@@ -213,7 +227,7 @@ const Events = () => {
               position: 'right',
               title: {
                 display: true,
-                text: 'Number of attendees (lines)'
+                text: 'Count of attendees (lines)'
               },
               grid: {
                 drawOnChartArea: false

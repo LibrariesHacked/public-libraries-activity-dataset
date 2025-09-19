@@ -31,7 +31,12 @@ const NavTabs = () => {
   const currentTab = routeMatch?.pattern?.path
   return (
     <nav>
-      <Tabs value={currentTab}>
+      <Tabs
+        value={currentTab}
+        variant='scrollable'
+        scrollButtons
+        allowScrollButtonsMobile
+      >
         <Tab label='Home' value='/' to='/' component={Link} />
         <Tab label='Loans' value='/loans' to='/loans' component={Link} />
         <Tab label='Users' value='/users' to='/users' component={Link} />

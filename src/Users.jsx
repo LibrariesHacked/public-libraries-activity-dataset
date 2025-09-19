@@ -51,7 +51,7 @@ const ageGroupChartOptions = {
   scales: {
     x: {
       stacked: true,
-      title: { display: true, text: 'Number of users' }
+      title: { display: true, text: 'Count of active users' }
     },
     y: {
       stacked: true,
