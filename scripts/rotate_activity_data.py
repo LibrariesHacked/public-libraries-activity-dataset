@@ -8,9 +8,10 @@ import csv
 import json
 from datetime import datetime
 
-INPUT = './data/libraries_activity_data_2023_2024.csv'
+LIBRARY_DATA = './data/libraries_activity_data_2023_2024.csv'
 POPULATION = './data/mye24tablesew.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
+LIBRARY_SERVICES = './data/library_authorities.json'
 
 SERVICES = './data/services.csv'
 LOANS = './data/loans.csv'
@@ -155,7 +156,13 @@ def convert_values_to_yearly(data):
 def rotate_activity_data():
     """Rotate the activity data from the input CSV file into multiple output files."""
 
-    with open(INPUT, mode='r', newline='', encoding='utf-8-sig') as infile, \
+    library_services = None
+    # Read the library services json to create a dictionary of all english library services
+    with open(LIBRARY_SERVICES, mode='r', encoding='utf-8') as lib_services_file:
+        library_services_data = json.load(lib_services_file)
+        library_services = {service['code']: service for service in library_services_data if service['nation'] == 'England'}
+
+    with open(LIBRARY_DATA, mode='r', newline='', encoding='utf-8-sig') as library_data_file, \
             open(POPULATION, mode='r', newline='', encoding='utf-8-sig') as population_file, \
             open(AUTHORITIES, mode='r', newline='', encoding='utf-8') as authorities_file, \
             open(USERS, mode='w', newline='', encoding='utf-8') as users_out, \
@@ -167,7 +174,8 @@ def rotate_activity_data():
             open(COMPUTER_USAGE, mode='w', newline='', encoding='utf-8') as computer_usage_out, \
             open(WIFI_SESSIONS, mode='w', newline='', encoding='utf-8') as wifi_sessions_out, \
             open(SERVICES, mode='w', newline='', encoding='utf-8') as services_out:
-        reader = csv.DictReader(infile)
+
+        activity_reader = csv.DictReader(library_data_file)
 
         # Create a lookup dictionary for population data
         population = {}
@@ -203,11 +211,20 @@ def rotate_activity_data():
         authorities = {}
         authorities_reader = csv.DictReader(authorities_file)
         for authority_row in authorities_reader:
+            # If not a library service ignore
+            if authority_row['gss-code'] not in library_services:
+                continue
             auth_object = {
                 'gss-code': authority_row['gss-code'],
                 'official-name': authority_row['official-name'],
                 'nice-name': authority_row['nice-name'],
             }
+            # Add nice name and population to the library service
+            if authority_row['gss-code'] in library_services:
+                library_services[authority_row['gss-code']]['nice-name'] = authority_row['nice-name']
+                library_services[authority_row['gss-code']]['population'] = population.get(
+                    authority_row['gss-code'], {'under_12': 0, '12_17': 0, 'adult': 0})
+
             # Use both official name and nice name as keys for lookup
             authorities[authority_row['nice-name']] = auth_object
             authorities[authority_row['official-name']] = auth_object
@@ -265,7 +282,7 @@ def rotate_activity_data():
         services = []
 
         # Each row is all the authority's activity data for the year
-        for row in reader:
+        for row in activity_reader:
 
             authority = row['authority']
             library_service = row['library_details']
@@ -579,18 +596,19 @@ def rotate_activity_data():
             wifi_sessions_count = sum(
                 int(record['Count']) for record in authority_wifi_sessions)
 
+            # If any of the counts are 0 set to None
             services.append({
                 'Authority code': authority_code,
                 'Authority nice name': authority_nice_name,
                 'Library service': library_service,
                 'Period': '2023-04-01/P1Y',
-                'Users': users_count,
-                'Events': events_count,
-                'Attendance': attendance_count,
-                'Loans': loans_count,
-                'Visits': visits_count,
-                'Computer hours': computer_hours_count,
-                'Wifi sessions': wifi_sessions_count,
+                'Users': users_count if users_count > 0 else None,
+                'Events': events_count if events_count > 0 else None,
+                'Attendance': attendance_count if attendance_count > 0 else None,
+                'Loans': loans_count if loans_count > 0 else None,
+                'Visits': visits_count if visits_count > 0 else None,
+                'Computer hours': computer_hours_count if computer_hours_count > 0 else None,
+                'Wifi sessions': wifi_sessions_count if wifi_sessions_count > 0 else None,
                 'Population under 12': auth_pop['under_12'],
                 'Population 12-17': auth_pop['12_17'],
                 'Population adult': auth_pop['adult']
@@ -753,6 +771,27 @@ def rotate_activity_data():
                     period = record['Period'] + '/P1M'
                 record['Period'] = period
             wifi_sessions.extend(authority_wifi_sessions)
+
+        # Extend the services data to include any library service not in the data
+        existing_codes = {service['Authority code'] for service in services}
+        for lib_service in library_services.values():
+            if lib_service['code'] not in existing_codes:
+                services.append({
+                    'Authority code': lib_service['code'],
+                    'Authority nice name': lib_service['nice-name'],
+                    'Library service': lib_service.get('name', 'Unknown'),
+                    'Period': '2023-04-01/P1Y',
+                    'Users': None,
+                    'Events': None,
+                    'Attendance': None,
+                    'Loans': None,
+                    'Visits': None,
+                    'Computer hours': None,
+                    'Wifi sessions': None,
+                    'Population under 12': lib_service['population']['under_12'],
+                    'Population 12-17': lib_service['population']['12_17'],
+                    'Population adult': lib_service['population']['adult']
+                })
 
         # Write the aggregated data to the respective CSV files
         attendance_writer.writerows(attendance)
