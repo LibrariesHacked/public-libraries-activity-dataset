@@ -13,12 +13,23 @@ const ComputerTotalCard = () => {
 
   const [computerHoursCount, setComputerHoursCount] = useState(0)
   const [computerHoursPerDay, setComputerHoursPerDay] = useState(0)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
 
+    const computerServices = activeServices?.filter(service =>
+      Number.isInteger(service.computerHours)
+    )
+
+    if (!computerServices || computerServices.length === 0) {
+      setNoData(true)
+    } else {
+      setNoData(false)
+    }
+
     const totalComputerHours =
-      activeServices?.reduce(
+      computerServices?.reduce(
         (acc, service) => acc + (service.computerHours || 0),
         0
       ) || 0
@@ -35,6 +46,7 @@ const ComputerTotalCard = () => {
         computerHoursPerDay
       )} computer hours per day`}
       colour='chartBlue'
+      noData={noData}
     />
   )
 }

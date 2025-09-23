@@ -13,12 +13,23 @@ const EventsTotalCard = () => {
 
   const [eventsCount, setEventsCount] = useState(0)
   const [eventsPerDay, setEventsPerDay] = useState(0)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
 
+    const eventServices = activeServices?.filter(service =>
+      Number.isInteger(service.events)
+    )
+
+    if (!eventServices || eventServices.length === 0) {
+      setNoData(true)
+    } else {
+      setNoData(false)
+    }
+
     const totalEvents =
-      activeServices?.reduce(
+      eventServices?.reduce(
         (acc, service) => acc + (service.events || 0),
         0
       ) || 0
@@ -33,6 +44,7 @@ const EventsTotalCard = () => {
       number={formatCompactNumber(eventsCount)}
       description={`${formatCompactNumber(eventsPerDay)} events per day`}
       colour='chartOrange'
+      noData={noData}
     />
   )
 }
