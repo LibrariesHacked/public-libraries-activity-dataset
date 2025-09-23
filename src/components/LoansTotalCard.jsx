@@ -11,6 +11,7 @@ const LoansTotalCard = () => {
 
   const [loansCount, setLoansCount] = useState(0)
   const [loansPerCapita, setLoansPerCapita] = useState(0)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     const activeServices =
@@ -18,12 +19,20 @@ const LoansTotalCard = () => {
         ? services.filter(s => filteredServices.includes(s.code))
         : services
 
+    const loanServices = activeServices?.filter(service =>
+      Number.isInteger(service.loans)
+    )
+
+    if (!loanServices || loanServices.length === 0) {
+      setNoData(true)
+    }
+
     // The loans count is the sum of the loans integer from each service object
     const totalLoans =
-      activeServices?.reduce((acc, service) => acc + (service.loans || 0), 0) ||
+      loanServices?.reduce((acc, service) => acc + (service.loans || 0), 0) ||
       0
 
-    // The population is the totalPopulation on the service object
+    // The population is the totalPopulation of the active services that are being considered
     const totalPopulation =
       activeServices?.reduce(
         (acc, service) => acc + (service.totalPopulation || 0),
