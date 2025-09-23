@@ -24,6 +24,8 @@ const ComputerTotalCard = () => {
 
     if (!computerServices || computerServices.length === 0) {
       setNoData(true)
+    } else {
+      setNoData(false)
     }
 
     const totalComputerHours =

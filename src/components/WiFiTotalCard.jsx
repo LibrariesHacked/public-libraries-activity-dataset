@@ -13,20 +13,31 @@ const WiFiTotalCard = () => {
 
   const [wifiSessionsCount, setWifiSessionsCount] = useState(0)
   const [wifiSessionsPerCapita, setWifiSessionsPerCapita] = useState(0)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
 
+    const wiFiServices = activeServices?.filter(service =>
+      Number.isInteger(service.wifiSessions)
+    )
+
+    if (!wiFiServices || wiFiServices.length === 0) {
+      setNoData(true)
+    } else {
+      setNoData(false)
+    }
+
     // The wifi sessions count is the sum of the wifiSessions integer from each service object
     const totalWifiSessions =
-      activeServices?.reduce(
+      wiFiServices?.reduce(
         (acc, service) => acc + (service.wifiSessions || 0),
         0
       ) || 0
 
     // The population is the totalPopulation on the service object
     const totalPopulation =
-      activeServices?.reduce(
+      wiFiServices?.reduce(
         (acc, service) => acc + (service.totalPopulation || 0),
         0
       ) || 0
@@ -44,6 +55,7 @@ const WiFiTotalCard = () => {
       number={formatCompactNumber(wifiSessionsCount)}
       description={`${Math.round(wifiSessionsPerCapita, 2)} per resident per year`}
       colour='chartYellow'
+      noData={noData}
     />
   )
 }

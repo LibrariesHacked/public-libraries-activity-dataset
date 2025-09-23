@@ -11,6 +11,7 @@ const UsersTotalCard = () => {
 
   const [usersCount, setUsersCount] = useState(0)
   const [percentageUsers, setPercentageUsers] = useState(0)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     // The active services are either the ones where the service code is in the filteredServices array
@@ -20,14 +21,23 @@ const UsersTotalCard = () => {
         ? services.filter(s => filteredServices.includes(s.code))
         : services
 
+    const userServices = activeServices?.filter(service =>
+      Number.isInteger(service.users)
+    )
+
+    if (!userServices || userServices.length === 0) {
+      setNoData(true)
+    } else {
+      setNoData(false)
+    }
+
     // The user count is the sum of the users integer from each service object
     const totalUsers =
-      activeServices?.reduce((acc, service) => acc + (service.users || 0), 0) ||
-      0
+      userServices?.reduce((acc, service) => acc + (service.users || 0), 0) || 0
 
     // The population is the sum of populationUnder12, population_12_17, population_adult
     const totalPopulation =
-      activeServices?.reduce(
+      userServices?.reduce(
         (acc, service) =>
           acc +
           (service.populationUnder12 || 0) +
@@ -49,6 +59,7 @@ const UsersTotalCard = () => {
       number={formatCompactNumber(usersCount)}
       description={`${Math.round(percentageUsers)}% of residents`}
       colour='chartPurple'
+      noData={noData}
     />
   )
 }

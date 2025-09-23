@@ -24,10 +24,12 @@ const EventsTotalCard = () => {
 
     if (!eventServices || eventServices.length === 0) {
       setNoData(true)
+    } else {
+      setNoData(false)
     }
 
     const totalEvents =
-      activeServices?.reduce(
+      eventServices?.reduce(
         (acc, service) => acc + (service.events || 0),
         0
       ) || 0

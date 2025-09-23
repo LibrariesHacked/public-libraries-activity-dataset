@@ -13,20 +13,31 @@ const VisitsTotalCard = () => {
 
   const [visitsCount, setVisitsCount] = useState(0)
   const [visitsPerCapita, setVisitsPerCapita] = useState(0)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
 
+    const visitServices = activeServices?.filter(service =>
+      Number.isInteger(service.visits)
+    )
+
+    if (!visitServices || visitServices.length === 0) {
+      setNoData(true)
+    } else {
+      setNoData(false)
+    }
+
     // The visits count is the sum of the visits integer from each service object
     const totalVisits =
-      activeServices?.reduce(
+      visitServices?.reduce(
         (acc, service) => acc + (service.visits || 0),
         0
       ) || 0
 
     // The population is the totalPopulation on the service object
     const totalPopulation =
-      activeServices?.reduce(
+      visitServices?.reduce(
         (acc, service) => acc + (service.totalPopulation || 0),
         0
       ) || 0
@@ -46,6 +57,7 @@ const VisitsTotalCard = () => {
         visitsPerCapita
       )} per resident per year`}
       colour='chartBlue'
+      noData={noData}
     />
   )
 }

@@ -25,6 +25,8 @@ const LoansTotalCard = () => {
 
     if (!loanServices || loanServices.length === 0) {
       setNoData(true)
+    } else {
+      setNoData(false)
     }
 
     // The loans count is the sum of the loans integer from each service object
@@ -34,7 +36,7 @@ const LoansTotalCard = () => {
 
     // The population is the totalPopulation of the active services that are being considered
     const totalPopulation =
-      activeServices?.reduce(
+      loanServices?.reduce(
         (acc, service) => acc + (service.totalPopulation || 0),
         0
       ) || 0
@@ -52,6 +54,7 @@ const LoansTotalCard = () => {
       number={formatCompactNumber(loansCount)}
       description={`${Math.round(loansPerCapita)} per resident per year`}
       colour='chartGreen'
+      noData={noData}
     />
   )
 }

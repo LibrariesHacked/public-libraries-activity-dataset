@@ -24,6 +24,8 @@ const AttendanceTotalCard = () => {
 
     if (!attendanceServices || attendanceServices.length === 0) {
       setNoData(true)
+    } else {
+      setNoData(false)
     }
 
     // The attendance count is the sum of the attendance from each service object
