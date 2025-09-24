@@ -115,6 +115,11 @@ function App () {
                 Made with ❤️ by{' '}
                 <a href='https://www.librarieshacked.org'>Libraries Hacked</a>
               </Typography>
+              <Typography variant='body2' color='textSecondary'>
+                <a target='_blank' href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk'>
+                  Analytics
+                </a>
+              </Typography> 
             </Box>
           </main>
         </Container>
