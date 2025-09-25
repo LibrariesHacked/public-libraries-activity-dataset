@@ -372,9 +372,9 @@ def rotate_activity_data():
 
                 if header.startswith('total_active_members'):
                     # We record the total users IF there is no data for the individual age groups.
-                    if row.get('active_users_11_under') == "" and \
-                       row.get('active_users_adults') == "" and \
-                       row.get('active_users_12_17') == "" and \
+                    if row.get('active_members_11_under') == "" and \
+                       row.get('active_members_adults') == "" and \
+                       row.get('active_members_12_17') == "" and \
                             value.isdigit():
                         authority_users.append({
                             'Authority': authority_code,
