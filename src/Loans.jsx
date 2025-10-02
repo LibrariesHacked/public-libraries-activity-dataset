@@ -53,14 +53,14 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: 'Loans by service and format'
+      text: 'Loans per population by service and format'
     }
   },
   scales: {
     x: {
       title: {
         display: true,
-        text: 'Count of loans'
+        text: 'Count of loans per population'
       },
       stacked: true,
       beginAtZero: true
@@ -208,6 +208,8 @@ const Loans = () => {
 
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
+
+
     const datasets = itemFormats.map((format, i) => {
       const data = []
       serviceLabels.forEach(serviceLabel => {
@@ -226,11 +228,19 @@ const Loans = () => {
         const loansPerCapita = Math.round(totalLoans / servicePopulation)
 
         data.push(loansPerCapita)
+
       })
       return {
         label: format,
-        data,
-        barThickness: 8
+        data
+      }
+    })
+
+    // If loans data is null for a service change the label to include (no data)
+    serviceLabels.forEach((label, index) => {
+      const service = services.find(s => s.niceName === label)
+      if (!service.loans) {
+        serviceLabels[index] = `${label} (no data)`
       }
     })
 

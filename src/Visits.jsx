@@ -183,10 +183,18 @@ const Visits = () => {
             .reduce((sum, v) => sum + (v.countVisits || 0), 0)
 
           const visitsPerCapita = service?.totalPopulation
-            ? (visitCount / service.totalPopulation) * 100
+            ? visitCount / service.totalPopulation
             : 0
           return parseFloat(visitsPerCapita.toFixed(2))
         })
+      }
+    })
+
+    // If visits data is null for a service change the label to include (no data)
+    serviceLabels.forEach((label, index) => {
+      const service = services.find(s => s.niceName === label)
+      if (!service.visits) {
+        serviceLabels[index] = `${label} (no data)`
       }
     })
 

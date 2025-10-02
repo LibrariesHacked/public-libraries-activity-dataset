@@ -171,7 +171,6 @@ const Users = () => {
       return {
         label: ageGroup,
         data,
-        barThickness: 20,
         hidden: ageGroup === 'Non-users'
       }
     })
@@ -213,13 +212,20 @@ const Users = () => {
       return Math.round(percentageUsers)
     })
 
+    // If users data is null for a service change the label to include (no data)
+    serviceLabels.forEach((label, index) => {
+      const service = services.find(s => s.niceName === label)
+      if (!service.users) {
+        serviceLabels[index] = `${label} (no data)`
+      }
+    })
+
     setServiceChart({
       labels: serviceLabels,
       datasets: [
         {
           label: '% of population',
-          data: serviceData,
-          barThickness: 8
+          data: serviceData
         }
       ]
     })

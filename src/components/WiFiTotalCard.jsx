@@ -12,7 +12,7 @@ const WiFiTotalCard = () => {
   const [{ filteredServices, services }] = useApplicationState()
 
   const [wifiSessionsCount, setWifiSessionsCount] = useState(0)
-  const [wifiSessionsPerCapita, setWifiSessionsPerCapita] = useState(0)
+  const [wifiSessionsPerDay, setWifiSessionsPerDay] = useState(0)
   const [noData, setNoData] = useState(false)
 
   useEffect(() => {
@@ -35,25 +35,15 @@ const WiFiTotalCard = () => {
         0
       ) || 0
 
-    // The population is the totalPopulation on the service object
-    const totalPopulation =
-      wiFiServices?.reduce(
-        (acc, service) => acc + (service.totalPopulation || 0),
-        0
-      ) || 0
-
-    const wifiSessionsPerCapita =
-      totalPopulation > 0 ? (totalWifiSessions / totalPopulation) : 0
-
     setWifiSessionsCount(totalWifiSessions)
-    setWifiSessionsPerCapita(wifiSessionsPerCapita)
+    setWifiSessionsPerDay(totalWifiSessions / 365)
   }, [services, filteredServices])
 
   return (
     <NumberCard
       title='WiFi sessions'
       number={formatCompactNumber(wifiSessionsCount)}
-      description={`${Math.round(wifiSessionsPerCapita, 2)} per resident per year`}
+      description={`${formatCompactNumber(wifiSessionsPerDay, 2)} sessions per day`}
       colour='chartYellow'
       noData={noData}
     />

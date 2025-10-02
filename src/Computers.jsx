@@ -82,14 +82,14 @@ const serviceChartOptions = {
     },
     title: {
       display: true,
-      text: 'Loans by service and format'
+      text: 'Computer hours and WiFi sessions by service and format'
     }
   },
   scales: {
     x: {
       title: {
         display: true,
-        text: 'Count of loans'
+        text: 'Count of computer hours and WiFi sessions'
       },
       beginAtZero: true
     }
@@ -211,8 +211,7 @@ const Computers = () => {
               .filter(c => c.serviceCode === serviceCode)
               .reduce((sum, v) => sum + (v.countHours || 0), 0) || 0
           )
-        }),
-        barThickness: 8
+        })
       },
       {
         label: 'WiFi sessions',
@@ -227,10 +226,17 @@ const Computers = () => {
               .filter(w => w.serviceCode === serviceCode)
               .reduce((sum, v) => sum + (v.countSessions || 0), 0) || 0
           )
-        }),
-        barThickness: 8
+        })
       }
     ]
+
+    // If computer hours and wifi are null for a service change the label to include (no data)
+    serviceLabels.forEach((label, index) => {
+      const service = services.find(s => s.niceName === label)
+      if (!service.computerHours && !service.wiFiSessions) {
+        serviceLabels[index] = `${label} (no data)`
+      }
+    })
 
     setServiceChart({
       labels: serviceLabels,
@@ -260,7 +266,7 @@ const Computers = () => {
           sx={{
             position: 'relative',
             width: '100%',
-            height: `${serviceChart.labels.length * 36 + 120}px`
+            height: `${serviceChart.labels.length * 28 + 120}px`
           }}
         >
           <Bar options={serviceChartOptions} data={serviceChart} />
