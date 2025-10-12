@@ -22,6 +22,8 @@ export class Service {
     this.populationAdult = json[13]
     // Total population is not in the original data, but we calculate it here for convenience
     this.totalPopulation = (json[11] || 0) + (json[12] || 0) + (json[13] || 0)
+    // The nearest neighbours are an array of codes of similar services json[14] - json[19]
+    this.nearestNeighbours = json.slice(14, 20).filter(n => n)
 
     return this
   }

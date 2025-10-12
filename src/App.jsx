@@ -99,9 +99,7 @@ function App () {
               </Typography>
               <ServiceSelection />
             </Box>
-            <Box sx={{ marginY: 2 }}>
-              <NavTabs />
-            </Box>
+            <NavTabs />
             <Routes>
               <Route path='/' element={<Home />} />
               <Route path='/loans' element={<Loans />} />
