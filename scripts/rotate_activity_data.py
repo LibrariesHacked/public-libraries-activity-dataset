@@ -12,6 +12,7 @@ LIBRARY_DATA = './data/libraries_activity_data_2023_2024.csv'
 POPULATION = './data/mye24tablesew.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
 LIBRARY_SERVICES = './data/library_authorities.json'
+NEAREST_NEIGHBOURS = './data/localauthoritynearestneighboursengland.csv'
 
 SERVICES = './data/services.csv'
 LOANS = './data/loans.csv'
@@ -165,6 +166,7 @@ def rotate_activity_data():
     with open(LIBRARY_DATA, mode='r', newline='', encoding='utf-8-sig') as library_data_file, \
             open(POPULATION, mode='r', newline='', encoding='utf-8-sig') as population_file, \
             open(AUTHORITIES, mode='r', newline='', encoding='utf-8') as authorities_file, \
+            open(NEAREST_NEIGHBOURS, mode='r', newline='', encoding='utf-8-sig') as nearest_neighbours_file, \
             open(USERS, mode='w', newline='', encoding='utf-8') as users_out, \
             open(EVENTS, mode='w', newline='', encoding='utf-8') as events_out, \
             open(ATTENDANCE, mode='w', newline='', encoding='utf-8') as attendance_out, \
@@ -207,6 +209,21 @@ def rotate_activity_data():
                 'adult': adult
             }
 
+        # Create a lookup dictionary for nearest neighbours
+        nearest_neighbours = {}
+        empty_neighbours = [None, None, None, None, None]
+        neighbours_reader = csv.DictReader(nearest_neighbours_file)
+        for row in neighbours_reader:
+            authority_code = row['Upper tier local authority code']
+            neighbour_1 = row['Neighbour 1']
+            neighbour_2 = row['Neighbour 2']
+            neighbour_3 = row['Neighbour 3']
+            neighbour_4 = row['Neighbour 4']
+            neighbour_5 = row['Neighbour 5']
+            if authority_code not in nearest_neighbours:
+                nearest_neighbours[authority_code] = []
+            nearest_neighbours[authority_code].extend([neighbour_1, neighbour_2, neighbour_3, neighbour_4, neighbour_5])
+
         # Create a lookup dictionary for authorities
         authorities = {}
         authorities_reader = csv.DictReader(authorities_file)
@@ -224,6 +241,10 @@ def rotate_activity_data():
                 library_services[authority_row['gss-code']]['nice-name'] = authority_row['nice-name']
                 library_services[authority_row['gss-code']]['population'] = population.get(
                     authority_row['gss-code'], {'under_12': 0, '12_17': 0, 'adult': 0})
+
+            # Add nearest neighbours to the library service
+            if authority_row['gss-code'] in nearest_neighbours:
+                library_services[authority_row['gss-code']]['nearest_neighbours'] = nearest_neighbours[authority_row['gss-code']]
 
             # Use both official name and nice name as keys for lookup
             authorities[authority_row['nice-name']] = auth_object
@@ -277,7 +298,9 @@ def rotate_activity_data():
                                                                   'Computer hours', 'Wifi sessions',
                                                                   'Population under 12',
                                                                   'Population 12-17',
-                                                                  'Population adult'])
+                                                                  'Population adult', 'Nearest neighbour 1',
+                                                                  'Nearest neighbour 2', 'Nearest neighbour 3',
+                                                                  'Nearest neighbour 4', 'Nearest neighbour 5'])
         service_writer.writeheader()
         services = []
 
@@ -289,6 +312,7 @@ def rotate_activity_data():
             authority_code = None
             authority_nice_name = None
             auth_pop = None
+            auth_neighbours = None
 
             authority_users = []
             authority_events = []
@@ -305,6 +329,7 @@ def rotate_activity_data():
                 authority_nice_name = authorities[authority]['nice-name']
                 auth_pop = population.get(
                     authority_code, {'under_12': 0, '12_17': 0, 'adult': 0})
+                auth_neighbours = nearest_neighbours.get(authority_code, empty_neighbours)
             else:
                 # If the authority is not found, we skip this row.
                 print(
@@ -611,7 +636,12 @@ def rotate_activity_data():
                 'Wifi sessions': wifi_sessions_count if wifi_sessions_count > 0 else None,
                 'Population under 12': auth_pop['under_12'],
                 'Population 12-17': auth_pop['12_17'],
-                'Population adult': auth_pop['adult']
+                'Population adult': auth_pop['adult'],
+                'Nearest neighbour 1': auth_neighbours[0],
+                'Nearest neighbour 2': auth_neighbours[1],
+                'Nearest neighbour 3': auth_neighbours[2],
+                'Nearest neighbour 4': auth_neighbours[3],
+                'Nearest neighbour 5': auth_neighbours[4]
             })
 
             users.extend(authority_users)
@@ -774,6 +804,7 @@ def rotate_activity_data():
 
         # Extend the services data to include any library service not in the data
         existing_codes = {service['Authority code'] for service in services}
+
         for lib_service in library_services.values():
             if lib_service['code'] not in existing_codes:
                 services.append({
@@ -790,7 +821,12 @@ def rotate_activity_data():
                     'Wifi sessions': None,
                     'Population under 12': lib_service['population']['under_12'],
                     'Population 12-17': lib_service['population']['12_17'],
-                    'Population adult': lib_service['population']['adult']
+                    'Population adult': lib_service['population']['adult'],
+                    'Nearest neighbour 1': lib_service.get('nearest_neighbours', empty_neighbours)[0],
+                    'Nearest neighbour 2': lib_service.get('nearest_neighbours', empty_neighbours)[1],
+                    'Nearest neighbour 3': lib_service.get('nearest_neighbours', empty_neighbours)[2],
+                    'Nearest neighbour 4': lib_service.get('nearest_neighbours', empty_neighbours)[3],
+                    'Nearest neighbour 5': lib_service.get('nearest_neighbours', empty_neighbours)[4]
                 })
 
         # Write the aggregated data to the respective CSV files

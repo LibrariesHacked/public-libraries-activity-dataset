@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
+import IconButton from '@mui/material/IconButton'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Tooltip from '@mui/material/Tooltip'
 
 import AddChartIcon from '@mui/icons-material/AddchartRounded'
+import ClearAllIcon from '@mui/icons-material/ClearAllRounded'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -54,6 +56,25 @@ const ServiceSelection = () => {
       type: 'SetFilteredServices',
       filteredServices: newFilteredServices
     })
+  }
+
+  const handleClearAll = () => {
+    dispatchApplication({
+      type: 'SetFilteredServices',
+      filteredServices: []
+    })
+  }
+
+  const handleNearestNeighbours = () => {
+    if (filteredServices && filteredServices.length === 1) {
+      const service = serviceLookup[filteredServices[0]]
+      const nearestNeighbours = service.nearestNeighbours || []
+      const newFilteredServices = Array.from(new Set([...filteredServices, ...nearestNeighbours]))
+      dispatchApplication({
+        type: 'SetFilteredServices',
+        filteredServices: newFilteredServices
+      })
+    }
   }
 
   return (
@@ -106,12 +127,24 @@ const ServiceSelection = () => {
                 key={'chip_itm_org_' + s}
                 label={serviceLookup[s] ? serviceLookup[s].niceName : s}
                 onDelete={() => deleteService(s)}
-                color='secondary'
-                variant='outlined'
-                sx={{ mx: 0.5 }}
+                color='primary'
+                variant='filled'
+                sx={{ mx: 0.5, mb: 1 }}
               />
             )
           })}
+        {filteredServices && filteredServices.length > 1 ? (
+          <IconButton variant='text' color='secondary' onClick={handleClearAll}>
+            <ClearAllIcon />
+          </IconButton>
+        ) : null}
+        <Box sx={{ display: 'block' }}>
+          {filteredServices && filteredServices.length === 1 ? (
+            <Button variant='text' color='secondary' onClick={handleNearestNeighbours}>
+              Add nearest neighbours
+            </Button>
+          ) : null}
+        </Box>
       </Box>
     </>
   )
