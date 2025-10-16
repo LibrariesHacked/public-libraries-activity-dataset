@@ -23,6 +23,8 @@ import Visits from './Visits'
 import NavTabs from './components/NavTabs'
 import ServiceSelection from './components/ServiceSelection'
 
+import 'maplibre-gl/dist/maplibre-gl.css';
+
 const theme = createTheme({
   palette: {
     background: {

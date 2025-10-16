@@ -16,6 +16,7 @@ import { Bar } from 'react-chartjs-2'
 import Markdown from 'react-markdown'
 
 import usersMd from './content/users.md'
+import usersMapMd from './content/users-map.md'
 import usersByAgeGroupMd from './content/users-by-age-group.md'
 import usersByServiceMd from './content/users-by-service.md'
 
@@ -25,6 +26,8 @@ import Typography from '@mui/material/Typography'
 import { getActiveServices } from './models/service'
 
 import { useApplicationState } from './hooks/useApplicationState'
+
+import UsersMap from './components/UsersMap'
 
 import * as usersModel from './models/users'
 
@@ -95,6 +98,7 @@ const Users = () => {
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
 
   const [usersMarkdown, setUsersMarkdown] = useState('')
+  const [usersMapMarkdown, setUsersMapMarkdown] = useState('')
   const [usersByAgeGroupMarkdown, setUsersByAgeGroupMarkdown] = useState('')
   const [usersByServiceMarkdown, setUsersByServiceMarkdown] = useState('')
 
@@ -102,6 +106,9 @@ const Users = () => {
     fetch(usersMd)
       .then(res => res.text())
       .then(text => setUsersMarkdown(text))
+    fetch(usersMapMd)
+      .then(res => res.text())
+      .then(text => setUsersMapMarkdown(text))
     fetch(usersByAgeGroupMd)
       .then(res => res.text())
       .then(text => setUsersByAgeGroupMarkdown(text))
@@ -250,6 +257,18 @@ const Users = () => {
       >
         <Bar options={ageGroupChartOptions} data={ageGroupChart} />
       </Box>
+      <Typography variant='h5' gutterBottom>
+        Active users map
+      </Typography>
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%'
+        }}
+      >
+        <UsersMap />
+      </Box>
+      <Markdown>{usersMapMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Active users by service
       </Typography>
