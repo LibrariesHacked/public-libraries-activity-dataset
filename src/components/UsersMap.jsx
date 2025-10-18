@@ -2,26 +2,40 @@ import React, { useEffect, useState } from 'react'
 
 import { useTheme } from '@mui/material/styles'
 
-import Map, { Layer, Source } from 'react-map-gl/maplibre'
+import Map, { Layer, Source, useMap } from 'react-map-gl/maplibre'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
+import { getUsersPopulationPercentages } from '../models/users'
+
+import * as usersModel from '../models/users'
+
 const UsersMap = () => {
   const [
-    { filteredServices, services, mapZoom, mapPosition },
+    { filteredServices, services, mapZoom, mapPosition, users },
     dispatchApplication
   ] = useApplicationState()
 
-  const [map, setMap] = useState(null)
+  const { current: map } = useMap()
 
   const [noData, setNoData] = useState(false)
 
-  const [percentPopulationLookup, setPercentPopulationLookup] = useState([])
+  const [opacityExpression, setOpacityExpression] = useState([])
 
   const theme = useTheme()
 
   const libraryAuthorityTiles =
     'https://api-geography.librarydata.uk/rest/libraryauthorities/{z}/{x}/{y}.mvt'
+
+  useEffect(() => {
+    const getUsers = async () => {
+      const users = await usersModel.getUsers()
+      dispatchApplication({ type: 'SetUsers', users })
+    }
+
+    // Trigger download of users data (if not already done)
+    if (!users) getUsers()
+  }, [users, dispatchApplication])
 
   useEffect(() => {
     // The active services are either the ones where the service code is in the filteredServices array
@@ -40,18 +54,36 @@ const UsersMap = () => {
     } else {
       setNoData(false)
       const lookup = {}
+
+      const populationPercentages = getUsersPopulationPercentages(
+        userServices,
+        users
+      )
       userServices.forEach(service => {
-        lookup[service.code] = service.users / service.population
+        lookup[service.code] = populationPercentages[service.code] || null
       })
 
-      // We need to rewrite this lookup into a mapbox style expression to set the opacity
-      const expression = ['interpolate', ['linear'], ['get', 'code']]
-      Object.keys(lookup).forEach(code => {
-        expression.push(code)
-        expression.push(Math.min(1, Math.max(0, lookup[code] * 10))) // Scale to 0-1 range for opacity
-      })
-      expression.push(0) // Default to 0 opacity if no match
-      setPercentPopulationLookup(expression)
+      if (map) {
+        userServices.forEach(service => {
+          map.setFeatureState(
+            {
+              source: 'library-authority-boundaries',
+              id: service.code
+            },
+            {
+              under12Percent: lookup[service.code]?.under12 || 0,
+              from12to17Percent: lookup[service.code]?.from12to17 || 0,
+              adultPercent: lookup[service.code]?.adult || 0,
+              totalPercent: lookup[service.code]?.total || 0
+            }
+          )
+        })
+      }
+
+      // We need to rewrite this lookup into a maplibre expression using feature-state
+      const expression = ['feature-state', 'percentPopulationOpacity']
+
+      setOpacityExpression(expression)
     }
   }, [services, filteredServices])
 
@@ -63,13 +95,8 @@ const UsersMap = () => {
     })
   }
 
-  const clickMap = (map, evt) => {
-    if (!map) return
-  }
-
   return (
     <Map
-      ref={setMap}
       style={{
         width: '100%',
         height: '400px',
@@ -81,9 +108,12 @@ const UsersMap = () => {
       zoom={mapZoom}
       maxZoom={18}
       onMove={evt => setViewState(evt.viewState)}
-      onClick={evt => clickMap(map, evt)}
     >
-      <Source type='vector' tiles={[libraryAuthorityTiles]}>
+      <Source
+        type='vector'
+        tiles={[libraryAuthorityTiles]}
+        promoteId={{ library_authority_boundaries: 'code' }}
+      >
         <Layer
           type='line'
           source-layer='library_authority_boundaries'
@@ -104,7 +134,7 @@ const UsersMap = () => {
           minzoom={6}
           paint={{
             'fill-color': theme.palette.secondary.main,
-            'fill-opacity': percentPopulationLookup
+            'fill-opacity': opacityExpression
           }}
         />
       </Source>

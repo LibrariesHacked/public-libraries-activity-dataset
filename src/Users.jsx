@@ -24,12 +24,12 @@ import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
 import { getActiveServices } from './models/service'
+import * as usersModel from './models/users'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import UsersMap from './components/UsersMap'
 
-import * as usersModel from './models/users'
 
 ChartJS.register(
   CategoryScale,
