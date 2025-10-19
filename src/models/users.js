@@ -24,7 +24,7 @@ export async function getUsers () {
   }
 }
 
-export async function getUsersPopulationPercentages (services, users) {
+export function getUsersPopulationPercentages (services, users) {
   let percentagesByService = {}
 
   // For all services we want a percentage of population for
@@ -47,22 +47,22 @@ export async function getUsersPopulationPercentages (services, users) {
           ? service.population12To17
           : ageGroup === 'Adult'
           ? service.populationAdult
-          : 0
+          : null
 
       const percentage =
         populationForAgeGroup > 0
           ? (totalUsers / populationForAgeGroup) * 100
-          : 0
+          : null
 
       percentagesByService[service.code][ageGroup] = parseFloat(
         percentage.toFixed(2)
       )
     })
 
-    const totalUsers = service.users || 0
-    const totalPopulation = service.totalPopulation || 0
+    const totalUsers = service.users ||  null
+    const totalPopulation = service.totalPopulation ||  null
     const overallPercentage =
-      totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
+      totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : null
     percentagesByService[service.code]['Total'] = parseFloat(
       overallPercentage.toFixed(2)
     )

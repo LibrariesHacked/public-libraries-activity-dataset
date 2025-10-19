@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react'
 
+import Box from '@mui/material/Box'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+
 import { useTheme } from '@mui/material/styles'
 
-import Map, { Layer, Source, useMap } from 'react-map-gl/maplibre'
+import Map, { Layer, Source } from 'react-map-gl/maplibre'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -11,16 +15,21 @@ import { getUsersPopulationPercentages } from '../models/users'
 import * as usersModel from '../models/users'
 
 const UsersMap = () => {
+  const [map, setMap] = useState(null)
+  const [mapLoaded, setMapLoaded] = useState(false)
+
   const [
     { filteredServices, services, mapZoom, mapPosition, users },
     dispatchApplication
   ] = useApplicationState()
 
-  const { current: map } = useMap()
-
   const [noData, setNoData] = useState(false)
 
+  const [displayAgeGroup, setDisplayAgeGroup] = useState('total')
+
   const [opacityExpression, setOpacityExpression] = useState([])
+  const [servicesWithDataFilter, setServicesWithDataFilter] = useState([])
+  const [servicesNoDataFilter, setServicesNoDataFilter] = useState([])
 
   const theme = useTheme()
 
@@ -32,14 +41,12 @@ const UsersMap = () => {
       const users = await usersModel.getUsers()
       dispatchApplication({ type: 'SetUsers', users })
     }
-
-    // Trigger download of users data (if not already done)
     if (!users) getUsers()
   }, [users, dispatchApplication])
 
   useEffect(() => {
-    // The active services are either the ones where the service code is in the filteredServices array
-    // or the filteredServices array is empty.
+    if (!users || !services) return
+
     const activeServices =
       filteredServices?.length > 0
         ? services.filter(s => filteredServices.includes(s.code))
@@ -51,41 +58,91 @@ const UsersMap = () => {
 
     if (!userServices || userServices.length === 0) {
       setNoData(true)
-    } else {
-      setNoData(false)
-      const lookup = {}
-
-      const populationPercentages = getUsersPopulationPercentages(
-        userServices,
-        users
-      )
-      userServices.forEach(service => {
-        lookup[service.code] = populationPercentages[service.code] || null
-      })
-
-      if (map) {
-        userServices.forEach(service => {
-          map.setFeatureState(
-            {
-              source: 'library-authority-boundaries',
-              id: service.code
-            },
-            {
-              under12Percent: lookup[service.code]?.under12 || 0,
-              from12to17Percent: lookup[service.code]?.from12to17 || 0,
-              adultPercent: lookup[service.code]?.adult || 0,
-              totalPercent: lookup[service.code]?.total || 0
-            }
-          )
-        })
-      }
-
-      // We need to rewrite this lookup into a maplibre expression using feature-state
-      const expression = ['feature-state', 'percentPopulationOpacity']
-
-      setOpacityExpression(expression)
+      return
     }
-  }, [services, filteredServices])
+    setNoData(false)
+    const serviceLookup = {}
+
+    const populationPercentages = getUsersPopulationPercentages(
+      userServices,
+      users
+    )
+
+    // Calculate the maximum percentage across all the services to create a scale
+    let maxPercent = Math.max(
+      ...Object.values(populationPercentages).flatMap(percentages => [
+        percentages['Under 12'] || 0,
+        percentages['12-17'] || 0,
+        percentages['Adult'] || 0,
+        percentages['Total'] || 0
+      ])
+    )
+    if (maxPercent > 20) maxPercent = 20 // Cap max percent to 20% for scaling purposes
+    const scale = maxPercent > 0 ? 0.6 / maxPercent : 0
+
+    userServices.forEach(service => {
+      const percentages = populationPercentages[service.code] || {}
+      const under12 = ((percentages['Under 12'] || 0) * scale).toFixed(1)
+      const from12to17 = ((percentages['12-17'] || 0) * scale).toFixed(1)
+      const adult = ((percentages['Adult'] || 0) * scale).toFixed(1)
+      const total = ((percentages['Total'] || 0) * scale).toFixed(1)
+      serviceLookup[service.code] = {
+        under12: under12 > 1 ? 1 : parseFloat(under12),
+        from12to17: from12to17 > 1 ? 1 : parseFloat(from12to17),
+        adult: adult > 1 ? 1 : parseFloat(adult),
+        total: total > 1 ? 1 : parseFloat(total)
+      }
+    })
+
+    if (map && mapLoaded) {
+      activeServices.forEach(service => {
+        map.setFeatureState(
+          {
+            source: 'library_authority_boundaries',
+            sourceLayer: 'library_authority_boundaries',
+            id: service.code
+          },
+          {
+            under12: serviceLookup[service.code]?.under12 || 0,
+            from12to17: serviceLookup[service.code]?.from12to17 || 0,
+            adult: serviceLookup[service.code]?.adult || 0,
+            total: serviceLookup[service.code]?.total || 0
+          }
+        )
+      })
+    }
+
+    const opacityExpression = ['feature-state', displayAgeGroup]
+    setOpacityExpression(opacityExpression)
+
+    // Add a layer filter to only show the activeServices
+    const servicesFilter = [
+      'in',
+      ['get', 'code'],
+      ['literal', activeServices.map(s => s.code)]
+    ]
+
+    const servicesWithNoDataFilter = [
+      'in',
+      ['get', 'code'],
+      [
+        'literal',
+        activeServices
+          .filter(s => {
+            const percentages = populationPercentages[s.code] || {}
+            return (
+              !percentages ||
+              Object.keys(percentages).length === 0 ||
+              percentages[displayAgeGroup] === 0
+            )
+          })
+          .map(s => s.code)
+      ]
+    ]
+
+    setServicesWithDataFilter(servicesFilter)
+    setServicesNoDataFilter(servicesWithNoDataFilter)
+  }, [services, filteredServices, map, users, displayAgeGroup, mapLoaded])
 
   const setViewState = viewState => {
     dispatchApplication({
@@ -95,50 +152,86 @@ const UsersMap = () => {
     })
   }
 
+  const handleChangeDisplayAgeGroup = (event, newAgeGroup) => {
+    if (newAgeGroup !== null) {
+      setDisplayAgeGroup(newAgeGroup)
+    }
+  }
+
   return (
-    <Map
-      style={{
-        width: '100%',
-        height: '400px',
-        position: 'relative'
-      }}
-      mapStyle='https://api.maptiler.com/maps/dataviz/style.json?key=1OK05AJqNta7xYzrG2kA'
-      longitude={mapPosition[0]}
-      latitude={mapPosition[1]}
-      zoom={mapZoom}
-      maxZoom={18}
-      onMove={evt => setViewState(evt.viewState)}
-    >
-      <Source
-        type='vector'
-        tiles={[libraryAuthorityTiles]}
-        promoteId={{ library_authority_boundaries: 'code' }}
+    <Box>
+      <ToggleButtonGroup
+        color='primary'
+        value={displayAgeGroup}
+        exclusive
+        onChange={handleChangeDisplayAgeGroup}
+        sx={{ mb: 1 }}
+        size='small'
       >
-        <Layer
-          type='line'
-          source-layer='library_authority_boundaries'
-          minzoom={6}
-          layout={{
-            'line-join': 'round',
-            'line-cap': 'square'
-          }}
-          paint={{
-            'line-color': theme.palette.secondary.main,
-            'line-opacity': 1,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 18, 4]
-          }}
-        />
-        <Layer
-          type='fill'
-          source-layer='library_authority_boundaries'
-          minzoom={6}
-          paint={{
-            'fill-color': theme.palette.secondary.main,
-            'fill-opacity': opacityExpression
-          }}
-        />
-      </Source>
-    </Map>
+        <ToggleButton value='under12'>Under 12</ToggleButton>
+        <ToggleButton value='from12to17'>12-17</ToggleButton>
+        <ToggleButton value='adult'>Adult</ToggleButton>
+        <ToggleButton value='total'>Total</ToggleButton>
+      </ToggleButtonGroup>
+      <Map
+        ref={setMap}
+        style={{
+          width: '100%',
+          height: '400px',
+          position: 'relative'
+        }}
+        mapStyle='https://api.maptiler.com/maps/dataviz/style.json?key=1OK05AJqNta7xYzrG2kA'
+        longitude={mapPosition[0]}
+        latitude={mapPosition[1]}
+        zoom={mapZoom}
+        maxZoom={18}
+        onMove={evt => setViewState(evt.viewState)}
+        onLoad={() => setMapLoaded(true)}
+      >
+        <Source
+          type='vector'
+          tiles={[libraryAuthorityTiles]}
+          promoteId={{ library_authority_boundaries: 'code' }}
+          id='library_authority_boundaries'
+        >
+          <Layer
+            type='line'
+            source-layer='library_authority_boundaries'
+            minzoom={6}
+            layout={{
+              'line-join': 'round',
+              'line-cap': 'square'
+            }}
+            paint={{
+              'line-color': theme.palette.secondary.main,
+              'line-opacity': 0.5,
+              'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 18, 4]
+            }}
+            filter={servicesWithDataFilter}
+          />
+          <Layer
+            type='fill'
+            source-layer='library_authority_boundaries'
+            minzoom={6}
+            paint={{
+              'fill-color': theme.palette.success.main,
+              'fill-opacity': opacityExpression
+            }}
+            filter={servicesWithDataFilter}
+          />
+          <Layer
+            type='fill'
+            source-layer='library_authority_boundaries'
+            minzoom={6}
+            paint={{
+              'fill-color': theme.palette.error.main,
+              'fill-opacity': 0.1
+            }}
+            filter={servicesNoDataFilter}
+          />
+        </Source>
+      </Map>
+    </Box>
   )
 }
 

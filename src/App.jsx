@@ -63,6 +63,13 @@ const theme = createTheme({
           textTransform: 'none'
         }
       }
+    },
+    MuiToggleButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none'
+        }
+      }
     }
   }
 })
