@@ -12,7 +12,9 @@ const initialApplicationState = {
   loans: null,
   users: null,
   visits: null,
-  wifiSessions: null
+  wifiSessions: null,
+  mapZoom: 7,
+  mapPosition: [-1.155414, 52.691432]
 }
 
 const applicationReducer = (state, action) => {
@@ -62,6 +64,12 @@ const applicationReducer = (state, action) => {
       return {
         ...state,
         wifi: action.wifi
+      }
+    case 'SetMapPosition':
+      return {
+        ...state,
+        mapPosition: action.mapPosition,
+        mapZoom: action.mapZoom
       }
     default:
       return state

@@ -23,6 +23,8 @@ import Visits from './Visits'
 import NavTabs from './components/NavTabs'
 import ServiceSelection from './components/ServiceSelection'
 
+import 'maplibre-gl/dist/maplibre-gl.css'
+
 const theme = createTheme({
   palette: {
     background: {
@@ -61,6 +63,13 @@ const theme = createTheme({
           textTransform: 'none'
         }
       }
+    },
+    MuiToggleButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none'
+        }
+      }
     }
   }
 })
@@ -89,7 +98,11 @@ function App () {
                 marginY: 2
               }}
             >
-              <Chip color='warning' label='In development' sx={{ fontWeight: 'bold' }} />
+              <Chip
+                color='warning'
+                label='In development'
+                sx={{ fontWeight: 'bold' }}
+              />
               <Typography component='h1' variant='h2'>
                 Library activity
               </Typography>
@@ -114,10 +127,13 @@ function App () {
                 <a href='https://www.librarieshacked.org'>Libraries Hacked</a>
               </Typography>
               <Typography variant='body2' color='textSecondary'>
-                <a target='_blank' href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk'>
+                <a
+                  target='_blank'
+                  href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk'
+                >
                   Analytics
                 </a>
-              </Typography> 
+              </Typography>
             </Box>
           </main>
         </Container>

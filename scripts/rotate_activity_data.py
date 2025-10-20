@@ -240,7 +240,7 @@ def rotate_activity_data():
             if authority_row['gss-code'] in library_services:
                 library_services[authority_row['gss-code']]['nice-name'] = authority_row['nice-name']
                 library_services[authority_row['gss-code']]['population'] = population.get(
-                    authority_row['gss-code'], {'under_12': 0, '12_17': 0, 'adult': 0})
+                    authority_row['gss-code'], {'under_12': 0, '12_17': 0, 'adult': 0, 'unknown': 0})
 
             # Add nearest neighbours to the library service
             if authority_row['gss-code'] in nearest_neighbours:
@@ -327,9 +327,8 @@ def rotate_activity_data():
             if authority in authorities:
                 authority_code = authorities[authority]['gss-code']
                 authority_nice_name = authorities[authority]['nice-name']
-                auth_pop = population.get(
-                    authority_code, {'under_12': 0, '12_17': 0, 'adult': 0})
                 auth_neighbours = nearest_neighbours.get(authority_code, empty_neighbours)
+                auth_pop = population.get(authority_code, {'under_12': 0, '12_17': 0, 'adult': 0})
             else:
                 # If the authority is not found, we skip this row.
                 print(
@@ -621,7 +620,7 @@ def rotate_activity_data():
             wifi_sessions_count = sum(
                 int(record['Count']) for record in authority_wifi_sessions)
 
-            # If any of the counts are 0 set to None
+            # If any of the counts are 0 set to None``
             services.append({
                 'Authority code': authority_code,
                 'Authority nice name': authority_nice_name,
