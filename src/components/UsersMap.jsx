@@ -28,6 +28,7 @@ const UsersMap = () => {
   const [displayAgeGroup, setDisplayAgeGroup] = useState('total')
 
   const [opacityExpression, setOpacityExpression] = useState([])
+  const [textDisplayExpression, setTextDisplayExpression] = useState([])
   const [servicesWithDataFilter, setServicesWithDataFilter] = useState([])
   const [servicesNoDataFilter, setServicesNoDataFilter] = useState([])
 
@@ -88,9 +89,13 @@ const UsersMap = () => {
       const total = ((percentages['Total'] || 0) * scale).toFixed(1)
       serviceLookup[service.code] = {
         under12: under12 > 1 ? 1 : parseFloat(under12),
+        under12Percent: percentages['Under 12'] || null,
         from12to17: from12to17 > 1 ? 1 : parseFloat(from12to17),
+        from12to17Percent: percentages['12-17'] || null,
         adult: adult > 1 ? 1 : parseFloat(adult),
-        total: total > 1 ? 1 : parseFloat(total)
+        adultPercent: percentages['Adult'] || null,
+        total: total > 1 ? 1 : parseFloat(total),
+        totalPercent: percentages['Total'] || null
       }
     })
 
@@ -114,6 +119,20 @@ const UsersMap = () => {
 
     const opacityExpression = ['feature-state', displayAgeGroup]
     setOpacityExpression(opacityExpression)
+
+    // Set the text display expression as a case based upon the service code
+    const textDisplayExpression = ['case']
+    activeServices.forEach(service => {
+      const percent = serviceLookup[service.code]?.[`${displayAgeGroup}Percent`]
+      if (percent !== null && percent !== undefined) {
+        textDisplayExpression.push(
+          ['==', ['get', 'code'], service.code],
+          `${service.niceName}\n${percent.toFixed(1)}%`
+        )
+      }
+    })
+    textDisplayExpression.push('') // Default to empty string if no match
+    setTextDisplayExpression(textDisplayExpression)
 
     // Add a layer filter to only show the activeServices
     const servicesFilter = [
@@ -224,10 +243,28 @@ const UsersMap = () => {
             source-layer='library_authority_boundaries'
             minzoom={6}
             paint={{
-              'fill-color': theme.palette.error.main,
+              'fill-color': theme.palette.secondary.light,
               'fill-opacity': 0.1
             }}
             filter={servicesNoDataFilter}
+          />
+          <Layer
+            type='symbol'
+            source-layer='library_authority_boundaries'
+            minzoom={6}
+            layout={{
+              'text-field': textDisplayExpression,
+              'text-size': 12,
+              'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+              'text-offset': [0, 0],
+              'text-anchor': 'center'
+            }}
+            paint={{
+              'text-color': theme.palette.text.primary,
+              'text-halo-color': theme.palette.background.paper,
+              'text-halo-width': 1
+            }}
+            filter={servicesWithDataFilter}
           />
         </Source>
       </Map>

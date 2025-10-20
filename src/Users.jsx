@@ -260,6 +260,7 @@ const Users = () => {
       <Typography variant='h5' gutterBottom>
         Active users map
       </Typography>
+      <Markdown>{usersMapMarkdown}</Markdown>
       <Box
         sx={{
           position: 'relative',
@@ -268,7 +269,6 @@ const Users = () => {
       >
         <UsersMap />
       </Box>
-      <Markdown>{usersMapMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Active users by service
       </Typography>
