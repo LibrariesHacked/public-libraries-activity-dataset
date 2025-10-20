@@ -6,7 +6,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
 import { useTheme } from '@mui/material/styles'
 
-import Map, { Layer, Source } from 'react-map-gl/maplibre'
+import Map, { FullscreenControl, Layer, Source } from 'react-map-gl/maplibre'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -178,20 +178,7 @@ const UsersMap = () => {
   }
 
   return (
-    <Box>
-      <ToggleButtonGroup
-        color='primary'
-        value={displayAgeGroup}
-        exclusive
-        onChange={handleChangeDisplayAgeGroup}
-        sx={{ mb: 1 }}
-        size='small'
-      >
-        <ToggleButton value='under12'>Under 12</ToggleButton>
-        <ToggleButton value='from12to17'>12-17</ToggleButton>
-        <ToggleButton value='adult'>Adult</ToggleButton>
-        <ToggleButton value='total'>Total</ToggleButton>
-      </ToggleButtonGroup>
+    <Box sx={{ mb: 2 }}>
       <Map
         ref={setMap}
         style={{
@@ -203,10 +190,27 @@ const UsersMap = () => {
         longitude={mapPosition[0]}
         latitude={mapPosition[1]}
         zoom={mapZoom}
-        maxZoom={18}
+        minZoom={6}
+        maxZoom={16}
         onMove={evt => setViewState(evt.viewState)}
         onLoad={() => setMapLoaded(true)}
       >
+        <Box>
+          <ToggleButtonGroup
+            color='primary'
+            value={displayAgeGroup}
+            exclusive
+            onChange={handleChangeDisplayAgeGroup}
+            sx={{ m: 1, position: 'absolute', backgroundColor: 'white' }}
+            size='small'
+          >
+            <ToggleButton value='under12'>Under 12</ToggleButton>
+            <ToggleButton value='from12to17'>12-17</ToggleButton>
+            <ToggleButton value='adult'>Adult</ToggleButton>
+            <ToggleButton value='total'>Total</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
+        <FullscreenControl />
         <Source
           type='vector'
           tiles={[libraryAuthorityTiles]}
