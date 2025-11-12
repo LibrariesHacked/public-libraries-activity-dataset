@@ -18,6 +18,7 @@ import { Bar, Line } from 'react-chartjs-2'
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
+import Grid from '@mui/material/Grid'
 import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
@@ -30,6 +31,8 @@ import { getActiveServices } from './models/service'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import * as loansModel from './models/loans'
+
+import LoansTotalCard from './components/LoansTotalCard'
 
 ChartJS.register(
   CategoryScale,
@@ -254,6 +257,11 @@ const Loans = () => {
       <Typography variant='h4' gutterBottom>
         Loans
       </Typography>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <LoansTotalCard />
+        </Grid>
+      </Grid>
       <Markdown>{loansMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Loans by format and age category

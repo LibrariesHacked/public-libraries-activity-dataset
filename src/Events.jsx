@@ -20,12 +20,16 @@ import eventsAttendanceMd from './content/events-attendance.md'
 import eventsAttendanceByServiceMd from './content/events-attendance-by-service.md'
 
 import Box from '@mui/material/Box'
+import Grid from '@mui/material/Grid'
 import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
 import { getActiveServices } from './models/service'
 
 import { useApplicationState } from './hooks/useApplicationState'
+
+import AttendanceTotalCard from './components/AttendanceTotalCard'
+import EventsTotalCard from './components/EventsTotalCard'
 
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
@@ -293,6 +297,14 @@ const Events = () => {
       <Typography variant='h4' gutterBottom>
         Events and attendance
       </Typography>
+      <Grid container spacing={2}>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <EventsTotalCard />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <AttendanceTotalCard />
+        </Grid>
+      </Grid>
       <Markdown>{eventsMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Event count and attendance by type
