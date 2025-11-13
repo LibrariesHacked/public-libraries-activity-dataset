@@ -18,7 +18,6 @@ import { Bar, Line } from 'react-chartjs-2'
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
 import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
@@ -26,13 +25,12 @@ import loansMd from './content/loans.md'
 import loansByTypeMd from './content/loans-by-type.md'
 import loansByServiceMd from './content/loans-by-service.md'
 
-import { getActiveServices } from './models/service'
-
 import { useApplicationState } from './hooks/useApplicationState'
 
+import { getActiveServices } from './models/service'
 import * as loansModel from './models/loans'
 
-import LoansTotalCard from './components/LoansTotalCard'
+import CardGrid from './components/CardGrid'
 
 ChartJS.register(
   CategoryScale,
@@ -211,8 +209,6 @@ const Loans = () => {
 
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
-
-
     const datasets = itemFormats.map((format, i) => {
       const data = []
       serviceLabels.forEach(serviceLabel => {
@@ -231,7 +227,6 @@ const Loans = () => {
         const loansPerCapita = Math.round(totalLoans / servicePopulation)
 
         data.push(loansPerCapita)
-
       })
       return {
         label: format,
@@ -257,11 +252,7 @@ const Loans = () => {
       <Typography variant='h4' gutterBottom>
         Loans
       </Typography>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <LoansTotalCard />
-        </Grid>
-      </Grid>
+      <CardGrid />
       <Markdown>{loansMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Loans by format and age category

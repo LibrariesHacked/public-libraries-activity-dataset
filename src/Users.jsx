@@ -21,17 +21,15 @@ import usersByAgeGroupMd from './content/users-by-age-group.md'
 import usersByServiceMd from './content/users-by-service.md'
 
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
+
+import { useApplicationState } from './hooks/useApplicationState'
 
 import { getActiveServices } from './models/service'
 import * as usersModel from './models/users'
 
-import { useApplicationState } from './hooks/useApplicationState'
-
+import CardGrid from './components/CardGrid'
 import UsersMap from './components/UsersMap'
-import UsersTotalCard from './components/UsersTotalCard'
-
 
 ChartJS.register(
   CategoryScale,
@@ -245,11 +243,7 @@ const Users = () => {
       <Typography variant='h4' gutterBottom>
         Active users
       </Typography>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <UsersTotalCard />
-        </Grid>
-      </Grid>
+      <CardGrid />
       <Markdown>{usersMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Active users by age group

@@ -43,3 +43,30 @@ export const getActiveServices = (services, filteredServices) => {
     ? services.filter(s => filteredServices.includes(s.code))
     : services
 }
+
+export const getServicesPopulation = services => {
+  const totalPopulation =
+    services?.reduce(
+      (acc, service) => acc + (service.totalPopulation || 0),
+      0
+    ) || 0
+  return totalPopulation
+}
+
+export const getServicesChildPopulation = services => {
+  const totalPopulation =
+    services?.reduce(
+      (acc, service) => acc + ((service.populationUnder12 || 0) + (service.population12To17 || 0)),
+      0
+    ) || 0
+  return totalPopulation
+}
+
+export const getServicesAdultPopulation = services => {
+  const totalPopulation =
+    services?.reduce(
+      (acc, service) => acc + (service.populationAdult || 0),
+      0
+    ) || 0
+  return totalPopulation
+}

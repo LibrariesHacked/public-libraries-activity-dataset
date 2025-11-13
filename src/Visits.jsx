@@ -18,20 +18,18 @@ import { Bar, Line } from 'react-chartjs-2'
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
 
 import visitsMd from './content/visits.md'
 import visitsByLocationMd from './content/visits-by-location.md'
 import visitsByServiceMd from './content/visits-by-service.md'
 
-import { getActiveServices } from './models/service'
-
 import { useApplicationState } from './hooks/useApplicationState'
 
+import { getActiveServices } from './models/service'
 import * as visitsModel from './models/visits'
 
-import VisitsTotalCard from './components/VisitsTotalCard'
+import CardGrid from './components/CardGrid'
 
 ChartJS.register(
   BarElement,
@@ -172,7 +170,7 @@ const Visits = () => {
     const activeServices = getActiveServices(services, filteredServices)
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
-    const datasets = locationTypes.map((locationType, index) => {
+    const datasets = locationTypes.map(locationType => {
       return {
         label: locationType,
         data: serviceLabels.map(serviceLabel => {
@@ -209,11 +207,7 @@ const Visits = () => {
       <Typography variant='h4' gutterBottom>
         Visits
       </Typography>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <VisitsTotalCard />
-        </Grid>
-      </Grid>
+      <CardGrid />
       <Markdown>{visitsMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Visits by location

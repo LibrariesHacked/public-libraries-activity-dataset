@@ -4,6 +4,8 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
+import { getActiveServices } from '../models/service'
+
 import NumberCard from './NumberCard'
 
 const LoansTotalCard = () => {
@@ -14,10 +16,7 @@ const LoansTotalCard = () => {
   const [noData, setNoData] = useState(false)
 
   useEffect(() => {
-    const activeServices =
-      filteredServices?.length > 0
-        ? services.filter(s => filteredServices.includes(s.code))
-        : services
+    const activeServices = getActiveServices(services, filteredServices)
 
     const loanServices = activeServices?.filter(service =>
       Number.isInteger(service.loans)
@@ -50,7 +49,7 @@ const LoansTotalCard = () => {
 
   return (
     <NumberCard
-      title='Loans'
+      title='All loans'
       number={formatCompactNumber(loansCount)}
       description={`${Math.round(loansPerCapita)} per resident per year`}
       colour='chartGreen'
