@@ -25,11 +25,12 @@ import loansMd from './content/loans.md'
 import loansByTypeMd from './content/loans-by-type.md'
 import loansByServiceMd from './content/loans-by-service.md'
 
-import { getActiveServices } from './models/service'
-
 import { useApplicationState } from './hooks/useApplicationState'
 
+import { getActiveServices } from './models/service'
 import * as loansModel from './models/loans'
+
+import CardGrid from './components/CardGrid'
 
 ChartJS.register(
   CategoryScale,
@@ -208,8 +209,6 @@ const Loans = () => {
 
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
-
-
     const datasets = itemFormats.map((format, i) => {
       const data = []
       serviceLabels.forEach(serviceLabel => {
@@ -228,7 +227,6 @@ const Loans = () => {
         const loansPerCapita = Math.round(totalLoans / servicePopulation)
 
         data.push(loansPerCapita)
-
       })
       return {
         label: format,
@@ -254,6 +252,7 @@ const Loans = () => {
       <Typography variant='h4' gutterBottom>
         Loans
       </Typography>
+      <CardGrid />
       <Markdown>{loansMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Loans by format and age category

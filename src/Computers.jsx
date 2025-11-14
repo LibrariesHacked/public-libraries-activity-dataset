@@ -22,10 +22,11 @@ import computersWiFiByServiceMd from './content/computers-wifi-by-service.md'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
-import { getActiveServices } from './models/service'
-
 import { useApplicationState } from './hooks/useApplicationState'
 
+import CardGrid from './components/CardGrid'
+
+import { getActiveServices } from './models/service'
 import * as computersModel from './models/computers'
 import * as wifiModel from './models/wifi'
 
@@ -247,11 +248,12 @@ const Computers = () => {
   return (
     <Box>
       <Typography variant='h4' gutterBottom>
-        Computer and WiFi usage
+        Computers and WiFi
       </Typography>
+      <CardGrid />
       <Markdown>{computersMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
-        Computer and WiFi usage
+        Computer hours and WiFi sessions over time
       </Typography>
       <Markdown>{computersWiFiMarkdown}</Markdown>
       <Box sx={{ mb: 2 }}>

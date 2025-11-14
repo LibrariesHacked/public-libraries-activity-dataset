@@ -10,6 +10,8 @@ import { Doughnut } from 'react-chartjs-2'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
+import { getActiveServices } from '../models/service'
+
 import * as loansModel from '../models/loans'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
@@ -32,10 +34,8 @@ const LoansByTypeCard = () => {
 
   useEffect(() => {
     if (!loans || !filteredServices || !services) return
-    const activeServices =
-      filteredServices?.length > 0
-        ? services.filter(s => filteredServices.includes(s.code))
-        : services
+    
+    const activeServices = getActiveServices(services, filteredServices)
 
     const filteredLoans = loans.filter(loan =>
       activeServices.includes(loan.serviceCode)

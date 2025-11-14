@@ -10,6 +10,7 @@ import Map, { FullscreenControl, Layer, Source } from 'react-map-gl/maplibre'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
+import { getActiveServices } from '../models/service'
 import { getUsersPopulationPercentages } from '../models/users'
 
 import * as usersModel from '../models/users'
@@ -48,10 +49,7 @@ const UsersMap = () => {
   useEffect(() => {
     if (!users || !services) return
 
-    const activeServices =
-      filteredServices?.length > 0
-        ? services.filter(s => filteredServices.includes(s.code))
-        : services
+    const activeServices = getActiveServices(services, filteredServices)
 
     const userServices = activeServices?.filter(service =>
       Number.isInteger(service.users)

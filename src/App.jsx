@@ -108,7 +108,7 @@ function App () {
               </Typography>
               <Typography gutterBottom color='textSecondary'>
                 All available data is displayed by default. Add services to
-                construct your own comparison group.
+                construct a comparison group.
               </Typography>
               <ServiceSelection />
             </Box>

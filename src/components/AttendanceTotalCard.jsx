@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
-import { getActiveServices } from '../models/service'
-
 import { formatCompactNumber } from '../helpers/numbers'
+
+import { getActiveServices } from '../models/service'
 
 import NumberCard from './NumberCard'
 

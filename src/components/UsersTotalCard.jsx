@@ -4,6 +4,8 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
+import { getActiveServices } from '../models/service'
+
 import NumberCard from './NumberCard'
 
 const UsersTotalCard = () => {
@@ -14,12 +16,7 @@ const UsersTotalCard = () => {
   const [noData, setNoData] = useState(false)
 
   useEffect(() => {
-    // The active services are either the ones where the service code is in the filteredServices array
-    // or the filteredServices array is empty.
-    const activeServices =
-      filteredServices?.length > 0
-        ? services.filter(s => filteredServices.includes(s.code))
-        : services
+    const activeServices = getActiveServices(services, filteredServices)
 
     const userServices = activeServices?.filter(service =>
       Number.isInteger(service.users)

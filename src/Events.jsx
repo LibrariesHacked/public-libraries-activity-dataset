@@ -23,10 +23,11 @@ import Box from '@mui/material/Box'
 import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
-import { getActiveServices } from './models/service'
-
 import { useApplicationState } from './hooks/useApplicationState'
 
+import CardGrid from './components/CardGrid'
+
+import { getActiveServices } from './models/service'
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
 
@@ -293,6 +294,7 @@ const Events = () => {
       <Typography variant='h4' gutterBottom>
         Events and attendance
       </Typography>
+      <CardGrid />
       <Markdown>{eventsMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
         Event count and attendance by type
