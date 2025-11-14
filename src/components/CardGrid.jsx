@@ -12,6 +12,9 @@ import LoansPhysicalBooksCard from './LoansPhysicalBooksCard'
 import LoansPhysicalBooksAdultsCard from './LoansPhysicalBooksAdultsCard'
 import LoansPhysicalBooksChildrenCard from './LoansPhysicalBooksChildrenCard'
 import UsersTotalCard from './UsersTotalCard'
+import UsersAdultCard from './UsersAdultCard'
+import UsersJuniorCard from './UsersJuniorCard'
+import UsersUnder12Card from './UsersUnder12Card'
 import VisitsTotalCard from './VisitsTotalCard'
 import WiFiTotalCard from './WiFiTotalCard'
 
@@ -43,6 +46,21 @@ const CardGrid = () => {
       {location.pathname === '/' || location.pathname === '/users' ? (
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <UsersTotalCard />
+        </Grid>
+      ) : null}
+      {location.pathname === '/users' ? (
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <UsersAdultCard />
+        </Grid>
+      ) : null}
+      {location.pathname === '/users' ? (
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <UsersJuniorCard />
+        </Grid>
+      ) : null}
+      {location.pathname === '/users' ? (
+        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
+          <UsersUnder12Card />
         </Grid>
       ) : null}
       {location.pathname === '/' || location.pathname === '/visits' ? (

@@ -21,8 +21,12 @@ const LoansPhysicalBooksCard = () => {
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const loanServices = activeServices?.filter(service =>
-      Number.isInteger(service.loans)
+    const loansPhysicalBooks = loans.filter(l => l.format === 'Physical book')
+
+    const loanServices = activeServices?.filter(
+      service =>
+        loansPhysicalBooks.filter(l => l.serviceCode === service.code).length >
+        0
     )
 
     if (!loanServices || loanServices.length === 0) {
@@ -31,12 +35,11 @@ const LoansPhysicalBooksCard = () => {
       setNoData(false)
     }
 
-    const totalLoans = loans
+    const totalLoans = loansPhysicalBooks
       .filter(
         l =>
-          l.format === 'Physical book' &&
-          (filteredServices.length === 0 ||
-            filteredServices.includes(l.serviceCode))
+          filteredServices.length === 0 ||
+          filteredServices.includes(l.serviceCode)
       )
       .reduce((sum, loan) => sum + loan.countLoans, 0)
 

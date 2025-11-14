@@ -53,10 +53,30 @@ export const getServicesPopulation = services => {
   return totalPopulation
 }
 
+export const getServicesUnder12Population = services => {
+  const totalPopulation =
+    services?.reduce(
+      (acc, service) => acc + (service.populationUnder12 || 0),
+      0
+    ) || 0
+  return totalPopulation
+}
+
+export const getServicesJuniorPopulation = services => {
+  const totalPopulation =
+    services?.reduce(
+      (acc, service) => acc + (service.population12To17 || 0),
+      0
+    ) || 0
+  return totalPopulation
+}
+
 export const getServicesChildPopulation = services => {
   const totalPopulation =
     services?.reduce(
-      (acc, service) => acc + ((service.populationUnder12 || 0) + (service.population12To17 || 0)),
+      (acc, service) =>
+        acc +
+        ((service.populationUnder12 || 0) + (service.population12To17 || 0)),
       0
     ) || 0
   return totalPopulation
