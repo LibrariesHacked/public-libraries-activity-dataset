@@ -127,14 +127,6 @@ const Events = () => {
       ...new Set([...events.map(e => e.month), ...attendance.map(a => a.month)])
     ].sort()
 
-    // We have a dataset for each age group from events and attendance
-    const ageGroups = [
-      ...new Set([
-        ...events.map(e => e.ageGroup),
-        ...attendance.map(a => a.ageGroup)
-      ])
-    ].sort()
-
     const eventAttendanceCharts = []
 
     // We want a chart for each event type

@@ -69,7 +69,9 @@ const ServiceSelection = () => {
     if (filteredServices && filteredServices.length === 1) {
       const service = serviceLookup[filteredServices[0]]
       const nearestNeighbours = service.nearestNeighbours || []
-      const newFilteredServices = Array.from(new Set([...filteredServices, ...nearestNeighbours]))
+      const newFilteredServices = Array.from(
+        new Set([...filteredServices, ...nearestNeighbours])
+      )
       dispatchApplication({
         type: 'SetFilteredServices',
         filteredServices: newFilteredServices
@@ -86,7 +88,7 @@ const ServiceSelection = () => {
           onClick={e => openServiceMenu(e.currentTarget)}
           startIcon={<AddChartIcon />}
         >
-          Add service
+          Select service
         </Button>
       </Tooltip>
       <Menu
@@ -111,14 +113,16 @@ const ServiceSelection = () => {
             })}
       </Menu>
       <Box>
-        {!filteredServices || filteredServices.length === 0 ? (
-          <Chip
-            label='Displaying all services'
-            color='secondary'
-            variant='outlined'
-            sx={{ mx: 0.5 }}
-          />
-        ) : null}
+        {!filteredServices || filteredServices.length === 0
+          ? (
+            <Chip
+              label='Displaying all services'
+              color='secondary'
+              variant='outlined'
+              sx={{ mx: 0.5 }}
+            />
+            )
+          : null}
         {filteredServices &&
           filteredServices.length > 0 &&
           filteredServices.map(s => {
@@ -133,17 +137,25 @@ const ServiceSelection = () => {
               />
             )
           })}
-        {filteredServices && filteredServices.length > 1 ? (
-          <IconButton variant='text' color='secondary' onClick={handleClearAll}>
-            <ClearAllIcon />
-          </IconButton>
-        ) : null}
+        {filteredServices && filteredServices.length > 1
+          ? (
+            <IconButton variant='text' color='secondary' onClick={handleClearAll}>
+              <ClearAllIcon />
+            </IconButton>
+            )
+          : null}
         <Box sx={{ display: 'block' }}>
-          {filteredServices && filteredServices.length === 1 ? (
-            <Button variant='text' color='secondary' onClick={handleNearestNeighbours}>
-              Add nearest neighbours
-            </Button>
-          ) : null}
+          {filteredServices && filteredServices.length === 1
+            ? (
+              <Button
+                variant='text'
+                color='secondary'
+                onClick={handleNearestNeighbours}
+              >
+                Add nearest neighbours
+              </Button>
+              )
+            : null}
         </Box>
       </Box>
     </>

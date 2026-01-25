@@ -24,8 +24,6 @@ const UsersMap = () => {
     dispatchApplication
   ] = useApplicationState()
 
-  const [noData, setNoData] = useState(false)
-
   const [displayAgeGroup, setDisplayAgeGroup] = useState('total')
 
   const [opacityExpression, setOpacityExpression] = useState([])
@@ -55,11 +53,6 @@ const UsersMap = () => {
       Number.isInteger(service.users)
     )
 
-    if (!userServices || userServices.length === 0) {
-      setNoData(true)
-      return
-    }
-    setNoData(false)
     const serviceLookup = {}
 
     const populationPercentages = getUsersPopulationPercentages(
@@ -72,8 +65,8 @@ const UsersMap = () => {
       ...Object.values(populationPercentages).flatMap(percentages => [
         percentages['Under 12'] || 0,
         percentages['12-17'] || 0,
-        percentages['Adult'] || 0,
-        percentages['Total'] || 0
+        percentages.Adult || 0,
+        percentages.Total || 0
       ])
     )
     if (maxPercent > 20) maxPercent = 20 // Cap max percent to 20% for scaling purposes
@@ -83,17 +76,17 @@ const UsersMap = () => {
       const percentages = populationPercentages[service.code] || {}
       const under12 = ((percentages['Under 12'] || 0) * scale).toFixed(1)
       const from12to17 = ((percentages['12-17'] || 0) * scale).toFixed(1)
-      const adult = ((percentages['Adult'] || 0) * scale).toFixed(1)
-      const total = ((percentages['Total'] || 0) * scale).toFixed(1)
+      const adult = ((percentages.Adult || 0) * scale).toFixed(1)
+      const total = ((percentages.Total || 0) * scale).toFixed(1)
       serviceLookup[service.code] = {
         under12: under12 > 1 ? 1 : parseFloat(under12),
         under12Percent: percentages['Under 12'] || null,
         from12to17: from12to17 > 1 ? 1 : parseFloat(from12to17),
         from12to17Percent: percentages['12-17'] || null,
         adult: adult > 1 ? 1 : parseFloat(adult),
-        adultPercent: percentages['Adult'] || null,
+        adultPercent: percentages.Adult || null,
         total: total > 1 ? 1 : parseFloat(total),
-        totalPercent: percentages['Total'] || null
+        totalPercent: percentages.Total || null
       }
     })
 

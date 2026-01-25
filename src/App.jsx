@@ -10,6 +10,7 @@ import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
+import Divider from '@mui/material/Divider'
 import GlobalStyles from '@mui/material/GlobalStyles'
 import Typography from '@mui/material/Typography'
 
@@ -99,7 +100,7 @@ function App () {
               }}
             >
               <Chip
-                color='warning'
+                color='info'
                 label='Prototype'
                 sx={{ fontWeight: 'bold' }}
               />
@@ -126,10 +127,11 @@ function App () {
                 Made with ❤️ by{' '}
                 <a href='https://www.librarieshacked.org'>Libraries Hacked</a>
               </Typography>
-              <Typography variant='body2' color='textSecondary'>
+              <Divider sx={{ marginY: 2 }} />
+              <Typography variant='body1' color='textSecondary'>
                 <a
                   target='_blank'
-                  href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk'
+                  href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk' rel='noreferrer'
                 >
                   Analytics
                 </a>
