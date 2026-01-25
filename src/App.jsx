@@ -100,15 +100,15 @@ function App () {
             >
               <Chip
                 color='warning'
-                label='In development'
+                label='Prototype'
                 sx={{ fontWeight: 'bold' }}
               />
               <Typography component='h1' variant='h2'>
                 Library activity
               </Typography>
               <Typography gutterBottom color='textSecondary'>
-                All available data is displayed by default. Add services to
-                construct a comparison group.
+                By default, all available data is displayed. Start selecting
+                services to construct a custom comparison group.
               </Typography>
               <ServiceSelection />
             </Box>

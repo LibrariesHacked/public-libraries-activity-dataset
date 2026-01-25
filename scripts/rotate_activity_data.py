@@ -386,7 +386,7 @@ def rotate_activity_data():
                     physical_digital = 'Digital'
 
                 # Users: We want a schema of Authority, Age Group, Count
-                if header.startswith('active_members') and value.isdigit():
+                if header.startswith('active_members') and value.isdigit() and authority_code != 'E06000031' and authority_code != 'E06000036':
                     authority_users.append({
                         'Authority': authority_code,
                         'Period': '2023-04-01/P1Y',
@@ -399,7 +399,7 @@ def rotate_activity_data():
                     if row.get('active_members_11_under') == "" and \
                        row.get('active_members_adults') == "" and \
                        row.get('active_members_12_17') == "" and \
-                            value.isdigit():
+                            value.isdigit() and authority_code != 'E06000031' and authority_code != 'E06000036':
                         authority_users.append({
                             'Authority': authority_code,
                             'Period': '2023-04-01/P1Y',

@@ -1,3 +1,3 @@
-The active users map shows the concentration of active users as a percentage of the population. It does this using a choropleth map (shaded regions) to show the differences between the different geographic areas.
+The active users map shows the concentration of active users as a percentage of the population. It does this using a choropleth map (shaded areas) to show the differences between library services.
 
 By default it shows the total users. You can change to the different age groups (under 12, 12-17, adult), and it will show the percentage of active users of that age group. Not all services report at this level of detail so this reduces the available data.
