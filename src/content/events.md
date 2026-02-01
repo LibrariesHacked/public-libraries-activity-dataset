@@ -2,4 +2,4 @@ An event is any scheduled activity session run by the library service which peop
 
 Events are split into physical and digital.
 
-Attendees data counts the people attending these events. This includes actual attendees rather than those booked onto the event.
+Data on attendees counts the people attending these events. This includes actual attendees rather than those booked onto the event.

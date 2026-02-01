@@ -34,7 +34,7 @@ const LoansByTypeCard = () => {
 
   useEffect(() => {
     if (!loans || !filteredServices || !services) return
-    
+
     const activeServices = getActiveServices(services, filteredServices)
 
     const filteredLoans = loans.filter(loan =>

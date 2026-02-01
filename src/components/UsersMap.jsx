@@ -24,12 +24,12 @@ const UsersMap = () => {
     dispatchApplication
   ] = useApplicationState()
 
-  const [noData, setNoData] = useState(false)
-
   const [displayAgeGroup, setDisplayAgeGroup] = useState('total')
 
   const [opacityExpression, setOpacityExpression] = useState([])
   const [textDisplayExpression, setTextDisplayExpression] = useState([])
+  const [textNoDataDisplayExpression, setTextNoDataDisplayExpression] =
+    useState([])
   const [servicesWithDataFilter, setServicesWithDataFilter] = useState([])
   const [servicesNoDataFilter, setServicesNoDataFilter] = useState([])
 
@@ -55,11 +55,6 @@ const UsersMap = () => {
       Number.isInteger(service.users)
     )
 
-    if (!userServices || userServices.length === 0) {
-      setNoData(true)
-      return
-    }
-    setNoData(false)
     const serviceLookup = {}
 
     const populationPercentages = getUsersPopulationPercentages(
@@ -72,8 +67,8 @@ const UsersMap = () => {
       ...Object.values(populationPercentages).flatMap(percentages => [
         percentages['Under 12'] || 0,
         percentages['12-17'] || 0,
-        percentages['Adult'] || 0,
-        percentages['Total'] || 0
+        percentages.Adult || 0,
+        percentages.Total || 0
       ])
     )
     if (maxPercent > 20) maxPercent = 20 // Cap max percent to 20% for scaling purposes
@@ -83,17 +78,17 @@ const UsersMap = () => {
       const percentages = populationPercentages[service.code] || {}
       const under12 = ((percentages['Under 12'] || 0) * scale).toFixed(1)
       const from12to17 = ((percentages['12-17'] || 0) * scale).toFixed(1)
-      const adult = ((percentages['Adult'] || 0) * scale).toFixed(1)
-      const total = ((percentages['Total'] || 0) * scale).toFixed(1)
+      const adult = ((percentages.Adult || 0) * scale).toFixed(1)
+      const total = ((percentages.Total || 0) * scale).toFixed(1)
       serviceLookup[service.code] = {
         under12: under12 > 1 ? 1 : parseFloat(under12),
         under12Percent: percentages['Under 12'] || null,
         from12to17: from12to17 > 1 ? 1 : parseFloat(from12to17),
         from12to17Percent: percentages['12-17'] || null,
         adult: adult > 1 ? 1 : parseFloat(adult),
-        adultPercent: percentages['Adult'] || null,
+        adultPercent: percentages.Adult || null,
         total: total > 1 ? 1 : parseFloat(total),
-        totalPercent: percentages['Total'] || null
+        totalPercent: percentages.Total || null
       }
     })
 
@@ -132,11 +127,37 @@ const UsersMap = () => {
     textDisplayExpression.push('') // Default to empty string if no match
     setTextDisplayExpression(textDisplayExpression)
 
+    // And set text for no data
+    const textNoDataDisplayExpression = ['case']
+    activeServices.forEach(service => {
+      const percent = serviceLookup[service.code]?.[`${displayAgeGroup}Percent`]
+      if (percent === null || percent === undefined) {
+        textNoDataDisplayExpression.push(
+          ['==', ['get', 'code'], service.code],
+          `${service.niceName}\n(no data)`
+        )
+      }
+    })
+    textNoDataDisplayExpression.push('') // Default to empty string if no match
+    setTextNoDataDisplayExpression(textNoDataDisplayExpression)
+
     // Add a layer filter to only show the activeServices
     const servicesFilter = [
       'in',
       ['get', 'code'],
-      ['literal', activeServices.map(s => s.code)]
+      [
+        'literal',
+        activeServices
+          .filter(s => {
+            const service = serviceLookup[s.code] || {}
+            return (
+              service &&
+              Object.keys(service).length > 0 &&
+              service[displayAgeGroup] > 0
+            )
+          })
+          .map(s => s.code)
+      ]
     ]
 
     const servicesWithNoDataFilter = [
@@ -146,11 +167,11 @@ const UsersMap = () => {
         'literal',
         activeServices
           .filter(s => {
-            const percentages = populationPercentages[s.code] || {}
+            const service = serviceLookup[s.code] || {}
             return (
-              !percentages ||
-              Object.keys(percentages).length === 0 ||
-              percentages[displayAgeGroup] === 0
+              !service ||
+              Object.keys(service).length === 0 ||
+              service[displayAgeGroup] === 0
             )
           })
           .map(s => s.code)
@@ -246,7 +267,7 @@ const UsersMap = () => {
             minzoom={6}
             paint={{
               'fill-color': theme.palette.secondary.light,
-              'fill-opacity': 0.1
+              'fill-opacity': 0.2
             }}
             filter={servicesNoDataFilter}
           />
@@ -267,6 +288,24 @@ const UsersMap = () => {
               'text-halo-width': 1
             }}
             filter={servicesWithDataFilter}
+          />
+          <Layer
+            type='symbol'
+            source-layer='library_authority_boundaries'
+            minzoom={6}
+            layout={{
+              'text-field': textNoDataDisplayExpression,
+              'text-size': 12,
+              'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+              'text-offset': [0, 0],
+              'text-anchor': 'center'
+            }}
+            paint={{
+              'text-color': theme.palette.text.primary,
+              'text-halo-color': theme.palette.background.paper,
+              'text-halo-width': 1
+            }}
+            filter={servicesNoDataFilter}
           />
         </Source>
       </Map>

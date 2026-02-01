@@ -1,1 +1,1 @@
-A visit is a physical interaction with a library service, without necesarily resulting in any item being borrowed.
+The service comparison chart plots the visits for each service as an average per resident, as a stacked bar chart. Each bar represents a service, with different sections of the bar representing the different visit types. This allows for easy comparison of loans across services and the distribution of visit types within each service.

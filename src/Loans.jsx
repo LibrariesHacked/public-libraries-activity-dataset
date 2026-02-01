@@ -255,7 +255,7 @@ const Loans = () => {
       <CardGrid />
       <Markdown>{loansMarkdown}</Markdown>
       <Typography variant='h5' gutterBottom>
-        Loans by format and age category
+        Loans by format and age group
       </Typography>
       <Markdown>{loansByTypeMarkdown}</Markdown>
       {formatCharts.map((chart, index) => (

@@ -1,1 +1,1 @@
-We can plot events and attendance over time in a single chart to see how they relate to each other.
+The service comparison chart plots event counts and attendance for each service.

@@ -39,33 +39,35 @@ const NumberCard = props => {
           <Stack
             sx={{ justifyContent: 'space-between', alignContent: 'center' }}
           >
-            {noData ? (
-              <Typography
-                variant='h4'
-                color='text.secondary'
-                sx={{ fontWeight: 700 }}
-              >
-                No data
-              </Typography>
-            ) : (
-              <>
+            {noData
+              ? (
                 <Typography
-                  variant='h3'
-                  color={colour}
+                  variant='h4'
+                  color='text.secondary'
                   sx={{ fontWeight: 700 }}
                 >
-                  {number}
+                  No data
                 </Typography>
-                <Box>
-                  <Chip
-                    sx={{ backgroundColor: 'rgb(245, 245, 245)' }}
-                    variant='filled'
-                    icon={descriptionIcon || <AutoAwesomeRoundedIcon />}
-                    label={description}
-                  />
-                </Box>
-              </>
-            )}
+                )
+              : (
+                <>
+                  <Typography
+                    variant='h3'
+                    color={colour}
+                    sx={{ fontWeight: 700 }}
+                  >
+                    {number}
+                  </Typography>
+                  <Box>
+                    <Chip
+                      sx={{ backgroundColor: 'rgb(245, 245, 245)' }}
+                      variant='filled'
+                      icon={descriptionIcon || <AutoAwesomeRoundedIcon />}
+                      label={description}
+                    />
+                  </Box>
+                </>
+                )}
           </Stack>
         </Stack>
       </CardContent>
