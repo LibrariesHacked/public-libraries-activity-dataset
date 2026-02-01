@@ -108,8 +108,8 @@ function App () {
                 Library activity
               </Typography>
               <Typography gutterBottom color='textSecondary'>
-                By default, all available data is displayed. Start selecting
-                services to construct a custom comparison group.
+                By default, all library services are displayed. Select services
+                to construct a custom comparison group.
               </Typography>
               <ServiceSelection />
             </Box>
@@ -131,7 +131,8 @@ function App () {
               <Typography variant='body1' color='textSecondary'>
                 <a
                   target='_blank'
-                  href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk' rel='noreferrer'
+                  href='https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk'
+                  rel='noreferrer'
                 >
                   Analytics
                 </a>

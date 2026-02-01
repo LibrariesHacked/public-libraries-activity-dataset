@@ -625,7 +625,7 @@ def rotate_activity_data():
                 'Authority code': authority_code,
                 'Authority nice name': authority_nice_name,
                 'Library service': library_service,
-                'Period': '2023-04-01/P1Y',
+                'Period': '2023/2024',
                 'Users': users_count if users_count > 0 else None,
                 'Events': events_count if events_count > 0 else None,
                 'Attendance': attendance_count if attendance_count > 0 else None,

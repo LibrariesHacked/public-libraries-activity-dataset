@@ -116,7 +116,7 @@ const ServiceSelection = () => {
         {!filteredServices || filteredServices.length === 0
           ? (
             <Chip
-              label='Displaying all services'
+              label='Displaying all available services'
               color='secondary'
               variant='outlined'
               sx={{ mx: 0.5 }}
