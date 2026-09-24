@@ -1,14 +1,16 @@
-""""
-This script reads a CSV file containing library activity data for the year 2023-2024,
-rotates the data into multiple output files, and handles various aspects such as authorities,
-users, events, attendance, loans, visits, computer usage, and metadata.
+"""Rotate published library activity workbooks into the dashboard data files.
+
+Each financial year is configured in ``YEAR_SOURCES`` and normalised into a
+common record schema before the output datasets are generated.
 """
 
 import csv
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+import openpyxl
 
-LIBRARY_DATA = './data/libraries_activity_data_2023_2024.csv'
+ACTIVITY_WORKBOOK_2023_2024 = './data/Libraries Activity Data 2023-24 FINAL.xlsx'
+ACTIVITY_WORKBOOK_2024_2026 = './data/Libraries Activity Data - official statistic release.xlsx'
 POPULATION = './data/mye24tablesew.csv'
 AUTHORITIES = './data/uk_local_authorities.csv'
 LIBRARY_SERVICES = './data/library_authorities.json'
@@ -33,32 +35,343 @@ ATTENDANCE_JSON = './public/attendance.json'
 COMPUTER_USAGE_JSON = './public/computers.json'
 WIFI_SESSIONS_JSON = './public/wifi.json'
 
+MONTHS = ('april', 'may', 'june', 'july', 'august', 'september',
+          'october', 'november', 'december', 'january', 'february', 'march')
+AUTHORITY_ALIASES = {
+    'Bristol, City of': 'City of Bristol',
+    'Camridgeshire': 'Cambridgeshire',
+    'Dorset': 'Dorset Council',
+    'East Riding Of Yorkshire': 'East Riding of Yorkshire',
+    'Herefordshire, County of': 'Herefordshire',
+    'Kingston upon Hull, City of': 'Kingston upon Hull',
+    'Kingston Upon Thames': 'Kingston upon Thames',
+    'Middlesborough': 'Middlesbrough',
+    'Newcastle Upon Tyne': 'Newcastle upon Tyne',
+    'Richmond Upon Thames': 'Richmond upon Thames',
+    'Southend': 'Southend-on-Sea',
+}
+YEAR_SOURCES = {
+    '2023/2024': {
+        'workbook': ACTIVITY_WORKBOOK_2023_2024,
+        'worksheet': 'Activity Data 2024',
+        'mapper': 'published_labels',
+    },
+    '2024/2025': {
+        'workbook': ACTIVITY_WORKBOOK_2024_2026,
+        'worksheet': 'Usable data 2425',
+        'mapper': 'question_codes',
+        'member_prefix': 'Q7',
+        'metric_prefixes': {
+            'events': 'Q4', 'attendance': 'Q12', 'loans': 'Q17',
+            'digital_loans': 'Q21', 'visits': 'Q8', 'additional_lending': 'Q9',
+            'computer_usage': 'Q10',
+        },
+        'month_codes': {
+            'events': tuple(range(1, 13)),
+            'attendance': (1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20),
+            'loans': (1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13),
+            'digital_loans': tuple(range(1, 13)),
+            'visits': (1, 2, 3, 4, 14, 15, 16, 17, 18, 19, 20, 21),
+            'additional_lending': (1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20),
+            'computer_usage': (1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20),
+        },
+    },
+    '2025/2026': {
+        'workbook': ACTIVITY_WORKBOOK_2024_2026,
+        'worksheet': 'Usable data 2526',
+        'mapper': 'question_codes',
+        'member_prefix': 'Q3a',
+        'metric_prefixes': {
+            'events': 'Q5a', 'attendance': 'Q7a', 'loans': 'Q8a',
+            'digital_loans': 'Q10a', 'visits': 'Q11a',
+            'additional_lending': 'Q12a', 'computer_usage': 'Q14a',
+        },
+        'month_codes': {
+            'events': tuple(range(1, 13)),
+            'attendance': (1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20),
+            'loans': (1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12),
+            'digital_loans': tuple(range(1, 13)),
+            'visits': (1, 2, 3, 4, 14, 15, 16, 17, 18, 19, 20, 21),
+            'additional_lending': (1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20),
+            'computer_usage': (1, 2, 3, 4, 13, 14, 15, 16, 17, 18, 19, 20),
+        },
+    },
+}
+LEGACY_MONTH_NAMES = ('April', 'May', 'June', 'July', 'August', 'Sept',
+                      'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'March')
+MONTHLY_LABELS = {
+    'total_physical_events': 'Total Number Of Physical Events',
+    'physical_events_adults': 'Physical Events Adults Age 18',
+    'physical_events_11_under': 'Physical Events Children 11 And Under',
+    'physical_events_12_17': 'Physical Events Young People Between 12 And 17',
+    'physical_events_all_ages': 'Physical Events All Age Groups',
+    'total_digital_events': 'Total Number Of Digital Events',
+    'digital_events_adults': 'Digital Events Adults Age 18',
+    'digital_events_11_under': 'Digital Events Children 11 And Under',
+    'digital_events_12_17': 'Digital Events Young People Between 12 And 17',
+    'digital_events_all_ages': 'Digital Events All Age Groups',
+    'total_attendees_physical_events': 'Total Attendees At Physical Events',
+    'physical_attendees_adults': 'Physical Attendees Adults',
+    'physical_attendees_11_under': 'Physical Attendees Children 11 And Under',
+    'physical_attendees_12_17': 'Physical Attendees Young People Between 12 And 17',
+    'total_attendees_digital_events': 'Total Attendees At Digital Events',
+    'digital_attendees_adults': 'Digital Attendees Adults',
+    'digital_attendees_11_under': 'Digital Attendees Children 11 And Under',
+    'digital_attendees_12_17': 'Digital Attendees Young People Between 12 And 17',
+    'total_physical_book_issues': 'Total Number Of Physical Book Issues',
+    'loans_adult': 'Loans And Lending Adult 18',
+    'loans_11_under': 'Loans And Lending Children Under 12',
+    'loans_12_17': 'Loans And Lending Young People Under 12 17',
+    'total_physical_audiobook_issues': 'Total Number Of Physical Audio Book Issues',
+    'total_ebook_issues': 'Total Number Of Ebooks Issues',
+    'ebooks_adult': 'Ebooks Adult 18',
+    'ebooks_11_under': 'Ebooks Children Under 12',
+    'ebooks_12_17': 'Ebooks Young People Under 12 17',
+    'total_digital_audiobook_issues': 'Total Number Of Digital Audio Book Issues',
+    'digital_audiobook_issues_adult': 'Digital Audio Book Issues Adult 18',
+    'digital_audiobook_issues_11_under': 'Digital Audio Book Issues Children Under 12',
+    'digital_audiobook_issues_12_17': 'Digital Audio Book Issues Young People Under 12 17',
+    'physical_visits': 'Physical Visitors To Library Sites Where There Is No Co Location',
+    'physical_visits_no_colocation': 'Physical Visitors Co Location',
+    'mobile_libraries': 'Mobile Libraries',
+    'home_delivery': 'Home Delivery',
+    'click_and_collect': 'Click And Collect',
+    'hours_public_computers': 'Number Of Hours Physical Public Pcs Library Issues Devices',
+    'wifi_sessions': 'Number Of Sessions Of Wifi Access',
+}
+MEMBER_LABELS = {
+    'total_active_members': 'Total Active Members',
+    'active_members_11_under': 'Active Members - Children (≤11)',
+    'active_members_adults': 'Active Members - Adults (18+)',
+    'active_members_12_17': 'Active Members - Teens (12-17)',
+}
+QUESTION_CODE_GROUPS = {
+    'events': (
+        'total_physical_events', 'physical_events_11_under',
+        'physical_events_12_17', 'physical_events_adults',
+        'physical_events_all_ages', 'total_digital_events',
+        'digital_events_11_under', 'digital_events_12_17',
+        'digital_events_adults', 'digital_events_all_ages',
+    ),
+    'attendance': (
+        'total_attendees_physical_events', 'physical_attendees_11_under',
+        'physical_attendees_12_17', 'physical_attendees_adults',
+        'total_attendees_digital_events',
+        'digital_attendees_11_under', 'digital_attendees_12_17',
+        'digital_attendees_adults',
+    ),
+    'loans': (
+        'total_physical_book_issues', 'loans_11_under', 'loans_12_17',
+        'loans_adult', 'total_physical_audiobook_issues',
+        'loans_11_under_digital', 'loans_12_17_digital', 'loans_adult_digital',
+    ),
+    'digital_loans': (
+        'total_ebook_issues', 'ebooks_11_under', 'ebooks_12_17', 'ebooks_adult',
+        'total_digital_audiobook_issues', 'digital_audiobook_issues_11_under',
+        'digital_audiobook_issues_12_17', 'digital_audiobook_issues_adult',
+    ),
+    'visits': ('physical_visits', 'physical_visits_no_colocation'),
+    'additional_lending': ('click_and_collect', 'mobile_libraries', 'home_delivery'),
+    'computer_usage': ('hours_public_computers', 'wifi_sessions'),
+}
+SERVICE_TOTAL_GROUPS = {
+    'events': (('events', 1), ('events', 6)),
+    'attendance': (('attendance', 1), ('attendance', 5)),
+    'loans': (('loans', 1), ('loans', 5), ('digital_loans', 1), ('digital_loans', 5)),
+    'computer_hours': (('computer_usage', 1),),
+    'wifi_sessions': (('computer_usage', 2),),
+}
+DATA_QUALITY_EXCLUSIONS = {
+    '2023/2024': {
+        'users': {
+            'authorities': {'E06000031', 'E06000036'},
+        },
+        'computer_usage': {
+            'authorities': {'E08000021', 'E10000031'},
+            'values': {'2236995718'},
+        },
+    },
+}
+
+
+def financial_year_start(year):
+    """Return the calendar year in which a financial-year label starts."""
+    return int(year.split('/')[0])
+
+
+def financial_year_label(start_year):
+    """Return the financial-year label beginning in ``start_year``."""
+    return f'{start_year}/{start_year + 1}'
+
+
+def financial_year_month_start(start_year, month_offset):
+    """Return an ISO date for an April-to-March month offset."""
+    month_number = month_offset + 4
+    calendar_year = start_year + (month_number - 1) // 12
+    return f'{calendar_year}-{(month_number - 1) % 12 + 1:02d}-01'
+
+
+def string_values(row):
+    """Convert source cell values to strings while preserving missing values."""
+    return {key: '' if value is None else str(value) for key, value in row.items()}
+
+
+def numeric_cell_value(value):
+    """Return a count as text, converting Excel duration cells to numeric days."""
+    if isinstance(value, timedelta):
+        value = value.total_seconds() / 86400
+    if isinstance(value, float) and value.is_integer():
+        value = int(value)
+    return str(value) if isinstance(value, int) or str(value).isdigit() else ''
+
+
+def has_positive_count(row, fields):
+    """Return whether any of the supplied canonical fields contains a positive count."""
+    return any(int(row.get(field, 0) or 0) > 0 for field in fields)
+
+
+def service_total(row, field, records):
+    """Use a published service total when present, otherwise sum detailed records."""
+    total = row.get(field)
+    if total not in (None, ''):
+        return int(total)
+    return sum(int(record['Count']) for record in records)
+
+
+def is_excluded(year, metric, authority_code, value):
+    """Return whether a documented exceptional value must be omitted."""
+    exclusions = DATA_QUALITY_EXCLUSIONS.get(year, {}).get(metric, {})
+    return (authority_code in exclusions.get('authorities', set())
+            or str(value) in exclusions.get('values', set()))
+
+
+def published_label_rows(worksheet, year):
+    """Translate the 2023/24 published labels into the common field names."""
+    headers = [cell.value for cell in next(worksheet.iter_rows(max_row=1))]
+    for values in worksheet.iter_rows(min_row=2, values_only=True):
+        source = dict(zip(headers, values))
+        authority = source.get('Library Authority (Upper Tier Local Authority)')
+        if not authority:
+            continue
+
+        authority = AUTHORITY_ALIASES.get(authority, authority)
+        row = {
+            'authority': authority,
+            'library_details': source.get('Library Details', authority),
+            '_year': year,
+        }
+
+        for field, source_name in MEMBER_LABELS.items():
+            row[field] = source.get(source_name, '')
+        for field, source_name in MONTHLY_LABELS.items():
+            for index, month_name in enumerate(MONTHS):
+                calendar_year = financial_year_start(year) + (index + 3) // 12
+                header = f'{source_name} - {LEGACY_MONTH_NAMES[index]} {calendar_year}'
+                row[f'{field}_{month_name}'] = source.get(header, '')
+        for field in ('loans_adult', 'loans_11_under', 'loans_12_17'):
+            source_name = MONTHLY_LABELS[field]
+            for index, month_name in enumerate(MONTHS):
+                calendar_year = financial_year_start(year) + (index + 3) // 12
+                header = f'{source_name} - {LEGACY_MONTH_NAMES[index]} {calendar_year}_digital'
+                row[f'{field}_{month_name}_digital'] = source.get(header, '')
+
+        yield string_values(row)
+
+
+def question_code_rows(worksheet, year, source_config):
+    """Translate later published Q-code columns into the common field names."""
+    headers = [cell.value for cell in next(worksheet.iter_rows(max_row=1))]
+    member_prefix = source_config['member_prefix']
+    for values in worksheet.iter_rows(min_row=2, values_only=True):
+        source = dict(zip(headers, values))
+        authority = source.get('Q1')
+        if (not authority or str(authority).lower().startswith('library service')
+                or str(authority).startswith('{')):
+            continue
+
+        authority = AUTHORITY_ALIASES.get(authority, authority)
+        row = {
+            'authority': authority,
+            'library_details': authority,
+            '_year': year,
+            'total_active_members': source.get(f'{member_prefix}_1_1', ''),
+            'active_members_11_under': source.get(f'{member_prefix}_2_1', ''),
+            'active_members_adults': source.get(f'{member_prefix}_3_1', ''),
+            'active_members_12_17': source.get(f'{member_prefix}_4_1', ''),
+        }
+        for output_metric, groups in SERVICE_TOTAL_GROUPS.items():
+            row[f'_service_{output_metric}'] = sum(
+                int(numeric_cell_value(
+                    source.get(f"{source_config['metric_prefixes'][metric]}_{group}_Total", '')) or 0)
+                for metric, group in groups)
+        for metric, fields in QUESTION_CODE_GROUPS.items():
+            prefix = source_config['metric_prefixes'][metric]
+            month_codes = source_config['month_codes'][metric]
+            for group_number, field in enumerate(fields, 1):
+                monthly_values = []
+                for month_code, month_name in zip(month_codes, MONTHS):
+                    value = numeric_cell_value(
+                        source.get(f'{prefix}_{group_number}_{month_code}', ''))
+                    row[f'{field}_{month_name}'] = value
+                    monthly_values.append(value)
+
+                annual_total = numeric_cell_value(
+                    source.get(f'{prefix}_{group_number}_Total', ''))
+                if annual_total not in (None, '') and not any(
+                    int(value or 0) > 0 for value in monthly_values):
+                    for month_name in MONTHS:
+                        row[f'{field}_{month_name}'] = ''
+                    row[field] = annual_total
+        yield string_values(row)
+
+
+def load_activity_rows():
+    """Load every configured financial year into the common activity schema."""
+    rows = []
+    workbooks = {}
+    for year, source_config in YEAR_SOURCES.items():
+        required_config = {'workbook', 'worksheet', 'mapper'}
+        missing_config = required_config - source_config.keys()
+        if missing_config:
+            raise ValueError(
+                f"Source for {year} is missing: {', '.join(sorted(missing_config))}")
+
+        workbook_path = source_config['workbook']
+        if workbook_path not in workbooks:
+            workbooks[workbook_path] = openpyxl.load_workbook(
+                workbook_path, read_only=True, data_only=True)
+        workbook = workbooks[workbook_path]
+        worksheet_name = source_config['worksheet']
+        if worksheet_name not in workbook.sheetnames:
+            raise ValueError(
+                f"Worksheet '{worksheet_name}' for {year} is not in {workbook_path}")
+
+        worksheet = workbook[worksheet_name]
+        if source_config['mapper'] == 'published_labels':
+            rows.extend(published_label_rows(worksheet, year))
+        elif source_config['mapper'] == 'question_codes':
+            rows.extend(question_code_rows(worksheet, year, source_config))
+        else:
+            raise ValueError(
+                f"Unknown mapper '{source_config['mapper']}' for {year}")
+    return rows
+
 
 def calculate_record_frequency(records):
-    """
-    Calculate the frequency of records based on their periods.
-    Returns 'Quarterly' if there are 4 unique periods AND they are June, September, December,
-    And March.
-    Returns 'Yearly' if there is 1 unique period AND it is April.
-    Else returns 'Monthly'.
-    """
+    """Classify a metric's source records as monthly, quarterly, or yearly."""
     unique_periods = set()
     for record in records:
-        if 'Period' in record:
+        if record.get('Period'):
             unique_periods.add(record['Period'])
 
-    if len(unique_periods) == 4 and all(month in unique_periods for month in ['2023-06-01', '2023-09-01', '2023-12-01', '2024-03-01']):
-        return 'Quarterly'
-    elif len(unique_periods) == 1 and ('2024-03-01' in unique_periods or '2023-04-01' in unique_periods):
+    if not unique_periods or len(unique_periods) == 1:
         return 'Yearly'
-    else:
-        return 'Monthly'
+    if len(unique_periods) == 4:
+        return 'Quarterly'
+    return 'Monthly'
 
 def convert_date_to_quarterly(date_str):
-    """
-        Convert a date string in YYYY-MM-DD format to a quarterly period string.
-        such as 2023-01-01/P3M
-    """
+    """Convert a quarter-ending month date to its ISO three-month period."""
     date_obj = datetime.strptime(date_str, "%Y-%m-%d")
     # Set to the first of the month
     new_date = date_obj.replace(day=1)
@@ -71,14 +384,11 @@ def convert_date_to_quarterly(date_str):
 
     period = new_date.strftime("%Y-%m-%d") + '/P3M'
 
-    # Correct some invalid entries
-    if period == '2023-03-01/P3M':
-        period = '2023-04-01/P3M'
     return period
 
 
 def convert_values_to_monthly(data):
-    """Convert quarterly and annual values to monthly and return as months """
+    """Expand quarterly and annual records into evenly distributed monthly data."""
     for record in data:
         if 'Period' in record and 'P1M' in record['Period']:
             original_period = record['Period']
@@ -131,12 +441,13 @@ def convert_values_to_monthly(data):
             # Round up to the nearest integer
             record['Count'] = new_count
             original_period = record['Period']
-            record['Period'] = '2023-04'
+            start_year = int(original_period[:4])
+            record['Period'] = f'{start_year}-04'
 
             new_records = []
             for i in range(1, 12):
                 new_month = (4 + i - 1) % 12 + 1
-                new_year = 2023 + ((4 + i - 1) // 12)
+                new_year = start_year + ((4 + i - 1) // 12)
                 new_date_str = f"{new_year}-{new_month:02d}"
                 new_records.append(
                     {**record, 'Period': new_date_str, 'Count': new_count})
@@ -146,16 +457,17 @@ def convert_values_to_monthly(data):
     return data
 
 def convert_values_to_yearly(data):
-    """Convert monthly and quarterly values to yearly and return as years """
+    """Format annual records as financial-year labels for the service dataset."""
     for record in data:
         if 'Period' in record and 'P1Y' in record['Period']:
-            record['Period'] = '2023/2024'
+            start_year = int(record['Period'][:4])
+            record['Period'] = f'{start_year}/{start_year + 1}'
 
     return data
 
 
 def rotate_activity_data():
-    """Rotate the activity data from the input CSV file into multiple output files."""
+    """Generate all CSV and JSON dashboard datasets for configured financial years."""
 
     library_services = None
     # Read the library services json to create a dictionary of all english library services
@@ -163,8 +475,11 @@ def rotate_activity_data():
         library_services_data = json.load(lib_services_file)
         library_services = {service['code']: service for service in library_services_data if service['nation'] == 'England'}
 
-    with open(LIBRARY_DATA, mode='r', newline='', encoding='utf-8-sig') as library_data_file, \
-            open(POPULATION, mode='r', newline='', encoding='utf-8-sig') as population_file, \
+    activity_rows = load_activity_rows()
+    reporting_years = sorted({financial_year_start(row['_year'])
+                              for row in activity_rows})
+
+    with open(POPULATION, mode='r', newline='', encoding='utf-8-sig') as population_file, \
             open(AUTHORITIES, mode='r', newline='', encoding='utf-8') as authorities_file, \
             open(NEAREST_NEIGHBOURS, mode='r', newline='', encoding='utf-8-sig') as nearest_neighbours_file, \
             open(USERS, mode='w', newline='', encoding='utf-8') as users_out, \
@@ -176,8 +491,6 @@ def rotate_activity_data():
             open(COMPUTER_USAGE, mode='w', newline='', encoding='utf-8') as computer_usage_out, \
             open(WIFI_SESSIONS, mode='w', newline='', encoding='utf-8') as wifi_sessions_out, \
             open(SERVICES, mode='w', newline='', encoding='utf-8') as services_out:
-
-        activity_reader = csv.DictReader(library_data_file)
 
         # Create a lookup dictionary for population data
         population = {}
@@ -305,8 +618,9 @@ def rotate_activity_data():
         services = []
 
         # Each row is all the authority's activity data for the year
-        for row in activity_reader:
+        for row in activity_rows:
 
+            start_year = financial_year_start(row['_year'])
             authority = row['authority']
             library_service = row['library_details']
             authority_code = None
@@ -342,30 +656,11 @@ def rotate_activity_data():
                 # We need to adjust the month to YYYY-MM-DD format and add the period
                 period_start = None
 
-                if 'april' in header:
-                    period_start = '2023-04-01'
-                elif 'may' in header:
-                    period_start = '2023-05-01'
-                elif 'june' in header:
-                    period_start = '2023-06-01'
-                elif 'july' in header:
-                    period_start = '2023-07-01'
-                elif 'august' in header:
-                    period_start = '2023-08-01'
-                elif 'september' in header:
-                    period_start = '2023-09-01'
-                elif 'october' in header:
-                    period_start = '2023-10-01'
-                elif 'november' in header:
-                    period_start = '2023-11-01'
-                elif 'december' in header:
-                    period_start = '2023-12-01'
-                elif 'january' in header:
-                    period_start = '2024-01-01'
-                elif 'february' in header:
-                    period_start = '2024-02-01'
-                elif 'march' in header:
-                    period_start = '2024-03-01'
+                for month_offset, month_name in enumerate(MONTHS):
+                    if month_name in header:
+                        period_start = financial_year_month_start(
+                            start_year, month_offset)
+                        break
 
                 # Age group is common in the header e.g. 'adults', '11_under', '12_17', 'all_ages'
                 age_group = None
@@ -386,23 +681,25 @@ def rotate_activity_data():
                     physical_digital = 'Digital'
 
                 # Users: We want a schema of Authority, Age Group, Count
-                if header.startswith('active_members') and value.isdigit() and authority_code != 'E06000031' and authority_code != 'E06000036':
+                if (header.startswith('active_members') and value.isdigit()
+                    and not is_excluded(row['_year'], 'users', authority_code, value)):
                     authority_users.append({
                         'Authority': authority_code,
-                        'Period': '2023-04-01/P1Y',
+                        'Period': f'{start_year}-04-01/P1Y',
                         'Age group': age_group,
                         'Count': value
                     })
 
                 if header.startswith('total_active_members'):
                     # We record the total users IF there is no data for the individual age groups.
-                    if row.get('active_members_11_under') == "" and \
-                       row.get('active_members_adults') == "" and \
-                       row.get('active_members_12_17') == "" and \
-                            value.isdigit() and authority_code != 'E06000031' and authority_code != 'E06000036':
+                    if (row.get('active_members_11_under') == ""
+                            and row.get('active_members_adults') == ""
+                            and row.get('active_members_12_17') == ""
+                            and value.isdigit()
+                            and not is_excluded(row['_year'], 'users', authority_code, value)):
                         authority_users.append({
                             'Authority': authority_code,
-                            'Period': '2023-04-01/P1Y',
+                            'Period': f'{start_year}-04-01/P1Y',
                             'Age group': 'Unknown',
                             'Count': value
                         })
@@ -420,7 +717,9 @@ def rotate_activity_data():
                         })
                 if header.startswith('total_physical_events'):
                     # Record total physical events IF no data for the individual months.
-                    if row.get('physical_events_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('physical_events_')]):
                         if value is not None and value != "":
                             authority_events.append({
                                 'Authority': authority_code,
@@ -431,7 +730,9 @@ def rotate_activity_data():
                             })
                 if header.startswith('total_digital_events'):
                     # Record the total digital events IF there is no data for the individual months.
-                    if row.get('digital_events_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('digital_events_')]):
                         if value is not None and value != "":
                             authority_events.append({
                                 'Authority': authority_code,
@@ -454,7 +755,9 @@ def rotate_activity_data():
                         })
                 if header.startswith('total_attendees_physical_events'):
                     # Record total physical attendance IF no data for the individual months.
-                    if row.get('physical_attendees_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('physical_attendees_')]):
                         if value is not None and value != "":
                             authority_attendance.append({
                                 'Authority': authority_code,
@@ -465,7 +768,9 @@ def rotate_activity_data():
                             })
                 if header.startswith('total_attendees_digital_events'):
                     # Record total digital attendance IF no data for the individual months.
-                    if row.get('digital_attendees_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('digital_attendees_')]):
                         if value is not None and value != "":
                             authority_attendance.append({
                                 'Authority': authority_code,
@@ -509,7 +814,10 @@ def rotate_activity_data():
 
                 if header.startswith('total_physical_book_issues'):
                     # Record total physical book loans IF no data for the individual months.
-                    if row.get('loans_adult_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('loans_')
+                                  and not field.endswith('_digital')]):
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -521,7 +829,10 @@ def rotate_activity_data():
 
                 if header.startswith('total_physical_audiobook_issues'):
                     # Record total physical audiobook loans IF no data for the individual months.
-                    if row.get('loans_adult_march_digital') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('loans_')
+                                  and field.endswith('_digital')]):
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -533,7 +844,9 @@ def rotate_activity_data():
 
                 if header.startswith('total_ebook_issues'):
                     # Record total ebook loans IF no data for the individual months.
-                    if row.get('ebooks_adult_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('ebooks_')]):
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -545,7 +858,9 @@ def rotate_activity_data():
 
                 if header.startswith('total_digital_audiobook_issues'):
                     # Record total digital audiobook loans IF no data for the individual months.
-                    if row.get('digital_audiobook_issues_adult_march') == "":
+                    if not has_positive_count(
+                            row, [field for field in row
+                                  if field.startswith('digital_audiobook_issues_')]):
                         if value is not None and value != "":
                             authority_loans.append({
                                 'Authority': authority_code,
@@ -588,7 +903,8 @@ def rotate_activity_data():
 
                 # Computer usage: Authority, Period, Count (hours)
                 if header.startswith('hours_public_computers'):
-                    if value is not None and value != "" and value != '2236995718' and authority_code != 'E08000021' and authority_code != 'E10000031':
+                    if (value is not None and value != ""
+                            and not is_excluded(row['_year'], 'computer_usage', authority_code, value)):
                         authority_computer_usage.append({
                             'Authority': authority_code,
                             'Period': period_start,
@@ -607,25 +923,24 @@ def rotate_activity_data():
             # Add the authority's data to the services list
             users_count = sum(
                 int(record['Count']) for record in authority_users)
-            events_count = sum(
-                int(record['Count']) for record in authority_events)
-            attendance_count = sum(
-                int(record['Count']) for record in authority_attendance)
-            loans_count = sum(
-                int(record['Count']) for record in authority_loans)
+            events_count = service_total(
+                row, '_service_events', authority_events)
+            attendance_count = service_total(
+                row, '_service_attendance', authority_attendance)
+            loans_count = service_total(row, '_service_loans', authority_loans)
             visits_count = sum(
                 int(record['Count']) for record in authority_visits)
-            computer_hours_count = sum(
-                int(record['Count']) for record in authority_computer_usage)
-            wifi_sessions_count = sum(
-                int(record['Count']) for record in authority_wifi_sessions)
+            computer_hours_count = service_total(
+                row, '_service_computer_hours', authority_computer_usage)
+            wifi_sessions_count = service_total(
+                row, '_service_wifi_sessions', authority_wifi_sessions)
 
             # If any of the counts are 0 set to None``
             services.append({
                 'Authority code': authority_code,
                 'Authority nice name': authority_nice_name,
                 'Library service': library_service,
-                'Period': '2023/2024',
+                'Period': financial_year_label(start_year),
                 'Users': users_count if users_count > 0 else None,
                 'Events': events_count if events_count > 0 else None,
                 'Attendance': attendance_count if attendance_count > 0 else None,
@@ -666,7 +981,7 @@ def rotate_activity_data():
                     elif event_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
                     elif event_frequency == 'Yearly':
-                        period = '2023-04-01/P1Y'
+                        period = f'{start_year}-04-01/P1Y'
 
                     record['Period'] = period
 
@@ -693,7 +1008,7 @@ def rotate_activity_data():
                     if attendance_frequency == 'Monthly':
                         period = record['Period'] + '/P1M'
                     elif attendance_frequency == 'Yearly':
-                        period = '2023-04-01/P1Y'
+                        period = f'{start_year}-04-01/P1Y'
                     elif attendance_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
                     record['Period'] = period
@@ -716,6 +1031,9 @@ def rotate_activity_data():
             loans_frequency = None
             for (content_format, content_age_group), records in loans_dict.items():
                 loans_frequency = calculate_record_frequency(records)
+                if loans_frequency != 'Yearly':
+                    records = [record for record in records if record.get('Period')]
+                    loans_dict[(content_format, content_age_group)] = records
 
                 for record in records:
                     period = None
@@ -724,7 +1042,7 @@ def rotate_activity_data():
                     elif loans_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
                     elif loans_frequency == 'Yearly':
-                        period = '2023-04-01/P1Y'
+                        period = f'{start_year}-04-01/P1Y'
                     record['Period'] = period
 
             # Flatten the dictionary back into a list
@@ -752,7 +1070,7 @@ def rotate_activity_data():
                     elif visits_frequency == 'Quarterly':
                         period = convert_date_to_quarterly(record['Period'])
                     elif visits_frequency == 'Yearly':
-                        period = '2023-04-01/P1Y'
+                        period = f'{start_year}-04-01/P1Y'
                     record['Period'] = period
 
             # Flatten the dictionary back into a list
@@ -767,7 +1085,7 @@ def rotate_activity_data():
                 if cc_visits_frequency == 'Quarterly':
                     period = convert_date_to_quarterly(record['Period'])
                 elif cc_visits_frequency == 'Yearly':
-                    period = '2023-04-01/P1Y'
+                    period = f'{start_year}-04-01/P1Y'
                 else:
                     period = record['Period'] + '/P1M'
                 record['Period'] = period
@@ -781,7 +1099,7 @@ def rotate_activity_data():
                 if computer_usage_frequency == 'Quarterly':
                     period = convert_date_to_quarterly(record['Period'])
                 elif computer_usage_frequency == 'Yearly':
-                    period = '2023-04-01/P1Y'
+                    period = f'{start_year}-04-01/P1Y'
                 else:
                     period = record['Period'] + '/P1M'
                 record['Period'] = period
@@ -795,22 +1113,26 @@ def rotate_activity_data():
                 if wifi_sessions_frequency == 'Quarterly':
                     period = convert_date_to_quarterly(record['Period'])
                 elif wifi_sessions_frequency == 'Yearly':
-                    period = '2023-04-01/P1Y'
+                    period = f'{start_year}-04-01/P1Y'
                 else:
                     period = record['Period'] + '/P1M'
                 record['Period'] = period
             wifi_sessions.extend(authority_wifi_sessions)
 
         # Extend the services data to include any library service not in the data
-        existing_codes = {service['Authority code'] for service in services}
+        existing_services = {(service['Authority code'], service['Period'])
+                             for service in services}
 
         for lib_service in library_services.values():
-            if lib_service['code'] not in existing_codes:
+            for start_year in reporting_years:
+                period = financial_year_label(start_year)
+                if (lib_service['code'], period) in existing_services:
+                    continue
                 services.append({
                     'Authority code': lib_service['code'],
                     'Authority nice name': lib_service['nice-name'],
                     'Library service': lib_service.get('name', 'Unknown'),
-                    'Period': '2023-04-01/P1Y',
+                    'Period': period,
                     'Users': None,
                     'Events': None,
                     'Attendance': None,

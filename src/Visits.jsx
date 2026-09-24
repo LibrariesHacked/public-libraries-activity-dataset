@@ -152,7 +152,7 @@ const Visits = () => {
 
     visitData = {
       labels,
-      datasets: locationTypes.map((location, index) => {
+      datasets: locationTypes.map(location => {
         return {
           label: location,
           data: labels.map(

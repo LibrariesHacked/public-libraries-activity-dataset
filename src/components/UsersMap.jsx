@@ -7,6 +7,10 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import { useTheme } from '@mui/material/styles'
 
 import Map, { FullscreenControl, Layer, Source } from 'react-map-gl/maplibre'
+import * as maplibregl from 'maplibre-gl'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
+
+import 'maplibre-gl/dist/maplibre-gl.css'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -14,6 +18,8 @@ import { getActiveServices } from '../models/service'
 import { getUsersPopulationPercentages } from '../models/users'
 
 import * as usersModel from '../models/users'
+
+maplibregl.setWorkerUrl(workerUrl)
 
 const UsersMap = () => {
   const [map, setMap] = useState(null)
@@ -200,6 +206,7 @@ const UsersMap = () => {
     <Box sx={{ mb: 2 }}>
       <Map
         ref={setMap}
+        mapLib={maplibregl}
         style={{
           width: '100%',
           height: '400px',

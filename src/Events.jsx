@@ -236,7 +236,7 @@ const Events = () => {
 
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
-    const datasets = ['Events', 'Attendance'].map((label, i) => {
+    const datasets = ['Events', 'Attendance'].map(label => {
       const data = serviceLabels.map(serviceLabel => {
         const serviceCode = services.find(
           s => s.niceName === serviceLabel

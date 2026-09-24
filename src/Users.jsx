@@ -136,7 +136,7 @@ const Users = () => {
     // We have a dataset for each age group
     const ageGroups = [...new Set(users.map(m => m.ageGroup))].sort()
     ageGroups.push('Non-users') // Add non-users as an age group
-    const ageGroupChartDatasets = ageGroups.map((ageGroup, i) => {
+    const ageGroupChartDatasets = ageGroups.map(ageGroup => {
       // For each age group we need the data for each period
       const data = yearLabels.map(label => {
         // For each period we need the total users in that age group

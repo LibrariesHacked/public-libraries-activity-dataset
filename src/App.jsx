@@ -1,4 +1,4 @@
-import React from 'react'
+import { lazy, Suspense } from 'react'
 
 import { HashRouter, Route, Routes } from 'react-router-dom'
 
@@ -14,17 +14,15 @@ import Divider from '@mui/material/Divider'
 import GlobalStyles from '@mui/material/GlobalStyles'
 import Typography from '@mui/material/Typography'
 
-import Computers from './Computers'
-import Events from './Events'
-import Home from './Home'
-import Loans from './Loans'
-import Users from './Users'
-import Visits from './Visits'
+const Computers = lazy(() => import('./Computers'))
+const Events = lazy(() => import('./Events'))
+const Home = lazy(() => import('./Home'))
+const Loans = lazy(() => import('./Loans'))
+const Users = lazy(() => import('./Users'))
+const Visits = lazy(() => import('./Visits'))
 
 import NavTabs from './components/NavTabs'
 import ServiceSelection from './components/ServiceSelection'
-
-import 'maplibre-gl/dist/maplibre-gl.css'
 
 const theme = createTheme({
   palette: {
@@ -114,14 +112,16 @@ function App () {
               <ServiceSelection />
             </Box>
             <NavTabs />
-            <Routes>
-              <Route path='/' element={<Home />} />
-              <Route path='/loans' element={<Loans />} />
-              <Route path='/users' element={<Users />} />
-              <Route path='/visits' element={<Visits />} />
-              <Route path='/events' element={<Events />} />
-              <Route path='/computers' element={<Computers />} />
-            </Routes>
+            <Suspense fallback={<Typography>Loading...</Typography>}>
+              <Routes>
+                <Route path='/' element={<Home />} />
+                <Route path='/loans' element={<Loans />} />
+                <Route path='/users' element={<Users />} />
+                <Route path='/visits' element={<Visits />} />
+                <Route path='/events' element={<Events />} />
+                <Route path='/computers' element={<Computers />} />
+              </Routes>
+            </Suspense>
             <Box sx={{ textAlign: 'center', marginY: 4 }}>
               <Typography variant='body1'>
                 Made with ❤️ by{' '}

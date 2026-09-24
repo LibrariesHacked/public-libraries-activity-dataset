@@ -209,7 +209,7 @@ const Loans = () => {
 
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
-    const datasets = itemFormats.map((format, i) => {
+    const datasets = itemFormats.map(format => {
       const data = []
       serviceLabels.forEach(serviceLabel => {
         const service = services.find(s => s.niceName === serviceLabel)

@@ -16,6 +16,9 @@ import { useApplicationState } from '../hooks/useApplicationState'
 import * as serviceModel from '../models/service'
 
 const ServiceSelection = () => {
+  const [{ services, serviceLookup, filteredServices }, dispatchApplication] =
+    useApplicationState()
+
   useEffect(() => {
     async function getServices () {
       const services = await serviceModel.getServices()
@@ -30,10 +33,7 @@ const ServiceSelection = () => {
       })
     }
     getServices()
-  }, []) // eslint-disable-line
-
-  const [{ services, serviceLookup, filteredServices }, dispatchApplication] =
-    useApplicationState() //eslint-disable-line
+  }, [dispatchApplication])
 
   const [serviceMenuAnchor, setServiceMenuAnchor] = useState(null)
 
