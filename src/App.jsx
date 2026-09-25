@@ -14,15 +14,16 @@ import Divider from '@mui/material/Divider'
 import GlobalStyles from '@mui/material/GlobalStyles'
 import Typography from '@mui/material/Typography'
 
+import NavTabs from './components/NavTabs'
+import PeriodSelection from './components/PeriodSelection'
+import ServiceSelection from './components/ServiceSelection'
+
 const Computers = lazy(() => import('./Computers'))
 const Events = lazy(() => import('./Events'))
 const Home = lazy(() => import('./Home'))
 const Loans = lazy(() => import('./Loans'))
 const Users = lazy(() => import('./Users'))
 const Visits = lazy(() => import('./Visits'))
-
-import NavTabs from './components/NavTabs'
-import ServiceSelection from './components/ServiceSelection'
 
 const theme = createTheme({
   palette: {
@@ -110,6 +111,10 @@ function App () {
                 to construct a custom comparison group.
               </Typography>
               <ServiceSelection />
+              <Typography gutterBottom color='textSecondary' sx={{ mt: 2 }}>
+                Select years to filter.
+              </Typography>
+              <PeriodSelection />
             </Box>
             <NavTabs />
             <Suspense fallback={<Typography>Loading...</Typography>}>

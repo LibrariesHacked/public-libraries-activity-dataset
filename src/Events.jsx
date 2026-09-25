@@ -27,6 +27,13 @@ import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
 
+import {
+  filterByMonthRange,
+  filterByPeriods,
+  formatMonth,
+  getMonthsInRange
+} from './helpers/periods'
+
 import { getActiveServices } from './models/service'
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
@@ -76,7 +83,14 @@ const serviceChartOptions = {
 
 const Events = () => {
   const [
-    { services, filteredServices, events, attendance },
+    {
+      services,
+      filteredServices,
+      events,
+      attendance,
+      monthRange,
+      selectedPeriods
+    },
     dispatchApplication
   ] = useApplicationState()
 
@@ -119,13 +133,14 @@ const Events = () => {
   }, [events, attendance, dispatchApplication])
 
   useEffect(() => {
-    if (!events || !attendance) return
+    if (!events || !attendance || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const monthLabels = [
-      ...new Set([...events.map(e => e.month), ...attendance.map(a => a.month)])
-    ].sort()
+    const monthLabels = getMonthsInRange(monthRange)
+
+    const chartEvents = filterByMonthRange(events, monthRange)
+    const chartAttendance = filterByMonthRange(attendance, monthRange)
 
     const eventAttendanceCharts = []
 
@@ -137,7 +152,7 @@ const Events = () => {
           label: `Attendance - ${eventType}`,
           data: monthLabels.map(month => {
             // Get the count of attendance for this event type and month
-            return attendance
+            return chartAttendance
               .filter(
                 a =>
                   a.type === eventType &&
@@ -153,7 +168,7 @@ const Events = () => {
           label: `Events - ${eventType}`,
           data: monthLabels.map(month => {
             // Get the count of events for this event type and month
-            return events
+            return chartEvents
               .filter(
                 e =>
                   e.type === eventType &&
@@ -195,12 +210,7 @@ const Events = () => {
               },
               ticks: {
                 callback: function (value) {
-                  const label = this.getLabelForValue(value)
-                  const date = new Date(label + '-01')
-                  return date.toLocaleDateString('en-GB', {
-                    month: 'short',
-                    year: '2-digit'
-                  })
+                  return formatMonth(this.getLabelForValue(value))
                 }
               }
             },
@@ -234,6 +244,9 @@ const Events = () => {
 
     setEventsAttendanceChartData(eventAttendanceCharts)
 
+    const serviceEvents = filterByPeriods(events, selectedPeriods)
+    const serviceAttendance = filterByPeriods(attendance, selectedPeriods)
+
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
     const datasets = ['Events', 'Attendance'].map(label => {
@@ -244,7 +257,7 @@ const Events = () => {
         if (!serviceCode) return 0
 
         if (label === 'Events') {
-          return events
+          return serviceEvents
             .filter(
               e =>
                 activeServices.find(s => s.code === e.serviceCode) &&
@@ -252,7 +265,7 @@ const Events = () => {
             )
             .reduce((sum, e) => sum + (e.countEvents || 0), 0)
         } else {
-          return attendance
+          return serviceAttendance
             .filter(
               a =>
                 activeServices.find(s => s.code === a.serviceCode) &&
@@ -279,7 +292,14 @@ const Events = () => {
       labels: serviceLabels,
       datasets
     })
-  }, [filteredServices, services, events, attendance])
+  }, [
+    filteredServices,
+    services,
+    events,
+    attendance,
+    monthRange,
+    selectedPeriods
+  ])
 
   return (
     <Box>

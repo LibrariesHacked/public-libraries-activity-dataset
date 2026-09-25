@@ -27,6 +27,13 @@ import loansByServiceMd from './content/loans-by-service.md'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
+import {
+  filterByMonthRange,
+  filterByPeriods,
+  formatMonth,
+  getMonthsInRange
+} from './helpers/periods'
+
 import { getActiveServices } from './models/service'
 import * as loansModel from './models/loans'
 
@@ -61,7 +68,7 @@ const serviceChartOptions = {
     x: {
       title: {
         display: true,
-        text: 'Count of loans per population'
+        text: 'Count of loans per population per year'
       },
       stacked: true,
       beginAtZero: true
@@ -73,8 +80,10 @@ const serviceChartOptions = {
 }
 
 const Loans = () => {
-  const [{ filteredServices, services, loans }, dispatchApplication] =
-    useApplicationState()
+  const [
+    { filteredServices, services, loans, monthRange, selectedPeriods },
+    dispatchApplication
+  ] = useApplicationState()
 
   const [formatCharts, setFormatCharts] = useState([])
 
@@ -107,11 +116,14 @@ const Loans = () => {
   }, [services, loans, dispatchApplication])
 
   useEffect(() => {
-    if (!loans) return
+    if (!loans || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
 
     const formatCharts = []
+
+    const chartLoans = filterByMonthRange(loans, monthRange)
+    const formatLabels = getMonthsInRange(monthRange)
 
     const itemFormats = [...new Set(loans.map(m => m.format))].sort((a, b) => {
       const order = ['Physical book', 'Ebook', 'Physical audiobook', 'Eaudio']
@@ -143,12 +155,7 @@ const Loans = () => {
             },
             ticks: {
               callback: function (value) {
-                const label = this.getLabelForValue(value)
-                const date = new Date(label + '-01')
-                return date.toLocaleDateString('en-GB', {
-                  month: 'short',
-                  year: '2-digit'
-                })
+                return formatMonth(this.getLabelForValue(value))
               }
             }
           },
@@ -161,12 +168,9 @@ const Loans = () => {
           }
         }
       }
-      const formatLoans = loans.filter(m => m.format === format)
+      const formatLoans = chartLoans.filter(m => m.format === format)
 
-      let formatLabels = []
       const datasets = []
-      // The labels are the months in the data. The months are already formattted as YYYY-MM
-      formatLabels = [...new Set(formatLoans.map(loan => loan.month))].sort()
 
       // We want a dataset for each content age group
       const contentAgeGroups = [
@@ -207,6 +211,9 @@ const Loans = () => {
 
     setFormatCharts(formatCharts)
 
+    const serviceLoans = filterByPeriods(loans, selectedPeriods)
+    const yearCount = selectedPeriods?.length || 1
+
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
     const datasets = itemFormats.map(format => {
@@ -216,7 +223,7 @@ const Loans = () => {
         const serviceCode = service?.code
         if (!serviceCode) return null
 
-        const serviceFormatLoans = loans.filter(
+        const serviceFormatLoans = serviceLoans.filter(
           m => m.serviceCode === serviceCode && m.format === format
         )
         const totalLoans = serviceFormatLoans.reduce(
@@ -224,7 +231,9 @@ const Loans = () => {
           0
         )
         const servicePopulation = service?.totalPopulation || 1
-        const loansPerCapita = Math.round(totalLoans / servicePopulation)
+        const loansPerCapita = Math.round(
+          totalLoans / servicePopulation / yearCount
+        )
 
         data.push(loansPerCapita)
       })
@@ -246,7 +255,7 @@ const Loans = () => {
       labels: serviceLabels,
       datasets
     })
-  }, [filteredServices, loans, services])
+  }, [filteredServices, loans, services, monthRange, selectedPeriods])
   return (
     <Box>
       <Typography variant='h4' gutterBottom>

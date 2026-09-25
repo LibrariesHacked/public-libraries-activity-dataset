@@ -26,7 +26,7 @@ const UsersMap = () => {
   const [mapLoaded, setMapLoaded] = useState(false)
 
   const [
-    { filteredServices, services, mapZoom, mapPosition, users },
+    { filteredServices, services, mapZoom, mapPosition, users, snapshotPeriod },
     dispatchApplication
   ] = useApplicationState()
 
@@ -63,9 +63,14 @@ const UsersMap = () => {
 
     const serviceLookup = {}
 
+    // Active users are a yearly snapshot, so only the latest selected year is used.
+    const snapshotUsers = snapshotPeriod
+      ? users.filter(u => u.period === snapshotPeriod)
+      : users
+
     const populationPercentages = getUsersPopulationPercentages(
       userServices,
-      users
+      snapshotUsers
     )
 
     // Calculate the maximum percentage across all the services to create a scale
@@ -186,7 +191,15 @@ const UsersMap = () => {
 
     setServicesWithDataFilter(servicesFilter)
     setServicesNoDataFilter(servicesWithNoDataFilter)
-  }, [services, filteredServices, map, users, displayAgeGroup, mapLoaded])
+  }, [
+    services,
+    filteredServices,
+    map,
+    users,
+    displayAgeGroup,
+    mapLoaded,
+    snapshotPeriod
+  ])
 
   const setViewState = viewState => {
     dispatchApplication({

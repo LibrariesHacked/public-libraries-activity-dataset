@@ -26,6 +26,13 @@ import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
 
+import {
+  filterByMonthRange,
+  filterByPeriods,
+  formatMonth,
+  getMonthsInRange
+} from './helpers/periods'
+
 import { getActiveServices } from './models/service'
 import * as computersModel from './models/computers'
 import * as wifiModel from './models/wifi'
@@ -52,6 +59,17 @@ const computersWiFiChartOptions = {
     }
   },
   scales: {
+    x: {
+      title: {
+        display: true,
+        text: 'Month'
+      },
+      ticks: {
+        callback: function (value) {
+          return formatMonth(this.getLabelForValue(value))
+        }
+      }
+    },
     y: {
       type: 'linear',
       display: true,
@@ -98,8 +116,10 @@ const serviceChartOptions = {
 }
 
 const Computers = () => {
-  const [{ filteredServices, services, computers, wifi }, dispatchApplication] =
-    useApplicationState()
+  const [
+    { filteredServices, services, computers, wifi, monthRange, selectedPeriods },
+    dispatchApplication
+  ] = useApplicationState()
 
   const [computersWiFiChart, setComputersWiFiChart] = useState({
     datasets: [],
@@ -141,7 +161,7 @@ const Computers = () => {
   }, [services, computers, wifi, dispatchApplication])
 
   useEffect(() => {
-    if (!computers || !wifi) return
+    if (!computers || !wifi || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
 
@@ -153,20 +173,17 @@ const Computers = () => {
       activeServices.find(s => s.code === m.serviceCode)
     )
 
-    // Create a new set of labels from both datasets
-    const monthLabels = Array.from(
-      new Set([
-        ...filteredComputers.map(c => c.month),
-        ...filteredWifi.map(w => w.month)
-      ])
-    ).sort()
+    const chartComputers = filterByMonthRange(filteredComputers, monthRange)
+    const chartWifi = filterByMonthRange(filteredWifi, monthRange)
+
+    const monthLabels = getMonthsInRange(monthRange)
 
     const computersWiFiDatasets = [
       {
         label: 'Computer hours',
         data: monthLabels.map(label => {
           return (
-            filteredComputers
+            chartComputers
               .filter(c => c.month === label)
               .reduce((sum, v) => sum + (v.countHours || 0), 0) || 0
           )
@@ -176,7 +193,7 @@ const Computers = () => {
         label: 'WiFi sessions',
         data: monthLabels.map(label => {
           return (
-            filteredWifi
+            chartWifi
               .filter(w => w.month === label)
               .reduce((sum, v) => sum + (v.countSessions || 0), 0) || 0
           )
@@ -196,6 +213,9 @@ const Computers = () => {
     setComputersWiFiChart(computersWiFiChart)
 
     // The service chart is a total computer hours and wifi sessions by service per resident population
+    const serviceComputers = filterByPeriods(filteredComputers, selectedPeriods)
+    const serviceWifi = filterByPeriods(filteredWifi, selectedPeriods)
+
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
     const serviceDatasets = [
@@ -208,7 +228,7 @@ const Computers = () => {
           if (!serviceCode) return null
 
           return (
-            filteredComputers
+            serviceComputers
               .filter(c => c.serviceCode === serviceCode)
               .reduce((sum, v) => sum + (v.countHours || 0), 0) || 0
           )
@@ -223,7 +243,7 @@ const Computers = () => {
           if (!serviceCode) return null
 
           return (
-            filteredWifi
+            serviceWifi
               .filter(w => w.serviceCode === serviceCode)
               .reduce((sum, v) => sum + (v.countSessions || 0), 0) || 0
           )
@@ -234,7 +254,7 @@ const Computers = () => {
     // If computer hours and wifi are null for a service change the label to include (no data)
     serviceLabels.forEach((label, index) => {
       const service = services.find(s => s.niceName === label)
-      if (!service.computerHours && !service.wiFiSessions) {
+      if (!service.computerHours && !service.wifiSessions) {
         serviceLabels[index] = `${label} (no data)`
       }
     })
@@ -243,7 +263,14 @@ const Computers = () => {
       labels: serviceLabels,
       datasets: serviceDatasets
     })
-  }, [filteredServices, services, computers, wifi])
+  }, [
+    filteredServices,
+    services,
+    computers,
+    wifi,
+    monthRange,
+    selectedPeriods
+  ])
 
   return (
     <Box>

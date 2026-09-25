@@ -222,7 +222,13 @@ def numeric_cell_value(value):
         value = value.total_seconds() / 86400
     if isinstance(value, float) and value.is_integer():
         value = int(value)
-    return str(value) if isinstance(value, int) or str(value).isdigit() else ''
+    return str(value) if isinstance(value, (int, float)) or str(value).isdigit() else ''
+
+
+def number_value(value):
+    """Convert a numeric string to an integer when possible, otherwise a float."""
+    number = float(value)
+    return int(number) if number.is_integer() else number
 
 
 def has_positive_count(row, fields):
@@ -234,7 +240,7 @@ def service_total(row, field, records):
     """Use a published service total when present, otherwise sum detailed records."""
     total = row.get(field)
     if total not in (None, ''):
-        return int(total)
+        return number_value(total)
     return sum(int(record['Count']) for record in records)
 
 
@@ -301,7 +307,7 @@ def question_code_rows(worksheet, year, source_config):
         }
         for output_metric, groups in SERVICE_TOTAL_GROUPS.items():
             row[f'_service_{output_metric}'] = sum(
-                int(numeric_cell_value(
+                number_value(numeric_cell_value(
                     source.get(f"{source_config['metric_prefixes'][metric]}_{group}_Total", '')) or 0)
                 for metric, group in groups)
         for metric, fields in QUESTION_CODE_GROUPS.items():

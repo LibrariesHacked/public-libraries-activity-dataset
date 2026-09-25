@@ -26,6 +26,13 @@ import visitsByServiceMd from './content/visits-by-service.md'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
+import {
+  filterByMonthRange,
+  filterByPeriods,
+  formatMonth,
+  getMonthsInRange
+} from './helpers/periods'
+
 import { getActiveServices } from './models/service'
 import * as visitsModel from './models/visits'
 
@@ -62,12 +69,7 @@ const visitsChartOptions = {
       },
       ticks: {
         callback: function (value) {
-          const label = this.getLabelForValue(value)
-          const date = new Date(label + '-01')
-          return date.toLocaleDateString('en-GB', {
-            month: 'short',
-            year: '2-digit'
-          })
+          return formatMonth(this.getLabelForValue(value))
         }
       }
     }
@@ -91,7 +93,7 @@ const serviceChartOptions = {
     x: {
       title: {
         display: true,
-        text: 'Visits per resident population'
+        text: 'Visits per resident population per year'
       },
       stacked: true,
       beginAtZero: true
@@ -103,8 +105,10 @@ const serviceChartOptions = {
 }
 
 const Visits = () => {
-  const [{ filteredServices, services, visits }, dispatchApplication] =
-    useApplicationState()
+  const [
+    { filteredServices, services, visits, monthRange, selectedPeriods },
+    dispatchApplication
+  ] = useApplicationState()
 
   const [visitData, setVisitData] = useState(null)
 
@@ -137,7 +141,7 @@ const Visits = () => {
   }, [services, visits, dispatchApplication])
 
   useEffect(() => {
-    if (!visits) return
+    if (!visits || !services) return
 
     let visitData = {}
 
@@ -147,8 +151,8 @@ const Visits = () => {
 
     const locationTypes = [...new Set(visits.map(m => m.location))].sort()
 
-    // The labels are the months in the data. The months are already formattted as YYYY-MM
-    const labels = [...new Set(filteredVisits.map(m => m.month))].sort()
+    const chartVisits = filterByMonthRange(filteredVisits, monthRange)
+    const labels = getMonthsInRange(monthRange)
 
     visitData = {
       labels,
@@ -157,7 +161,7 @@ const Visits = () => {
           label: location,
           data: labels.map(
             month =>
-              filteredVisits
+              chartVisits
                 .filter(v => v.location === location && v.month === month)
                 .reduce((sum, v) => sum + (v.countVisits || 0), 0) || 0
           )
@@ -167,6 +171,9 @@ const Visits = () => {
 
     setVisitData(visitData)
 
+    const serviceVisits = filterByPeriods(filteredVisits, selectedPeriods)
+    const yearCount = selectedPeriods?.length || 1
+
     const activeServices = getActiveServices(services, filteredServices)
     const serviceLabels = activeServices.map(s => s.niceName).sort()
 
@@ -175,7 +182,7 @@ const Visits = () => {
         label: locationType,
         data: serviceLabels.map(serviceLabel => {
           const service = services.find(s => s.niceName === serviceLabel)
-          const visitCount = filteredVisits
+          const visitCount = serviceVisits
             .filter(v => {
               return (
                 service.code === v.serviceCode && v.location === locationType
@@ -184,7 +191,7 @@ const Visits = () => {
             .reduce((sum, v) => sum + (v.countVisits || 0), 0)
 
           const visitsPerCapita = service?.totalPopulation
-            ? visitCount / service.totalPopulation
+            ? visitCount / service.totalPopulation / yearCount
             : 0
           return parseFloat(visitsPerCapita.toFixed(2))
         })
@@ -200,7 +207,7 @@ const Visits = () => {
     })
 
     setServiceChart({ labels: serviceLabels, datasets })
-  }, [visits, filteredServices, services])
+  }, [visits, filteredServices, services, monthRange, selectedPeriods])
 
   return (
     <Box>

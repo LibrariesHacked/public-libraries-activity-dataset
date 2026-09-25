@@ -4,16 +4,22 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import { getActiveServices } from '../models/service'
+import { formatPeriod } from '../helpers/periods'
+
+import { getActiveServices, getServicePeriodChange } from '../models/service'
 
 import NumberCard from './NumberCard'
 
 const UsersTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
+  const [{ filteredServices, services, serviceRecords, selectedPeriods }] =
+    useApplicationState()
 
   const [usersCount, setUsersCount] = useState(0)
   const [percentageUsers, setPercentageUsers] = useState(0)
+  const [usersChange, setUsersChange] = useState(null)
   const [noData, setNoData] = useState(false)
+
+  const earliestPeriod = selectedPeriods?.[0]
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
@@ -48,13 +54,27 @@ const UsersTotalCard = () => {
 
     setUsersCount(totalUsers)
     setPercentageUsers(percentageUsers)
-  }, [services, filteredServices])
+
+    setUsersChange(
+      getServicePeriodChange(
+        serviceRecords,
+        'users',
+        earliestPeriod,
+        selectedPeriods?.[selectedPeriods.length - 1],
+        userServices?.map(service => service.code)
+      )
+    )
+  }, [services, serviceRecords, filteredServices, selectedPeriods, earliestPeriod])
 
   return (
     <NumberCard
       title='Active users'
       number={formatCompactNumber(usersCount)}
       description={`${Math.round(percentageUsers)}% of residents`}
+      change={usersChange}
+      changeDescription={`since ${
+        earliestPeriod ? formatPeriod(earliestPeriod) : ''
+      }`}
       colour='chartPurple'
       noData={noData}
     />

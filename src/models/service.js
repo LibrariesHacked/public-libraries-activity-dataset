@@ -29,19 +29,102 @@ export class Service {
   }
 }
 
+// Returns a record per service per financial year period.
 export async function getServices () {
   const response = await axios.get('./services.json')
   if (response && response.data && response.data.length > 0) {
-    return response.data.map(s => new Service().fromJson(s))
+    return response.data.map(service => new Service().fromJson(service))
   } else {
     return []
   }
+}
+
+const sumOrNull = (records, property) => {
+  const values = records
+    .map(record => record[property])
+    .filter(value => Number.isFinite(value))
+  if (values.length === 0) return null
+  return values.reduce((acc, value) => acc + value, 0)
+}
+
+// Collapses the per period service records into a single record per service for
+// the selected periods. Activity measures accumulate across the years, whereas
+// active users are a snapshot of a single year so the latest period is used.
+export const getServicesForPeriods = (serviceRecords, periods) => {
+  const selectedRecords =
+    periods?.length > 0
+      ? serviceRecords.filter(record => periods.includes(record.period))
+      : serviceRecords
+
+  const recordsByService = new Map()
+  selectedRecords.forEach(record => {
+    if (!recordsByService.has(record.code)) recordsByService.set(record.code, [])
+    recordsByService.get(record.code).push(record)
+  })
+
+  return [...recordsByService.values()].map(records => {
+    const orderedRecords = [...records].sort((a, b) =>
+      a.period.localeCompare(b.period)
+    )
+    const latest = orderedRecords[orderedRecords.length - 1]
+    return new Service({
+      ...latest,
+      periods: orderedRecords.map(record => record.period),
+      periodCount: orderedRecords.length,
+      users: latest.users,
+      events: sumOrNull(orderedRecords, 'events'),
+      attendance: sumOrNull(orderedRecords, 'attendance'),
+      loans: sumOrNull(orderedRecords, 'loans'),
+      visits: sumOrNull(orderedRecords, 'visits'),
+      computerHours: sumOrNull(orderedRecords, 'computerHours'),
+      wifiSessions: sumOrNull(orderedRecords, 'wifiSessions')
+    })
+  })
 }
 
 export const getActiveServices = (services, filteredServices) => {
   return filteredServices?.length > 0
     ? services.filter(s => filteredServices.includes(s.code))
     : services
+}
+
+// Percentage change in a measure between two financial years. Only services
+// that reported in both years are included, so the change is not distorted by
+// services starting or stopping reporting.
+export const getServicePeriodChange = (
+  serviceRecords,
+  property,
+  earliestPeriod,
+  latestPeriod,
+  serviceCodes
+) => {
+  if (!serviceRecords || !earliestPeriod || !latestPeriod) return null
+  if (earliestPeriod === latestPeriod) return null
+
+  const valueFor = period => {
+    const values = new Map()
+    serviceRecords.forEach(record => {
+      if (record.period !== period) return
+      if (serviceCodes && !serviceCodes.includes(record.code)) return
+      if (!Number.isFinite(record[property])) return
+      values.set(record.code, record[property])
+    })
+    return values
+  }
+
+  const earliestValues = valueFor(earliestPeriod)
+  const latestValues = valueFor(latestPeriod)
+
+  let earliestTotal = 0
+  let latestTotal = 0
+  earliestValues.forEach((value, code) => {
+    if (!latestValues.has(code)) return
+    earliestTotal += value
+    latestTotal += latestValues.get(code)
+  })
+
+  if (earliestTotal === 0) return null
+  return ((latestTotal - earliestTotal) / earliestTotal) * 100
 }
 
 export const getServicesPopulation = services => {

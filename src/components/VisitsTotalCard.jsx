@@ -9,11 +9,15 @@ import { formatCompactNumber } from '../helpers/numbers'
 import NumberCard from './NumberCard'
 
 const VisitsTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
+  const [{ filteredServices, services, selectedPeriods }] =
+    useApplicationState()
 
   const [visitsCount, setVisitsCount] = useState(0)
   const [visitsPerCapita, setVisitsPerCapita] = useState(0)
   const [noData, setNoData] = useState(false)
+
+  // Visits accumulate across the selected years, so rates are per year.
+  const yearCount = selectedPeriods?.length || 1
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
@@ -43,11 +47,13 @@ const VisitsTotalCard = () => {
       ) || 0
 
     const visitsPerCapita =
-      totalPopulation > 0 ? Math.round(totalVisits / totalPopulation) : 0
+      totalPopulation > 0
+        ? Math.round(totalVisits / totalPopulation / yearCount)
+        : 0
 
     setVisitsCount(totalVisits)
     setVisitsPerCapita(visitsPerCapita)
-  }, [services, filteredServices])
+  }, [services, filteredServices, yearCount])
 
   return (
     <NumberCard

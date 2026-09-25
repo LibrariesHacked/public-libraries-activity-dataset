@@ -21,15 +21,10 @@ const ServiceSelection = () => {
 
   useEffect(() => {
     async function getServices () {
-      const services = await serviceModel.getServices()
-      const serviceLookup = {}
-      services.forEach(service => {
-        serviceLookup[service.code] = service
-      })
+      const serviceRecords = await serviceModel.getServices()
       dispatchApplication({
         type: 'AddServices',
-        services,
-        serviceLookup
+        serviceRecords
       })
     }
     getServices()

@@ -9,17 +9,21 @@ import { formatCompactNumber } from '../helpers/numbers'
 import NumberCard from './NumberCard'
 
 const ComputerTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
+  const [{ filteredServices, services, selectedPeriods }] =
+    useApplicationState()
 
   const [computerHoursCount, setComputerHoursCount] = useState(0)
   const [computerHoursPerDay, setComputerHoursPerDay] = useState(0)
   const [noData, setNoData] = useState(false)
 
+  // Computer hours accumulate across the selected years, so rates are per year.
+  const yearCount = selectedPeriods?.length || 1
+
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
 
     const computerServices = activeServices?.filter(service =>
-      Number.isInteger(service.computerHours)
+      Number.isFinite(service.computerHours)
     )
 
     if (!computerServices || computerServices.length === 0) {
@@ -35,8 +39,8 @@ const ComputerTotalCard = () => {
       ) || 0
 
     setComputerHoursCount(totalComputerHours)
-    setComputerHoursPerDay(totalComputerHours / 365)
-  }, [services, filteredServices])
+    setComputerHoursPerDay(totalComputerHours / (365 * yearCount))
+  }, [services, filteredServices, yearCount])
 
   return (
     <NumberCard

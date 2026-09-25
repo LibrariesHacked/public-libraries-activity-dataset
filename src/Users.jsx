@@ -25,6 +25,8 @@ import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
+import { formatPeriod } from './helpers/periods'
+
 import { getActiveServices } from './models/service'
 import * as usersModel from './models/users'
 
@@ -58,7 +60,7 @@ const ageGroupChartOptions = {
     },
     y: {
       stacked: true,
-      title: { display: true, text: 'Year' }
+      title: { display: true, text: 'Financial year' }
     }
   }
 }
@@ -67,12 +69,6 @@ const serviceChartOptions = {
   indexAxis: 'y',
   responsive: true,
   maintainAspectRatio: false,
-  plugins: {
-    title: {
-      display: true,
-      text: 'Active users % population by service'
-    }
-  },
   scales: {
     x: {
       title: {
@@ -86,9 +82,28 @@ const serviceChartOptions = {
 
 const Users = () => {
   const [
-    { filteredServices, services, serviceLookup, users },
+    {
+      filteredServices,
+      services,
+      serviceRecords,
+      users,
+      selectedPeriods,
+      snapshotPeriod
+    },
     dispatchApplication
   ] = useApplicationState()
+
+  const serviceChartTitleOptions = {
+    ...serviceChartOptions,
+    plugins: {
+      title: {
+        display: true,
+        text: `Active users % population by service${
+          snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
+        }`
+      }
+    }
+  }
 
   const [ageGroupChart, setAgeGroupChart] = useState({
     labels: [],
@@ -128,21 +143,27 @@ const Users = () => {
   }, [services, users, dispatchApplication])
 
   useEffect(() => {
-    if (!users || !serviceLookup) return
+    if (!users || !serviceRecords || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const yearLabels = [...new Set(users.map(m => m.period))].sort()
+    // Active users are a snapshot of each financial year, so they are never
+    // summed across years. Each selected year is its own bar.
+    const periods = selectedPeriods?.length
+      ? selectedPeriods
+      : [...new Set(users.map(m => m.period))].sort()
+
+    const yearLabels = periods.map(formatPeriod)
     // We have a dataset for each age group
     const ageGroups = [...new Set(users.map(m => m.ageGroup))].sort()
     ageGroups.push('Non-users') // Add non-users as an age group
     const ageGroupChartDatasets = ageGroups.map(ageGroup => {
       // For each age group we need the data for each period
-      const data = yearLabels.map(label => {
+      const data = periods.map(period => {
         // For each period we need the total users in that age group
         let total = 0
         users.forEach(m => {
-          if (m.period === label && m.ageGroup === ageGroup) {
+          if (m.period === period && m.ageGroup === ageGroup) {
             // If we are filtering by service, only include if the service is in the filtered list
             if (
               !filteredServices ||
@@ -158,8 +179,8 @@ const Users = () => {
           // We need to add in the non-users for this period.
           // Non-users are the total population for the period minus the users
           let totalPopulation = 0
-          Object.values(serviceLookup).forEach(service => {
-            if (service.period === label) {
+          serviceRecords.forEach(service => {
+            if (service.period === period) {
               // If we are filtering by service, only include if the service is in the filtered list
               if (
                 !filteredServices ||
@@ -236,7 +257,7 @@ const Users = () => {
         }
       ]
     })
-  }, [users, services, filteredServices, serviceLookup])
+  }, [users, services, serviceRecords, filteredServices, selectedPeriods])
 
   return (
     <Box>
@@ -281,7 +302,7 @@ const Users = () => {
           height: `${serviceChart.labels.length * 18 + 120}px`
         }}
       >
-        <Bar options={serviceChartOptions} data={serviceChart} />
+        <Bar options={serviceChartTitleOptions} data={serviceChart} />
       </Box>
     </Box>
   )

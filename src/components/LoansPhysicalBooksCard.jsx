@@ -6,10 +6,13 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import { getActiveServices, getServicesPopulation } from '../models/service'
 
+import { filterByPeriods } from '../helpers/periods'
+
 import NumberCard from './NumberCard'
 
 const LoansPhysicalBooksCard = () => {
-  const [{ filteredServices, services, loans }] = useApplicationState()
+  const [{ filteredServices, services, loans, selectedPeriods }] =
+    useApplicationState()
 
   const [loansPhysicalBooksCount, setLoansPhysicalBooksCount] = useState(0)
   const [loansPhysicalBooksPerCapita, setLoansPhysicalBooksPerCapita] =
@@ -21,7 +24,9 @@ const LoansPhysicalBooksCard = () => {
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const loansPhysicalBooks = loans.filter(l => l.format === 'Physical book')
+    const loansPhysicalBooks = filterByPeriods(loans, selectedPeriods).filter(
+      l => l.format === 'Physical book'
+    )
 
     const loanServices = activeServices?.filter(
       service =>
@@ -47,11 +52,13 @@ const LoansPhysicalBooksCard = () => {
     const totalPopulation = getServicesPopulation(loanServices)
 
     const loansPerCapita =
-      totalPopulation > 0 ? Math.round(totalLoans / totalPopulation) : 0
+      totalPopulation > 0
+        ? Math.round(totalLoans / totalPopulation / (selectedPeriods?.length || 1))
+        : 0
 
     setLoansPhysicalBooksCount(totalLoans)
     setLoansPhysicalBooksPerCapita(loansPerCapita)
-  }, [services, filteredServices, loans])
+  }, [services, filteredServices, loans, selectedPeriods])
 
   return (
     <NumberCard

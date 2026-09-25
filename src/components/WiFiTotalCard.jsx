@@ -9,11 +9,15 @@ import { formatCompactNumber } from '../helpers/numbers'
 import NumberCard from './NumberCard'
 
 const WiFiTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
+  const [{ filteredServices, services, selectedPeriods }] =
+    useApplicationState()
 
   const [wifiSessionsCount, setWifiSessionsCount] = useState(0)
   const [wifiSessionsPerDay, setWifiSessionsPerDay] = useState(0)
   const [noData, setNoData] = useState(false)
+
+  // WiFi sessions accumulate across the selected years, so rates are per year.
+  const yearCount = selectedPeriods?.length || 1
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
@@ -36,8 +40,8 @@ const WiFiTotalCard = () => {
       ) || 0
 
     setWifiSessionsCount(totalWifiSessions)
-    setWifiSessionsPerDay(totalWifiSessions / 365)
-  }, [services, filteredServices])
+    setWifiSessionsPerDay(totalWifiSessions / (365 * yearCount))
+  }, [services, filteredServices, yearCount])
 
   return (
     <NumberCard

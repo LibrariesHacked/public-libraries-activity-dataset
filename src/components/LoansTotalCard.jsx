@@ -9,11 +9,15 @@ import { getActiveServices } from '../models/service'
 import NumberCard from './NumberCard'
 
 const LoansTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
+  const [{ filteredServices, services, selectedPeriods }] =
+    useApplicationState()
 
   const [loansCount, setLoansCount] = useState(0)
   const [loansPerCapita, setLoansPerCapita] = useState(0)
   const [noData, setNoData] = useState(false)
+
+  // Loans accumulate across the selected years, so rates are per year.
+  const yearCount = selectedPeriods?.length || 1
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
@@ -41,11 +45,13 @@ const LoansTotalCard = () => {
       ) || 0
 
     const loansPerCapita =
-      totalPopulation > 0 ? Math.round(totalLoans / totalPopulation) : 0
+      totalPopulation > 0
+        ? Math.round(totalLoans / totalPopulation / yearCount)
+        : 0
 
     setLoansCount(totalLoans)
     setLoansPerCapita(loansPerCapita)
-  }, [services, filteredServices])
+  }, [services, filteredServices, yearCount])
 
   return (
     <NumberCard

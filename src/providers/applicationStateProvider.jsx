@@ -2,10 +2,20 @@ import React, { useReducer } from 'react'
 
 import { ApplicationStateContext } from '../context/applicationStateContext'
 
+import { getMonthRangeForPeriods } from '../helpers/periods'
+
+import { getServicesForPeriods } from '../models/service'
+
 const initialApplicationState = {
+  serviceRecords: null,
   services: null,
   serviceLookup: null,
   filteredServices: [],
+  periods: [],
+  selectedPeriods: [],
+  snapshotPeriod: null,
+  periodMonthRange: null,
+  monthRange: null,
   attendance: null,
   computerUsage: null,
   events: null,
@@ -17,13 +27,48 @@ const initialApplicationState = {
   mapPosition: [-1.155414, 52.691432]
 }
 
+// Rebuilds the service aggregates whenever the selected financial years change.
+const buildPeriodState = (state, serviceRecords, selectedPeriods) => {
+  const services = getServicesForPeriods(serviceRecords, selectedPeriods)
+  const serviceLookup = {}
+  services.forEach(service => {
+    serviceLookup[service.code] = service
+  })
+  const periodMonthRange = getMonthRangeForPeriods(selectedPeriods)
+  return {
+    ...state,
+    serviceRecords,
+    services,
+    serviceLookup,
+    selectedPeriods,
+    snapshotPeriod: selectedPeriods[selectedPeriods.length - 1] || null,
+    periodMonthRange,
+    monthRange: periodMonthRange
+  }
+}
+
 const applicationReducer = (state, action) => {
   switch (action.type) {
-    case 'AddServices':
+    case 'AddServices': {
+      const periods = [
+        ...new Set(action.serviceRecords.map(record => record.period))
+      ].sort()
+      return {
+        ...buildPeriodState(state, action.serviceRecords, periods),
+        periods
+      }
+    }
+    case 'SetSelectedPeriods': {
+      const selectedPeriods = state.periods.filter(period =>
+        action.selectedPeriods.includes(period)
+      )
+      if (selectedPeriods.length === 0) return state
+      return buildPeriodState(state, state.serviceRecords, selectedPeriods)
+    }
+    case 'SetMonthRange':
       return {
         ...state,
-        services: action.services,
-        serviceLookup: action.serviceLookup
+        monthRange: action.monthRange
       }
     case 'SetFilteredServices':
       return {

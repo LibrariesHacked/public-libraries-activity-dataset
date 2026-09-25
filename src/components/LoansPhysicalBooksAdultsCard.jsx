@@ -9,10 +9,13 @@ import {
   getServicesAdultPopulation
 } from '../models/service'
 
+import { filterByPeriods } from '../helpers/periods'
+
 import NumberCard from './NumberCard'
 
 const LoansPhysicalBooksAdultsCard = () => {
-  const [{ filteredServices, services, loans }] = useApplicationState()
+  const [{ filteredServices, services, loans, selectedPeriods }] =
+    useApplicationState()
 
   const [loansAdultsCount, setLoansAdultsCount] = useState(0)
   const [loansAdultsPerCapita, setLoansAdultsPerCapita] = useState(0)
@@ -23,9 +26,10 @@ const LoansPhysicalBooksAdultsCard = () => {
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const loansAdultPhysicalBooks = loans.filter(
-      l => l.format === 'Physical book' && l.contentAgeGroup === 'Adult'
-    )
+    const loansAdultPhysicalBooks = filterByPeriods(
+      loans,
+      selectedPeriods
+    ).filter(l => l.format === 'Physical book' && l.contentAgeGroup === 'Adult')
 
     const loanServices = activeServices?.filter(
       service =>
@@ -51,11 +55,13 @@ const LoansPhysicalBooksAdultsCard = () => {
     const totalPopulation = getServicesAdultPopulation(loanServices)
 
     const loansPerCapita =
-      totalPopulation > 0 ? Math.round(totalLoans / totalPopulation) : 0
+      totalPopulation > 0
+        ? Math.round(totalLoans / totalPopulation / (selectedPeriods?.length || 1))
+        : 0
 
     setLoansAdultsCount(totalLoans)
     setLoansAdultsPerCapita(loansPerCapita)
-  }, [services, filteredServices, loans])
+  }, [services, filteredServices, loans, selectedPeriods])
 
   return (
     <NumberCard

@@ -24,6 +24,48 @@ export async function getUsers () {
   }
 }
 
+// Percentage change in active users between two financial years. Only services
+// that reported in both years are included, so the change is not distorted by
+// services starting or stopping reporting.
+export function getUsersPeriodChange (
+  users,
+  ageGroup,
+  earliestPeriod,
+  latestPeriod,
+  serviceCodes
+) {
+  if (!users || !earliestPeriod || !latestPeriod) return null
+  if (earliestPeriod === latestPeriod) return null
+
+  const totalsFor = period => {
+    const totals = new Map()
+    users.forEach(user => {
+      if (user.period !== period) return
+      if (ageGroup && user.ageGroup !== ageGroup) return
+      if (serviceCodes && !serviceCodes.includes(user.serviceCode)) return
+      totals.set(
+        user.serviceCode,
+        (totals.get(user.serviceCode) || 0) + user.countUsers
+      )
+    })
+    return totals
+  }
+
+  const earliestTotals = totalsFor(earliestPeriod)
+  const latestTotals = totalsFor(latestPeriod)
+
+  let earliestTotal = 0
+  let latestTotal = 0
+  earliestTotals.forEach((total, serviceCode) => {
+    if (!latestTotals.has(serviceCode)) return
+    earliestTotal += total
+    latestTotal += latestTotals.get(serviceCode)
+  })
+
+  if (earliestTotal === 0) return null
+  return ((latestTotal - earliestTotal) / earliestTotal) * 100
+}
+
 export function getUsersPopulationPercentages (services, users) {
   const percentagesByService = {}
 

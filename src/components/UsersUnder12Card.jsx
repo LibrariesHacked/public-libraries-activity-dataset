@@ -4,28 +4,41 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
+import { formatPeriod } from '../helpers/periods'
+
 import {
   getActiveServices,
   getServicesUnder12Population
 } from '../models/service'
 
+import { getUsersPeriodChange } from '../models/users'
+
 import NumberCard from './NumberCard'
 
 const UsersUnder12Card = () => {
-  const [{ filteredServices, services, users }] = useApplicationState()
+  const [{ filteredServices, services, users, selectedPeriods, snapshotPeriod }] =
+    useApplicationState()
 
   const [usersCount, setUsersCount] = useState(0)
   const [percentageUsers, setPercentageUsers] = useState(0)
+  const [usersChange, setUsersChange] = useState(null)
   const [noData, setNoData] = useState(false)
+
+  const earliestPeriod = selectedPeriods?.[0]
 
   useEffect(() => {
     if (!users || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
 
+    // Active users are a yearly snapshot so they are not summed across years.
+    const snapshotUsers = snapshotPeriod
+      ? users.filter(u => u.period === snapshotPeriod)
+      : users
+
     const under12UserServices = activeServices?.filter(
       service =>
-        users.filter(
+        snapshotUsers.filter(
           u => u.ageGroup === 'Under 12' && u.serviceCode === service.code
         ).length > 0
     )
@@ -36,7 +49,7 @@ const UsersUnder12Card = () => {
       setNoData(false)
     }
 
-    const totalUnder12Users = users
+    const totalUnder12Users = snapshotUsers
       .filter(
         u =>
           u.ageGroup === 'Under 12' &&
@@ -55,13 +68,33 @@ const UsersUnder12Card = () => {
 
     setUsersCount(totalUnder12Users)
     setPercentageUsers(percentageUsers)
-  }, [services, filteredServices, users])
+
+    setUsersChange(
+      getUsersPeriodChange(
+        users,
+        'Under 12',
+        earliestPeriod,
+        snapshotPeriod,
+        under12UserServices?.map(service => service.code)
+      )
+    )
+  }, [
+    services,
+    filteredServices,
+    users,
+    snapshotPeriod,
+    earliestPeriod
+  ])
 
   return (
     <NumberCard
       title='Active users under 12'
       number={formatCompactNumber(usersCount)}
       description={`${Math.round(percentageUsers)}% of residents under 12`}
+      change={usersChange}
+      changeDescription={`since ${
+        earliestPeriod ? formatPeriod(earliestPeriod) : ''
+      }`}
       colour='chartRed'
       noData={noData}
     />
