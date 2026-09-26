@@ -1,65 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { formatCompactNumber } from '../helpers/numbers'
-
-import { getActiveServices } from '../models/service'
-
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
 const LoansTotalCard = () => {
-  const [{ filteredServices, services, selectedPeriods }] =
-    useApplicationState()
-
-  const [loansCount, setLoansCount] = useState(0)
-  const [loansPerCapita, setLoansPerCapita] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  // Loans accumulate across the selected years, so rates are per year.
-  const yearCount = selectedPeriods?.length || 1
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const loanServices = activeServices?.filter(service =>
-      Number.isInteger(service.loans)
-    )
-
-    if (!loanServices || loanServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    // The loans count is the sum of the loans integer from each service object
-    const totalLoans =
-      loanServices?.reduce((acc, service) => acc + (service.loans || 0), 0) ||
-      0
-
-    // The population is the totalPopulation of the active services that are being considered
-    const totalPopulation =
-      loanServices?.reduce(
-        (acc, service) => acc + (service.totalPopulation || 0),
-        0
-      ) || 0
-
-    const loansPerCapita =
-      totalPopulation > 0
-        ? Math.round(totalLoans / totalPopulation / yearCount)
-        : 0
-
-    setLoansCount(totalLoans)
-    setLoansPerCapita(loansPerCapita)
-  }, [services, filteredServices, yearCount])
+  const formatDescription = useCallback(
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? Math.round(total / totalPopulation / yearCount)
+          : 0
+      return `${Math.round(perCapita)} per resident per year`
+    },
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='loans'
       title='All loans'
-      number={formatCompactNumber(loansCount)}
-      description={`${Math.round(loansPerCapita)} per resident per year`}
       colour='chartGreen'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

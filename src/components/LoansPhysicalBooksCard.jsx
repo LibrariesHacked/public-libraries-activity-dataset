@@ -1,74 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 
-import { useApplicationState } from '../hooks/useApplicationState'
+import { getServicesPopulation } from '../models/service'
 
-import { formatCompactNumber } from '../helpers/numbers'
-
-import { getActiveServices, getServicesPopulation } from '../models/service'
-
-import { filterByPeriods } from '../helpers/periods'
-
-import NumberCard from './NumberCard'
+import LoansCategoryCard from './LoansCategoryCard'
 
 const LoansPhysicalBooksCard = () => {
-  const [{ filteredServices, services, loans, selectedPeriods }] =
-    useApplicationState()
-
-  const [loansPhysicalBooksCount, setLoansPhysicalBooksCount] = useState(0)
-  const [loansPhysicalBooksPerCapita, setLoansPhysicalBooksPerCapita] =
-    useState(0)
-  const [noData, setNoData] = useState(false)
-
-  useEffect(() => {
-    if (!loans || !services) return
-
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const loansPhysicalBooks = filterByPeriods(loans, selectedPeriods).filter(
-      l => l.format === 'Physical book'
-    )
-
-    const loanServices = activeServices?.filter(
-      service =>
-        loansPhysicalBooks.filter(l => l.serviceCode === service.code).length >
-        0
-    )
-
-    if (!loanServices || loanServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const totalLoans = loansPhysicalBooks
-      .filter(
-        l =>
-          filteredServices.length === 0 ||
-          filteredServices.includes(l.serviceCode)
-      )
-      .reduce((sum, loan) => sum + loan.countLoans, 0)
-
-    // The population is the totalPopulation of the active services that are being considered
-    const totalPopulation = getServicesPopulation(loanServices)
-
-    const loansPerCapita =
-      totalPopulation > 0
-        ? Math.round(totalLoans / totalPopulation / (selectedPeriods?.length || 1))
-        : 0
-
-    setLoansPhysicalBooksCount(totalLoans)
-    setLoansPhysicalBooksPerCapita(loansPerCapita)
-  }, [services, filteredServices, loans, selectedPeriods])
+  const filterLoan = useCallback(l => l.format === 'Physical book', [])
 
   return (
-    <NumberCard
+    <LoansCategoryCard
       title='Physical book loans'
-      number={formatCompactNumber(loansPhysicalBooksCount)}
-      description={`${Math.round(
-        loansPhysicalBooksPerCapita
-      )} per resident per year`}
       colour='chartPurple'
-      noData={noData}
+      filterLoan={filterLoan}
+      populationFn={getServicesPopulation}
+      perCapitaLabel='resident'
     />
   )
 }

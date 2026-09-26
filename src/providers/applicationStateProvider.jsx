@@ -17,19 +17,26 @@ const initialApplicationState = {
   periodMonthRange: null,
   monthRange: null,
   attendance: null,
-  computerUsage: null,
+  computers: null,
   events: null,
   loans: null,
   users: null,
   visits: null,
-  wifiSessions: null,
+  wifi: null,
+  useEstimates: true,
   mapZoom: 7,
   mapPosition: [-1.155414, 52.691432]
 }
 
 // Rebuilds the service aggregates whenever the selected financial years change.
-const buildPeriodState = (state, serviceRecords, selectedPeriods) => {
-  const services = getServicesForPeriods(serviceRecords, selectedPeriods)
+const buildPeriodState = (
+  state,
+  serviceRecords,
+  selectedPeriods,
+  useEstimates = state.useEstimates !== false
+) => {
+  if (!serviceRecords) return state
+  const services = getServicesForPeriods(serviceRecords, selectedPeriods, useEstimates)
   const serviceLookup = {}
   services.forEach(service => {
     serviceLookup[service.code] = service
@@ -37,14 +44,37 @@ const buildPeriodState = (state, serviceRecords, selectedPeriods) => {
   const periodMonthRange = getMonthRangeForPeriods(selectedPeriods)
   return {
     ...state,
+    useEstimates,
     serviceRecords,
     services,
     serviceLookup,
     selectedPeriods,
     snapshotPeriod: selectedPeriods[selectedPeriods.length - 1] || null,
     periodMonthRange,
-    monthRange: periodMonthRange
+    monthRange: state.monthRange || periodMonthRange
   }
+}
+
+const ACTIVITY_KEYS = [
+  'computers',
+  'wifi',
+  'loans',
+  'visits',
+  'events',
+  'attendance',
+  'users'
+]
+
+const updateRecordCounts = (records, useEstimates, fallbackProp) => {
+  if (!records) return records
+  return records.map(r => {
+    if (r.updateCount) {
+      r.updateCount(useEstimates)
+    } else if (r.resolveCount && fallbackProp) {
+      r[fallbackProp] = r.resolveCount(useEstimates)
+    }
+    return r
+  })
 }
 
 const applicationReducer = (state, action) => {
@@ -54,7 +84,7 @@ const applicationReducer = (state, action) => {
         ...new Set(action.serviceRecords.map(record => record.period))
       ].sort()
       return {
-        ...buildPeriodState(state, action.serviceRecords, periods),
+        ...buildPeriodState(state, action.serviceRecords, periods, state.useEstimates),
         periods
       }
     }
@@ -63,7 +93,22 @@ const applicationReducer = (state, action) => {
         action.selectedPeriods.includes(period)
       )
       if (selectedPeriods.length === 0) return state
-      return buildPeriodState(state, state.serviceRecords, selectedPeriods)
+      return buildPeriodState(state, state.serviceRecords, selectedPeriods, state.useEstimates)
+    }
+    case 'SetUseEstimates': {
+      const useEstimates = action.useEstimates
+      const updatedDatasets = {}
+      ACTIVITY_KEYS.forEach(key => {
+        if (state[key]) {
+          updatedDatasets[key] = updateRecordCounts(state[key], useEstimates)
+        }
+      })
+      const updatedState = {
+        ...state,
+        useEstimates,
+        ...updatedDatasets
+      }
+      return buildPeriodState(updatedState, state.serviceRecords, state.selectedPeriods, useEstimates)
     }
     case 'SetMonthRange':
       return {
@@ -78,37 +123,37 @@ const applicationReducer = (state, action) => {
     case 'SetUsers':
       return {
         ...state,
-        users: action.users
+        users: updateRecordCounts(action.users, state.useEstimates, 'countUsers')
       }
     case 'SetLoans':
       return {
         ...state,
-        loans: action.loans
+        loans: updateRecordCounts(action.loans, state.useEstimates, 'countLoans')
       }
     case 'SetAttendance':
       return {
         ...state,
-        attendance: action.attendance
+        attendance: updateRecordCounts(action.attendance, state.useEstimates, 'countAttendance')
       }
     case 'SetComputers':
       return {
         ...state,
-        computers: action.computers
+        computers: updateRecordCounts(action.computers, state.useEstimates, 'countHours')
       }
     case 'SetEvents':
       return {
         ...state,
-        events: action.events
+        events: updateRecordCounts(action.events, state.useEstimates, 'countEvents')
       }
     case 'SetVisits':
       return {
         ...state,
-        visits: action.visits
+        visits: updateRecordCounts(action.visits, state.useEstimates, 'countVisits')
       }
     case 'SetWiFi':
       return {
         ...state,
-        wifi: action.wifi
+        wifi: updateRecordCounts(action.wifi, state.useEstimates, 'countSessions')
       }
     case 'SetMapPosition':
       return {

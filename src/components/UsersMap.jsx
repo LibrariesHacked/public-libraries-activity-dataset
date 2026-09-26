@@ -226,12 +226,14 @@ const UsersMap = () => {
           position: 'relative'
         }}
         mapStyle='https://api.maptiler.com/maps/dataviz/style.json?key=1OK05AJqNta7xYzrG2kA'
-        longitude={mapPosition[0]}
-        latitude={mapPosition[1]}
-        zoom={mapZoom}
+        initialViewState={{
+          longitude: mapPosition[0],
+          latitude: mapPosition[1],
+          zoom: mapZoom
+        }}
         minZoom={6}
         maxZoom={16}
-        onMove={evt => setViewState(evt.viewState)}
+        onMoveEnd={evt => setViewState(evt.viewState)}
         onLoad={() => setMapLoaded(true)}
       >
         <Box>

@@ -14,6 +14,7 @@ import Divider from '@mui/material/Divider'
 import GlobalStyles from '@mui/material/GlobalStyles'
 import Typography from '@mui/material/Typography'
 
+import DataChoiceSelection from './components/DataChoiceSelection'
 import NavTabs from './components/NavTabs'
 import PeriodSelection from './components/PeriodSelection'
 import ServiceSelection from './components/ServiceSelection'
@@ -115,6 +116,7 @@ function App () {
                 Select years to filter.
               </Typography>
               <PeriodSelection />
+              <DataChoiceSelection />
             </Box>
             <NavTabs />
             <Suspense fallback={<Typography>Loading...</Typography>}>

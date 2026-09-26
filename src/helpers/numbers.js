@@ -1,7 +1,12 @@
-export const formatCompactNumber = value => {
-  if (typeof value !== 'number') {
-    throw new TypeError('Value must be a number')
+export const formatCompactNumber = (value, maximumFractionDigits) => {
+  if (value == null || !Number.isFinite(Number(value))) {
+    return '0'
   }
 
-  return new Intl.NumberFormat('en', { notation: 'compact' }).format(value)
+  const options = { notation: 'compact' }
+  if (typeof maximumFractionDigits === 'number') {
+    options.maximumFractionDigits = maximumFractionDigits
+  }
+
+  return new Intl.NumberFormat('en', options).format(Number(value))
 }

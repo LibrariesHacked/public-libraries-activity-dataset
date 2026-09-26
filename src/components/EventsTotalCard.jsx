@@ -1,54 +1,22 @@
-import React, { useEffect, useState } from 'react'
-
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { getActiveServices } from '../models/service'
+import React, { useCallback } from 'react'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
 const EventsTotalCard = () => {
-  const [{ filteredServices, services, selectedPeriods }] =
-    useApplicationState()
-
-  const [eventsCount, setEventsCount] = useState(0)
-  const [eventsPerDay, setEventsPerDay] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  // Events accumulate across the selected years, so rates are per year.
-  const yearCount = selectedPeriods?.length || 1
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const eventServices = activeServices?.filter(service =>
-      Number.isInteger(service.events)
-    )
-
-    if (!eventServices || eventServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const totalEvents =
-      eventServices?.reduce(
-        (acc, service) => acc + (service.events || 0),
-        0
-      ) || 0
-
-    setEventsCount(totalEvents)
-    setEventsPerDay(totalEvents / (365 * yearCount))
-  }, [services, filteredServices, yearCount])
+  const formatDescription = useCallback(
+    ({ total, yearCount }) =>
+      `${formatCompactNumber(total / (365 * yearCount))} events per day`,
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='events'
       title='Events'
-      number={formatCompactNumber(eventsCount)}
-      description={`${formatCompactNumber(eventsPerDay)} events per day`}
       colour='chartOrange'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

@@ -1,0 +1,115 @@
+import React, { useEffect, useState } from 'react'
+
+import { useApplicationState } from '../hooks/useApplicationState'
+
+import { formatCompactNumber } from '../helpers/numbers'
+import { formatPeriod } from '../helpers/periods'
+import { getActiveServices } from '../models/service'
+import { getUsersPeriodChange } from '../models/users'
+import { getRecordsQualityWarning } from '../helpers/dataQuality'
+
+import NumberCard from './NumberCard'
+
+const UsersAgeGroupCard = ({
+  title,
+  colour,
+  ageGroup,
+  populationFn,
+  descLabel
+}) => {
+  const [
+    { filteredServices, services, users, selectedPeriods, snapshotPeriod, useEstimates }
+  ] = useApplicationState()
+
+  const [usersCount, setUsersCount] = useState(0)
+  const [percentageUsers, setPercentageUsers] = useState(0)
+  const [usersChange, setUsersChange] = useState(null)
+  const [noData, setNoData] = useState(false)
+  const [warning, setWarning] = useState(null)
+
+  const earliestPeriod = selectedPeriods?.[0]
+
+  useEffect(() => {
+    if (!users || !services) return
+
+    const activeServices = getActiveServices(services, filteredServices)
+
+    // Active users are a yearly snapshot so they are not summed across years.
+    const snapshotUsers = snapshotPeriod
+      ? users.filter(u => u.period === snapshotPeriod)
+      : users
+
+    const groupUserServices = activeServices?.filter(service =>
+      snapshotUsers.some(
+        u => u.ageGroup === ageGroup && u.serviceCode === service.code
+      )
+    )
+
+    if (!groupUserServices || groupUserServices.length === 0) {
+      setNoData(true)
+    } else {
+      setNoData(false)
+    }
+
+    const matchedUsers = snapshotUsers.filter(
+      u =>
+        u.ageGroup === ageGroup &&
+        (filteredServices.length === 0 ||
+          filteredServices.includes(u.serviceCode))
+    )
+
+    const totalGroupUsers = matchedUsers.reduce(
+      (sum, user) => sum + (user.countUsers || 0),
+      0
+    )
+
+    const totalGroupPopulation = populationFn(groupUserServices) || 0
+
+    const percentage =
+      totalGroupPopulation > 0
+        ? (totalGroupUsers / totalGroupPopulation) * 100
+        : 0
+
+    setUsersCount(totalGroupUsers)
+    setPercentageUsers(percentage)
+
+    setUsersChange(
+      getUsersPeriodChange(
+        users,
+        ageGroup,
+        earliestPeriod,
+        snapshotPeriod,
+        groupUserServices?.map(service => service.code)
+      )
+    )
+
+    setWarning(getRecordsQualityWarning(matchedUsers))
+  }, [
+    services,
+    filteredServices,
+    users,
+    snapshotPeriod,
+    earliestPeriod,
+    useEstimates,
+    ageGroup,
+    populationFn
+  ])
+
+  return (
+    <NumberCard
+      title={title}
+      number={formatCompactNumber(usersCount)}
+      description={`${Math.round(percentageUsers)}% of ${descLabel}`}
+      change={usersChange}
+      changeDescription={`since ${
+        earliestPeriod ? formatPeriod(earliestPeriod) : ''
+      }`}
+      colour={colour}
+      noData={noData}
+      warning={warning}
+      isShowingEstimated={useEstimates !== false}
+    />
+  )
+}
+
+export default UsersAgeGroupCard

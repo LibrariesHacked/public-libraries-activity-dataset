@@ -1,24 +1,12 @@
-import axios from 'axios'
+import { ActivityRecord, createActivityModel } from './activityFactory'
 
-export class Computers {
-  constructor (obj) {
-    Object.assign(this, obj)
-  }
+export class Computers extends ActivityRecord {}
 
-  fromJson (json) {
-    this.serviceCode = json[0]
-    this.month = json[1]
-    this.countHours = parseInt(json[2]) || null
+const { fetchRecords: getComputers } = createActivityModel({
+  fields: ['month'],
+  countProp: 'countHours',
+  endpoint: './computers.json',
+  RecordClass: Computers
+})
 
-    return this
-  }
-}
-
-export async function getComputers () {
-  const response = await axios.get('./computers.json')
-  if (response && response.data && response.data.length > 0) {
-    return response.data.map(a => new Computers().fromJson(a))
-  } else {
-    return []
-  }
-}
+export { getComputers }

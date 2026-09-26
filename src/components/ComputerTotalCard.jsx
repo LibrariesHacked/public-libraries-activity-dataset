@@ -1,56 +1,22 @@
-import React, { useEffect, useState } from 'react'
-
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { getActiveServices } from '../models/service'
+import React, { useCallback } from 'react'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
 const ComputerTotalCard = () => {
-  const [{ filteredServices, services, selectedPeriods }] =
-    useApplicationState()
-
-  const [computerHoursCount, setComputerHoursCount] = useState(0)
-  const [computerHoursPerDay, setComputerHoursPerDay] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  // Computer hours accumulate across the selected years, so rates are per year.
-  const yearCount = selectedPeriods?.length || 1
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const computerServices = activeServices?.filter(service =>
-      Number.isFinite(service.computerHours)
-    )
-
-    if (!computerServices || computerServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const totalComputerHours =
-      computerServices?.reduce(
-        (acc, service) => acc + (service.computerHours || 0),
-        0
-      ) || 0
-
-    setComputerHoursCount(totalComputerHours)
-    setComputerHoursPerDay(totalComputerHours / (365 * yearCount))
-  }, [services, filteredServices, yearCount])
+  const formatDescription = useCallback(
+    ({ total, yearCount }) =>
+      `${formatCompactNumber(total / (365 * yearCount))} computer hours per day`,
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='computerHours'
       title='Computer hours'
-      number={formatCompactNumber(computerHoursCount)}
-      description={`${formatCompactNumber(
-        computerHoursPerDay
-      )} computer hours per day`}
       colour='chartBlue'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

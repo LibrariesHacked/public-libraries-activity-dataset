@@ -4,18 +4,61 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded'
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded'
 import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 
 import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
 const getChangeIcon = change => {
   if (change <= -0.05) return <TrendingDownRoundedIcon />
   if (change >= 0.05) return <TrendingUpRoundedIcon />
   return <TrendingFlatRoundedIcon />
+}
+
+const getWarningLabel = (warning, isShowingEstimated) => {
+  if (typeof warning === 'string') return 'Data note'
+  if (warning.status === 'excluded') return 'Data excluded'
+  if (warning.status === 'replaced') {
+    const showingEst = isShowingEstimated !== false && warning.isShowingEstimated !== false
+    return showingEst ? 'Estimated data' : 'Original reported'
+  }
+  if (warning.status === 'suspicious') return 'Data warning'
+  return 'Data note'
+}
+
+const getWarningColor = (warning, isShowingEstimated) => {
+  if (typeof warning === 'string') return 'warning'
+  if (warning.status === 'excluded') return 'error'
+  if (warning.status === 'replaced') {
+    const showingEst = isShowingEstimated !== false && warning.isShowingEstimated !== false
+    return showingEst ? 'info' : 'warning'
+  }
+  return 'warning'
+}
+
+const getWarningTooltip = (warning, isShowingEstimated) => {
+  if (typeof warning === 'string') return warning
+  let tip = warning.notes || 'Data quality note'
+  if (warning.status === 'replaced') {
+    const showingEst = isShowingEstimated !== false && warning.isShowingEstimated !== false
+    if (showingEst) {
+      if (warning.original != null) {
+        tip += ` (Original reported: ${Number(warning.original).toLocaleString()})`
+      }
+    } else {
+      if (warning.estimated != null) {
+        tip += ` (Estimated correction: ${Number(warning.estimated).toLocaleString()})`
+      }
+    }
+  } else if (warning.original != null) {
+    tip += ` (Reported: ${Number(warning.original).toLocaleString()})`
+  }
+  return tip
 }
 
 const NumberCard = props => {
@@ -27,7 +70,9 @@ const NumberCard = props => {
     change,
     changeDescription,
     colour,
-    noData
+    noData,
+    warning,
+    isShowingEstimated = true
   } = props
 
   return (
@@ -59,13 +104,30 @@ const NumberCard = props => {
           >
             {noData
               ? (
-                <Typography
-                  variant='h4'
-                  color='text.secondary'
-                  sx={{ fontWeight: 700 }}
-                >
-                  No data
-                </Typography>
+                <>
+                  <Typography
+                    variant='h4'
+                    color='text.secondary'
+                    sx={{ fontWeight: 700 }}
+                  >
+                    No data
+                  </Typography>
+                  {warning
+                    ? (
+                      <Box sx={{ mt: 1 }}>
+                        <Tooltip title={getWarningTooltip(warning, isShowingEstimated)} arrow>
+                          <Chip
+                            size='small'
+                            color={getWarningColor(warning, isShowingEstimated)}
+                            variant='outlined'
+                            icon={<WarningAmberRoundedIcon />}
+                            label={getWarningLabel(warning, isShowingEstimated)}
+                          />
+                        </Tooltip>
+                      </Box>
+                      )
+                    : null}
+                </>
                 )
               : (
                 <>
@@ -84,6 +146,21 @@ const NumberCard = props => {
                       label={description}
                     />
                   </Box>
+                  {warning
+                    ? (
+                      <Box sx={{ mt: 1 }}>
+                        <Tooltip title={getWarningTooltip(warning, isShowingEstimated)} arrow>
+                          <Chip
+                            size='small'
+                            color={getWarningColor(warning, isShowingEstimated)}
+                            variant='outlined'
+                            icon={<WarningAmberRoundedIcon />}
+                            label={getWarningLabel(warning, isShowingEstimated)}
+                          />
+                        </Tooltip>
+                      </Box>
+                      )
+                    : null}
                   {Number.isFinite(change)
                     ? (
                       <Box sx={{ mt: 1 }}>

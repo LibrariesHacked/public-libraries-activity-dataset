@@ -5,16 +5,13 @@ import CardContent from '@mui/material/CardContent'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
-import { Doughnut } from 'react-chartjs-2'
-
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { getActiveServices } from '../models/service'
 
 import * as loansModel from '../models/loans'
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+import { AppChart } from './charts'
 
 const LoansByTypeCard = () => {
   const [{ filteredServices, services, loans }, dispatchApplication] =
@@ -69,7 +66,7 @@ const LoansByTypeCard = () => {
           sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 1 }}
         >
           <Stack sx={{ justifyContent: 'space-between' }}>
-            {loansData && <Doughnut data={loansData} />}
+            <AppChart type='doughnut' data={loansData} />
           </Stack>
         </Stack>
       </CardContent>

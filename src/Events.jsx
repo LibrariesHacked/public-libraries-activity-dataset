@@ -1,52 +1,34 @@
 import React, { useEffect, useState } from 'react'
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-import { Bar } from 'react-chartjs-2'
-
 import Markdown from 'react-markdown'
 
-import eventsMd from './content/events.md'
-import eventsAttendanceMd from './content/events-attendance.md'
-import eventsAttendanceByServiceMd from './content/events-attendance-by-service.md'
+import eventsMd from './content/events.md?raw'
+import eventsAttendanceMd from './content/events-attendance.md?raw'
+import eventsAttendanceByServiceMd from './content/events-attendance-by-service.md?raw'
 
 import Box from '@mui/material/Box'
-import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
+import { AppChart } from './components/charts'
+
+import {
+  createTimelineChartOptions,
+  createServiceBarChartOptions,
+  formatServiceLabelsWithNoData
+} from './helpers/charts'
 
 import {
   filterByMonthRange,
   filterByPeriods,
-  formatMonth,
   getMonthsInRange
 } from './helpers/periods'
 
 import { getActiveServices } from './models/service'
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
-
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
 
 const eventTypes = {
   Physical: {
@@ -57,29 +39,10 @@ const eventTypes = {
   }
 }
 
-const serviceChartOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    },
-    title: {
-      display: true,
-      text: 'Event counts and attendance by service'
-    }
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Count of events and attendees'
-      },
-      beginAtZero: true
-    }
-  }
-}
+const serviceChartOptions = createServiceBarChartOptions(
+  'Event counts and attendance by service',
+  'Count of events and attendees'
+)
 
 const Events = () => {
   const [
@@ -97,25 +60,6 @@ const Events = () => {
   const [eventsAttendanceChartData, setEventsAttendanceChartData] = useState([])
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
 
-  const [eventsMarkdown, setEventsMarkdown] = useState('')
-  const [eventsAttendanceMarkdown, setEventsAttendanceMarkdown] = useState('')
-  const [
-    eventsAttendanceByServiceMarkdown,
-    setEventsAttendanceByServiceMarkdown
-  ] = useState('')
-
-  useEffect(() => {
-    fetch(eventsMd)
-      .then(res => res.text())
-      .then(text => setEventsMarkdown(text))
-    fetch(eventsAttendanceMd)
-      .then(res => res.text())
-      .then(text => setEventsAttendanceMarkdown(text))
-    fetch(eventsAttendanceByServiceMd)
-      .then(res => res.text())
-      .then(text => setEventsAttendanceByServiceMarkdown(text))
-  }, [])
-
   useEffect(() => {
     const getEvents = async () => {
       const events = await eventsModel.getEvents()
@@ -126,21 +70,46 @@ const Events = () => {
       const attendance = await attendanceModel.getAttendance()
       dispatchApplication({ type: 'SetAttendance', attendance })
     }
-    if (!events && !attendance) {
-      getEvents()
-      getAttendance()
-    }
+    if (!events) getEvents()
+    if (!attendance) getAttendance()
   }, [events, attendance, dispatchApplication])
 
   useEffect(() => {
     if (!events || !attendance || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
+    const activeServiceCodes = new Set(activeServices.map(s => s.code))
 
     const monthLabels = getMonthsInRange(monthRange)
 
     const chartEvents = filterByMonthRange(events, monthRange)
     const chartAttendance = filterByMonthRange(attendance, monthRange)
+
+    // Pre-aggregate monthly attendance: (type, month) -> sum
+    const attendanceTypeMonthMap = new Map()
+    for (let i = 0; i < chartAttendance.length; i++) {
+      const a = chartAttendance[i]
+      if (a.countAttendance && activeServiceCodes.has(a.serviceCode)) {
+        const key = `${a.type}|||${a.month}`
+        attendanceTypeMonthMap.set(
+          key,
+          (attendanceTypeMonthMap.get(key) || 0) + a.countAttendance
+        )
+      }
+    }
+
+    // Pre-aggregate monthly events: (type, month) -> sum
+    const eventsTypeMonthMap = new Map()
+    for (let i = 0; i < chartEvents.length; i++) {
+      const e = chartEvents[i]
+      if (e.countEvents && activeServiceCodes.has(e.serviceCode)) {
+        const key = `${e.type}|||${e.month}`
+        eventsTypeMonthMap.set(
+          key,
+          (eventsTypeMonthMap.get(key) || 0) + e.countEvents
+        )
+      }
+    }
 
     const eventAttendanceCharts = []
 
@@ -150,33 +119,17 @@ const Events = () => {
         // One dataset for attendance and one for events
         {
           label: `Attendance - ${eventType}`,
-          data: monthLabels.map(month => {
-            // Get the count of attendance for this event type and month
-            return chartAttendance
-              .filter(
-                a =>
-                  a.type === eventType &&
-                  a.month === month &&
-                  activeServices.find(s => s.code === a.serviceCode)
-              )
-              .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
-          }),
+          data: monthLabels.map(
+            month => attendanceTypeMonthMap.get(`${eventType}|||${month}`) || 0
+          ),
           yAxisID: 'y1',
           type: 'line'
         },
         {
           label: `Events - ${eventType}`,
-          data: monthLabels.map(month => {
-            // Get the count of events for this event type and month
-            return chartEvents
-              .filter(
-                e =>
-                  e.type === eventType &&
-                  e.month === month &&
-                  activeServices.find(s => s.code === e.serviceCode)
-              )
-              .reduce((sum, e) => sum + (e.countEvents || 0), 0)
-          }),
+          data: monthLabels.map(
+            month => eventsTypeMonthMap.get(`${eventType}|||${month}`) || 0
+          ),
           yAxisID: 'y',
           stack: 'Stack 0'
         }
@@ -188,57 +141,15 @@ const Events = () => {
           datasets
         },
         eventType,
-        options: {
-          responsive: true,
-          interaction: {
-            mode: 'index',
-            intersect: false
-          },
-          stacked: false,
-          plugins: {
-            title: {
-              display: true,
-              text: `Events and Attendance - ${eventTypes[eventType].label}`
-            }
-          },
-          scales: {
-            x: {
-              stacked: true,
-              title: {
-                display: true,
-                text: 'Month'
-              },
-              ticks: {
-                callback: function (value) {
-                  return formatMonth(this.getLabelForValue(value))
-                }
-              }
-            },
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'Count of events (bars)'
-              },
-              stacked: true
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Count of attendees (lines)'
-              },
-              grid: {
-                drawOnChartArea: false
-              },
-              stacked: true
-            }
+        options: createTimelineChartOptions(
+          `Events and Attendance - ${eventTypes[eventType].label}`,
+          'Count of events (bars)',
+          'Count of attendees (lines)',
+          {
+            stacked: true,
+            interaction: { mode: 'index', intersect: false }
           }
-        }
+        )
       })
     })
 
@@ -247,46 +158,54 @@ const Events = () => {
     const serviceEvents = filterByPeriods(events, selectedPeriods)
     const serviceAttendance = filterByPeriods(attendance, selectedPeriods)
 
-    const serviceLabels = activeServices.map(s => s.niceName).sort()
+    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
+    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
 
-    const datasets = ['Events', 'Attendance'].map(label => {
-      const data = serviceLabels.map(serviceLabel => {
-        const serviceCode = services.find(
-          s => s.niceName === serviceLabel
-        )?.code
-        if (!serviceCode) return 0
-
-        if (label === 'Events') {
-          return serviceEvents
-            .filter(
-              e =>
-                activeServices.find(s => s.code === e.serviceCode) &&
-                e.serviceCode === serviceCode
-            )
-            .reduce((sum, e) => sum + (e.countEvents || 0), 0)
-        } else {
-          return serviceAttendance
-            .filter(
-              a =>
-                activeServices.find(s => s.code === a.serviceCode) &&
-                a.serviceCode === serviceCode
-            )
-            .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
-        }
-      })
-      return {
-        label,
-        data
+    // Pre-aggregate service events and attendance
+    const serviceEventsMap = new Map()
+    for (let i = 0; i < serviceEvents.length; i++) {
+      const e = serviceEvents[i]
+      if (e.countEvents && activeServiceCodes.has(e.serviceCode)) {
+        serviceEventsMap.set(
+          e.serviceCode,
+          (serviceEventsMap.get(e.serviceCode) || 0) + e.countEvents
+        )
       }
-    })
+    }
 
-    // If events and attendees are null for a service change the label to include (no data)
-    serviceLabels.forEach((label, index) => {
-      const service = services.find(s => s.niceName === label)
-      if (!service.events && !service.attendance) {
-        serviceLabels[index] = `${label} (no data)`
+    const serviceAttendanceMap = new Map()
+    for (let i = 0; i < serviceAttendance.length; i++) {
+      const a = serviceAttendance[i]
+      if (a.countAttendance && activeServiceCodes.has(a.serviceCode)) {
+        serviceAttendanceMap.set(
+          a.serviceCode,
+          (serviceAttendanceMap.get(a.serviceCode) || 0) + a.countAttendance
+        )
       }
-    })
+    }
+
+    const datasets = [
+      {
+        label: 'Events',
+        data: rawServiceLabels.map(serviceLabel => {
+          const service = serviceByNiceName.get(serviceLabel)
+          return service ? serviceEventsMap.get(service.code) || 0 : 0
+        })
+      },
+      {
+        label: 'Attendance',
+        data: rawServiceLabels.map(serviceLabel => {
+          const service = serviceByNiceName.get(serviceLabel)
+          return service ? serviceAttendanceMap.get(service.code) || 0 : 0
+        })
+      }
+    ]
+
+    const serviceLabels = formatServiceLabelsWithNoData(
+      rawServiceLabels,
+      serviceByNiceName,
+      s => s?.events || s?.attendance
+    )
 
     setServiceChart({
       labels: serviceLabels,
@@ -307,32 +226,29 @@ const Events = () => {
         Events and attendance
       </Typography>
       <CardGrid />
-      <Markdown>{eventsMarkdown}</Markdown>
+      <Markdown>{eventsMd}</Markdown>
       <Typography variant='h5' gutterBottom>
         Event count and attendance by type
       </Typography>
-      <Markdown>{eventsAttendanceMarkdown}</Markdown>
+      <Markdown>{eventsAttendanceMd}</Markdown>
       {eventsAttendanceChartData.map((chart, index) => (
-        <Box key={index} sx={{ mb: 2 }}>
-          <ListSubheader component='div' disableSticky disableGutters>
-            {chart.eventType}
-          </ListSubheader>
-          <Bar data={chart.data} options={chart.options} />
-        </Box>
+        <AppChart
+          key={index}
+          type='bar'
+          title={chart.eventType}
+          data={chart.data}
+          options={chart.options}
+        />
       ))}
       <Typography variant='h5' gutterBottom>
         Events and attendance by service
       </Typography>
-      <Markdown>{eventsAttendanceByServiceMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${(serviceChart?.labels?.length || 1) * 30 + 120}px`
-        }}
-      >
-        <Bar options={serviceChartOptions} data={serviceChart} />
-      </Box>
+      <Markdown>{eventsAttendanceByServiceMd}</Markdown>
+      <AppChart
+        type='service'
+        data={serviceChart}
+        options={serviceChartOptions}
+      />
     </Box>
   )
 }

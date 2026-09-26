@@ -1,108 +1,43 @@
 import React, { useEffect, useState } from 'react'
 
-import {
-  BarElement,
-  Chart as ChartJS,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-import { Bar, Line } from 'react-chartjs-2'
-
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 
-import visitsMd from './content/visits.md'
-import visitsByLocationMd from './content/visits-by-location.md'
-import visitsByServiceMd from './content/visits-by-service.md'
+import visitsMd from './content/visits.md?raw'
+import visitsByLocationMd from './content/visits-by-location.md?raw'
+import visitsByServiceMd from './content/visits-by-service.md?raw'
 
 import { useApplicationState } from './hooks/useApplicationState'
+
+import CardGrid from './components/CardGrid'
+import { AppChart } from './components/charts'
+
+import {
+  createTimelineChartOptions,
+  createServiceBarChartOptions,
+  formatServiceLabelsWithNoData
+} from './helpers/charts'
 
 import {
   filterByMonthRange,
   filterByPeriods,
-  formatMonth,
   getMonthsInRange
 } from './helpers/periods'
 
 import { getActiveServices } from './models/service'
 import * as visitsModel from './models/visits'
 
-import CardGrid from './components/CardGrid'
-
-ChartJS.register(
-  BarElement,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
+const visitsChartOptions = createTimelineChartOptions(
+  'Visits by location type over time'
 )
 
-const visitsChartOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'top'
-    },
-    title: {
-      display: true,
-      text: 'Visits by location type over time'
-    }
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Month'
-      },
-      ticks: {
-        callback: function (value) {
-          return formatMonth(this.getLabelForValue(value))
-        }
-      }
-    }
-  }
-}
-
-const serviceChartOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    },
-    title: {
-      display: true,
-      text: 'Visits by service per resident population'
-    }
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Visits per resident population per year'
-      },
-      stacked: true,
-      beginAtZero: true
-    },
-    y: {
-      stacked: true
-    }
-  }
-}
+const serviceChartOptions = createServiceBarChartOptions(
+  'Visits by service per resident population',
+  'Visits per resident population per year',
+  { stacked: true }
+)
 
 const Visits = () => {
   const [
@@ -111,24 +46,7 @@ const Visits = () => {
   ] = useApplicationState()
 
   const [visitData, setVisitData] = useState(null)
-
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
-
-  const [visitsMarkdown, setVisitsMarkdown] = useState('')
-  const [visitsByLocationMarkdown, setVisitsByLocationMarkdown] = useState('')
-  const [visitsByServiceMarkdown, setVisitsByServiceMarkdown] = useState('')
-
-  useEffect(() => {
-    fetch(visitsMd)
-      .then(res => res.text())
-      .then(text => setVisitsMarkdown(text))
-    fetch(visitsByLocationMd)
-      .then(res => res.text())
-      .then(text => setVisitsByLocationMarkdown(text))
-    fetch(visitsByServiceMd)
-      .then(res => res.text())
-      .then(text => setVisitsByServiceMarkdown(text))
-  }, [])
 
   useEffect(() => {
     const getVisits = async () => {
@@ -143,10 +61,12 @@ const Visits = () => {
   useEffect(() => {
     if (!visits || !services) return
 
-    let visitData = {}
+    const filteredServiceSet = filteredServices?.length
+      ? new Set(filteredServices)
+      : null
 
-    const filteredVisits = filteredServices?.length
-      ? visits.filter(v => filteredServices.includes(v.serviceCode))
+    const filteredVisits = filteredServiceSet
+      ? visits.filter(v => filteredServiceSet.has(v.serviceCode))
       : visits
 
     const locationTypes = [...new Set(visits.map(m => m.location))].sort()
@@ -154,57 +74,69 @@ const Visits = () => {
     const chartVisits = filterByMonthRange(filteredVisits, monthRange)
     const labels = getMonthsInRange(monthRange)
 
-    visitData = {
-      labels,
-      datasets: locationTypes.map(location => {
-        return {
-          label: location,
-          data: labels.map(
-            month =>
-              chartVisits
-                .filter(v => v.location === location && v.month === month)
-                .reduce((sum, v) => sum + (v.countVisits || 0), 0) || 0
-          )
-        }
-      })
+    // Pre-aggregate monthly visits: (location, month) -> sum
+    const locationMonthMap = new Map()
+    for (let i = 0; i < chartVisits.length; i++) {
+      const v = chartVisits[i]
+      if (v.countVisits) {
+        const key = `${v.location}|||${v.month}`
+        locationMonthMap.set(
+          key,
+          (locationMonthMap.get(key) || 0) + v.countVisits
+        )
+      }
     }
 
-    setVisitData(visitData)
+    const newVisitData = {
+      labels,
+      datasets: locationTypes.map(location => ({
+        label: location,
+        data: labels.map(month => locationMonthMap.get(`${location}|||${month}`) || 0)
+      }))
+    }
+
+    setVisitData(newVisitData)
 
     const serviceVisits = filterByPeriods(filteredVisits, selectedPeriods)
     const yearCount = selectedPeriods?.length || 1
 
     const activeServices = getActiveServices(services, filteredServices)
-    const serviceLabels = activeServices.map(s => s.niceName).sort()
+    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
+    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
 
-    const datasets = locationTypes.map(locationType => {
-      return {
-        label: locationType,
-        data: serviceLabels.map(serviceLabel => {
-          const service = services.find(s => s.niceName === serviceLabel)
-          const visitCount = serviceVisits
-            .filter(v => {
-              return (
-                service.code === v.serviceCode && v.location === locationType
-              )
-            })
-            .reduce((sum, v) => sum + (v.countVisits || 0), 0)
-
-          const visitsPerCapita = service?.totalPopulation
-            ? visitCount / service.totalPopulation / yearCount
-            : 0
-          return parseFloat(visitsPerCapita.toFixed(2))
-        })
+    // Pre-aggregate service visits: (serviceCode, location) -> sum
+    const serviceLocationMap = new Map()
+    for (let i = 0; i < serviceVisits.length; i++) {
+      const v = serviceVisits[i]
+      if (v.countVisits) {
+        const key = `${v.serviceCode}|||${v.location}`
+        serviceLocationMap.set(
+          key,
+          (serviceLocationMap.get(key) || 0) + v.countVisits
+        )
       }
-    })
+    }
 
-    // If visits data is null for a service change the label to include (no data)
-    serviceLabels.forEach((label, index) => {
-      const service = services.find(s => s.niceName === label)
-      if (!service.visits) {
-        serviceLabels[index] = `${label} (no data)`
-      }
-    })
+    const datasets = locationTypes.map(locationType => ({
+      label: locationType,
+      data: rawServiceLabels.map(serviceLabel => {
+        const service = serviceByNiceName.get(serviceLabel)
+        const visitCount = service
+          ? serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
+          : 0
+
+        const visitsPerCapita = service?.totalPopulation
+          ? visitCount / service.totalPopulation / yearCount
+          : 0
+        return parseFloat(visitsPerCapita.toFixed(2))
+      })
+    }))
+
+    const serviceLabels = formatServiceLabelsWithNoData(
+      rawServiceLabels,
+      serviceByNiceName,
+      s => s?.visits
+    )
 
     setServiceChart({ labels: serviceLabels, datasets })
   }, [visits, filteredServices, services, monthRange, selectedPeriods])
@@ -215,25 +147,21 @@ const Visits = () => {
         Visits
       </Typography>
       <CardGrid />
-      <Markdown>{visitsMarkdown}</Markdown>
+      <Markdown>{visitsMd}</Markdown>
       <Typography variant='h5' gutterBottom>
         Visits by location
       </Typography>
-      <Markdown>{visitsByLocationMarkdown}</Markdown>
-      {visitData && <Line options={visitsChartOptions} data={visitData} />}
+      <Markdown>{visitsByLocationMd}</Markdown>
+      <AppChart type='line' options={visitsChartOptions} data={visitData} />
       <Typography variant='h5' gutterBottom>
         Visits types by service
       </Typography>
-      <Markdown>{visitsByServiceMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${serviceChart.labels.length * 18 + 120}px`
-        }}
-      >
-        <Bar options={serviceChartOptions} data={serviceChart} />
-      </Box>
+      <Markdown>{visitsByServiceMd}</Markdown>
+      <AppChart
+        type='service'
+        data={serviceChart}
+        options={serviceChartOptions}
+      />
     </Box>
   )
 }

@@ -1,24 +1,11 @@
-import React, { useEffect, useState } from 'react'
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-import { Bar } from 'react-chartjs-2'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
-import usersMd from './content/users.md'
-import usersMapMd from './content/users-map.md'
-import usersByAgeGroupMd from './content/users-by-age-group.md'
-import usersByServiceMd from './content/users-by-service.md'
+import usersMd from './content/users.md?raw'
+import usersMapMd from './content/users-map.md?raw'
+import usersByAgeGroupMd from './content/users-by-age-group.md?raw'
+import usersByServiceMd from './content/users-by-service.md?raw'
 
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
@@ -32,16 +19,12 @@ import * as usersModel from './models/users'
 
 import CardGrid from './components/CardGrid'
 import UsersMap from './components/UsersMap'
+import { AppChart } from './components/charts'
 
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
+import {
+  createServiceBarChartOptions,
+  formatServiceLabelsWithNoData
+} from './helpers/charts'
 
 const ageGroupChartOptions = {
   plugins: {
@@ -65,21 +48,6 @@ const ageGroupChartOptions = {
   }
 }
 
-const serviceChartOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Active users as % of population'
-      },
-      beginAtZero: true
-    }
-  }
-}
-
 const Users = () => {
   const [
     {
@@ -93,17 +61,17 @@ const Users = () => {
     dispatchApplication
   ] = useApplicationState()
 
-  const serviceChartTitleOptions = {
-    ...serviceChartOptions,
-    plugins: {
-      title: {
-        display: true,
-        text: `Active users % population by service${
-          snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
-        }`
-      }
-    }
-  }
+  const serviceChartTitle = `Active users % population by service${
+    snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
+  }`
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        serviceChartTitle,
+        'Active users as % of population'
+      ),
+    [serviceChartTitle]
+  )
 
   const [ageGroupChart, setAgeGroupChart] = useState({
     labels: [],
@@ -111,26 +79,6 @@ const Users = () => {
   })
 
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
-
-  const [usersMarkdown, setUsersMarkdown] = useState('')
-  const [usersMapMarkdown, setUsersMapMarkdown] = useState('')
-  const [usersByAgeGroupMarkdown, setUsersByAgeGroupMarkdown] = useState('')
-  const [usersByServiceMarkdown, setUsersByServiceMarkdown] = useState('')
-
-  useEffect(() => {
-    fetch(usersMd)
-      .then(res => res.text())
-      .then(text => setUsersMarkdown(text))
-    fetch(usersMapMd)
-      .then(res => res.text())
-      .then(text => setUsersMapMarkdown(text))
-    fetch(usersByAgeGroupMd)
-      .then(res => res.text())
-      .then(text => setUsersByAgeGroupMarkdown(text))
-    fetch(usersByServiceMd)
-      .then(res => res.text())
-      .then(text => setUsersByServiceMarkdown(text))
-  }, [])
 
   useEffect(() => {
     const getUsers = async () => {
@@ -145,6 +93,10 @@ const Users = () => {
   useEffect(() => {
     if (!users || !serviceRecords || !services) return
 
+    const filteredSet = filteredServices?.length
+      ? new Set(filteredServices)
+      : null
+
     const activeServices = getActiveServices(services, filteredServices)
 
     // Active users are a snapshot of each financial year, so they are never
@@ -156,45 +108,39 @@ const Users = () => {
     const yearLabels = periods.map(formatPeriod)
     // We have a dataset for each age group
     const ageGroups = [...new Set(users.map(m => m.ageGroup))].sort()
-    ageGroups.push('Non-users') // Add non-users as an age group
-    const ageGroupChartDatasets = ageGroups.map(ageGroup => {
-      // For each age group we need the data for each period
-      const data = periods.map(period => {
-        // For each period we need the total users in that age group
-        let total = 0
-        users.forEach(m => {
-          if (m.period === period && m.ageGroup === ageGroup) {
-            // If we are filtering by service, only include if the service is in the filtered list
-            if (
-              !filteredServices ||
-              filteredServices.length === 0 ||
-              filteredServices.includes(m.serviceCode)
-            ) {
-              total += m.countUsers
-            }
-          }
-        })
 
+    // Pre-aggregate user counts: (period, ageGroup) -> sum
+    const periodAgeGroupMap = new Map()
+    for (let i = 0; i < users.length; i++) {
+      const u = users[i]
+      if (!filteredSet || filteredSet.has(u.serviceCode)) {
+        const key = `${u.period}|||${u.ageGroup}`
+        periodAgeGroupMap.set(
+          key,
+          (periodAgeGroupMap.get(key) || 0) + u.countUsers
+        )
+      }
+    }
+
+    // Pre-aggregate total population: period -> sum
+    const periodPopulationMap = new Map()
+    for (let i = 0; i < serviceRecords.length; i++) {
+      const s = serviceRecords[i]
+      if (!filteredSet || filteredSet.has(s.code)) {
+        periodPopulationMap.set(
+          s.period,
+          (periodPopulationMap.get(s.period) || 0) + (s.totalPopulation || 0)
+        )
+      }
+    }
+
+    const allGroups = [...ageGroups, 'Non-users']
+    const ageGroupChartDatasets = allGroups.map(ageGroup => {
+      const data = periods.map(period => {
         if (ageGroup === 'Non-users') {
-          // We need to add in the non-users for this period.
-          // Non-users are the total population for the period minus the users
-          let totalPopulation = 0
-          serviceRecords.forEach(service => {
-            if (service.period === period) {
-              // If we are filtering by service, only include if the service is in the filtered list
-              if (
-                !filteredServices ||
-                filteredServices.length === 0 ||
-                filteredServices.includes(service.code)
-              ) {
-                totalPopulation += service.totalPopulation || 0
-              }
-            }
-          })
-          // The total non-users are the total population minus the total users
-          total = totalPopulation // We'll change this later to subtract users
+          return periodPopulationMap.get(period) || 0
         }
-        return total
+        return periodAgeGroupMap.get(`${period}|||${ageGroup}`) || 0
       })
       return {
         label: ageGroup,
@@ -204,12 +150,11 @@ const Users = () => {
     })
 
     // Now we need to adjust the non-users to be total population minus users
-    const nonUserIndex = ageGroups.indexOf('Non-users')
+    const nonUserIndex = allGroups.indexOf('Non-users')
     if (nonUserIndex !== -1) {
       ageGroupChartDatasets[nonUserIndex].data = ageGroupChartDatasets[
         nonUserIndex
       ].data.map((totalNonUsers, index) => {
-        // Total users for this period is the sum of all other datasets for this index
         const totalUsers = ageGroupChartDatasets.reduce(
           (sum, dataset, dsIndex) => {
             if (dsIndex !== nonUserIndex) {
@@ -228,10 +173,11 @@ const Users = () => {
       datasets: ageGroupChartDatasets
     })
 
-    const serviceLabels = activeServices.map(s => s.niceName).sort()
+    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
+    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
 
-    const serviceData = serviceLabels.map(serviceLabel => {
-      const svc = services.find(s => s.niceName === serviceLabel)
+    const serviceData = rawServiceLabels.map(serviceLabel => {
+      const svc = serviceByNiceName.get(serviceLabel)
       if (!svc) return 0
       const totalUsers = svc.users || 0
       const totalPopulation = svc.totalPopulation || 0
@@ -240,13 +186,11 @@ const Users = () => {
       return Math.round(percentageUsers)
     })
 
-    // If users data is null for a service change the label to include (no data)
-    serviceLabels.forEach((label, index) => {
-      const service = services.find(s => s.niceName === label)
-      if (!service.users) {
-        serviceLabels[index] = `${label} (no data)`
-      }
-    })
+    const serviceLabels = formatServiceLabelsWithNoData(
+      rawServiceLabels,
+      serviceByNiceName,
+      s => s?.users
+    )
 
     setServiceChart({
       labels: serviceLabels,
@@ -265,24 +209,21 @@ const Users = () => {
         Active users
       </Typography>
       <CardGrid />
-      <Markdown>{usersMarkdown}</Markdown>
+      <Markdown>{usersMd}</Markdown>
       <Typography variant='h5' gutterBottom>
         Active users by age group
       </Typography>
-      <Markdown>{usersByAgeGroupMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${ageGroupChart.labels.length * 30 + 120}px`
-        }}
-      >
-        <Bar options={ageGroupChartOptions} data={ageGroupChart} />
-      </Box>
+      <Markdown>{usersByAgeGroupMd}</Markdown>
+      <AppChart
+        type='bar'
+        options={ageGroupChartOptions}
+        data={ageGroupChart}
+        height={`${ageGroupChart.labels.length * 30 + 120}px`}
+      />
       <Typography variant='h5' gutterBottom>
         Active users map
       </Typography>
-      <Markdown>{usersMapMarkdown}</Markdown>
+      <Markdown>{usersMapMd}</Markdown>
       <Box
         sx={{
           position: 'relative',
@@ -294,16 +235,12 @@ const Users = () => {
       <Typography variant='h5' gutterBottom>
         Active users by service
       </Typography>
-      <Markdown>{usersByServiceMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${serviceChart.labels.length * 18 + 120}px`
-        }}
-      >
-        <Bar options={serviceChartTitleOptions} data={serviceChart} />
-      </Box>
+      <Markdown>{usersByServiceMd}</Markdown>
+      <AppChart
+        type='service'
+        data={serviceChart}
+        options={serviceChartOptions}
+      />
     </Box>
   )
 }

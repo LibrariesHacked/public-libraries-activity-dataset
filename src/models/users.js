@@ -1,28 +1,15 @@
-import axios from 'axios'
+import { ActivityRecord, createActivityModel } from './activityFactory'
 
-export class Users {
-  constructor (obj) {
-    Object.assign(this, obj)
-  }
+export class Users extends ActivityRecord {}
 
-  fromJson (json) {
-    this.serviceCode = json[0]
-    this.period = json[1]
-    this.ageGroup = json[2]
-    this.countUsers = parseInt(json[3])
+const { fetchRecords: getUsers } = createActivityModel({
+  fields: ['period', 'ageGroup'],
+  countProp: 'countUsers',
+  endpoint: './users.json',
+  RecordClass: Users
+})
 
-    return this
-  }
-}
-
-export async function getUsers () {
-  const response = await axios.get('./users.json')
-  if (response && response.data && response.data.length > 0) {
-    return response.data.map(m => new Users().fromJson(m))
-  } else {
-    return []
-  }
-}
+export { getUsers }
 
 // Percentage change in active users between two financial years. Only services
 // that reported in both years are included, so the change is not distorted by
@@ -96,18 +83,18 @@ export function getUsersPopulationPercentages (services, users) {
           ? (totalUsers / populationForAgeGroup) * 100
           : null
 
-      percentagesByService[service.code][ageGroup] = parseFloat(
-        percentage.toFixed(2)
-      )
+      percentagesByService[service.code][ageGroup] =
+        percentage != null ? parseFloat(percentage.toFixed(2)) : null
     })
 
     const totalUsers = service.users || null
     const totalPopulation = service.totalPopulation || null
     const overallPercentage =
       totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : null
-    percentagesByService[service.code].Total = parseFloat(
-      overallPercentage.toFixed(2)
-    )
+    percentagesByService[service.code].Total =
+      overallPercentage != null
+        ? parseFloat(overallPercentage.toFixed(2))
+        : null
   })
 
   return percentagesByService

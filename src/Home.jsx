@@ -1,24 +1,17 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 
 import Box from '@mui/material/Box'
 
 import Markdown from 'react-markdown'
 
-import homeMd from './content/home.md'
+import homeMd from './content/home.md?raw'
 
 import CardGrid from './components/CardGrid'
 
 const Home = () => {
-  const [homeMarkdown, setHomeMarkdown] = useState('')
-  useEffect(() => {
-    fetch(homeMd)
-      .then(res => res.text())
-      .then(text => setHomeMarkdown(text))
-  }, [])
-
   return (
     <Box>
-      <Markdown>{homeMarkdown}</Markdown>
+      <Markdown>{homeMd}</Markdown>
       <CardGrid />
     </Box>
   )
