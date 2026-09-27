@@ -1,6 +1,8 @@
 import React from 'react'
 
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded'
+import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded'
 import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
@@ -14,51 +16,72 @@ import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
+import { DataQualityStatus } from '../helpers/dataQuality'
+
 const getChangeIcon = change => {
   if (change <= -0.05) return <TrendingDownRoundedIcon />
   if (change >= 0.05) return <TrendingUpRoundedIcon />
   return <TrendingFlatRoundedIcon />
 }
 
-const getWarningLabel = (warning, isShowingEstimated) => {
-  if (typeof warning === 'string') return 'Data note'
-  if (warning.status === 'excluded') return 'Data excluded'
-  if (warning.status === 'replaced') {
-    const showingEst = isShowingEstimated !== false && warning.isShowingEstimated !== false
-    return showingEst ? 'Estimated data' : 'Original reported'
+const WARNING_CONFIG = {
+  [DataQualityStatus.EXCLUDED]: {
+    label: 'Data excluded',
+    color: 'error.main',
+    Icon: ErrorOutlineRoundedIcon
+  },
+  [DataQualityStatus.REPLACED]: {
+    getLabel: isShowingEstimated =>
+      isShowingEstimated ? 'Corrected data' : 'Original data',
+    getColor: isShowingEstimated =>
+      isShowingEstimated ? 'info.main' : 'warning.main',
+    Icon: InfoOutlinedIcon
+  },
+  [DataQualityStatus.SUSPICIOUS]: {
+    label: 'Data warning',
+    color: 'warning.main',
+    Icon: WarningAmberRoundedIcon
   }
-  if (warning.status === 'suspicious') return 'Data warning'
-  return 'Data note'
 }
 
-const getWarningColor = (warning, isShowingEstimated) => {
-  if (typeof warning === 'string') return 'warning'
-  if (warning.status === 'excluded') return 'error'
-  if (warning.status === 'replaced') {
-    const showingEst = isShowingEstimated !== false && warning.isShowingEstimated !== false
-    return showingEst ? 'info' : 'warning'
-  }
-  return 'warning'
-}
+const getWarningDetails = (warning, isShowingEstimated) => {
+  if (!warning) return null
 
-const getWarningTooltip = (warning, isShowingEstimated) => {
-  if (typeof warning === 'string') return warning
-  let tip = warning.notes || 'Data quality note'
-  if (warning.status === 'replaced') {
-    const showingEst = isShowingEstimated !== false && warning.isShowingEstimated !== false
+  if (typeof warning === 'string') {
+    return {
+      label: 'Data note',
+      color: 'warning.main',
+      Icon: WarningAmberRoundedIcon,
+      tooltip: warning
+    }
+  }
+
+  const showingEst =
+    isShowingEstimated !== false && warning.isShowingEstimated !== false
+  const config = WARNING_CONFIG[warning.status] || {
+    label: 'Data note',
+    color: 'warning.main',
+    Icon: WarningAmberRoundedIcon
+  }
+
+  const label = config.getLabel ? config.getLabel(showingEst) : config.label
+  const color = config.getColor ? config.getColor(showingEst) : config.color
+  const Icon = config.Icon
+
+  let tooltip = warning.notes || 'Data quality note'
+  if (warning.status === DataQualityStatus.REPLACED) {
     if (showingEst) {
       if (warning.original != null) {
-        tip += ` (Original reported: ${Number(warning.original).toLocaleString()})`
+        tooltip += ` (Original data: ${Number(warning.original).toLocaleString('en-GB')})`
       }
-    } else {
-      if (warning.estimated != null) {
-        tip += ` (Estimated correction: ${Number(warning.estimated).toLocaleString()})`
-      }
+    } else if (warning.estimated != null) {
+      tooltip += ` (Corrected data: ${Number(warning.estimated).toLocaleString('en-GB')})`
     }
   } else if (warning.original != null) {
-    tip += ` (Reported: ${Number(warning.original).toLocaleString()})`
+    tooltip += ` (Reported: ${Number(warning.original).toLocaleString('en-GB')})`
   }
-  return tip
+
+  return { label, color, Icon, tooltip }
 }
 
 const NumberCard = props => {
@@ -75,17 +98,59 @@ const NumberCard = props => {
     isShowingEstimated = true
   } = props
 
+  const warningDetails = getWarningDetails(warning, isShowingEstimated)
+
   return (
     <Card
       variant='outlined'
-      sx={{ height: '100%', flexGrow: 1, textAlign: 'center' }}
+      sx={{
+        height: '100%',
+        flexGrow: 1,
+        textAlign: 'center',
+        position: 'relative'
+      }}
     >
+      {warningDetails && (
+        <Tooltip
+          title={warningDetails.tooltip}
+          arrow
+          placement='top-end'
+        >
+          <Box
+            component='span'
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              p: 0.5,
+              borderRadius: '50%',
+              color: warningDetails.color,
+              cursor: 'help',
+              opacity: 0.8,
+              transition: 'all 0.2s ease',
+              '&:hover': {
+                opacity: 1,
+                backgroundColor: 'action.hover'
+              }
+            }}
+            tabIndex={0}
+            role='button'
+            aria-label={warningDetails.label}
+          >
+            <warningDetails.Icon sx={{ fontSize: 18 }} />
+          </Box>
+        </Tooltip>
+      )}
       <CardContent>
         <Typography
           component='h2'
           variant='subtitle2'
           color='text.secondary'
           gutterBottom
+          sx={{ px: 2 }}
         >
           {title}
         </Typography>
@@ -104,30 +169,13 @@ const NumberCard = props => {
           >
             {noData
               ? (
-                <>
-                  <Typography
-                    variant='h4'
-                    color='text.secondary'
-                    sx={{ fontWeight: 700 }}
-                  >
-                    No data
-                  </Typography>
-                  {warning
-                    ? (
-                      <Box sx={{ mt: 1 }}>
-                        <Tooltip title={getWarningTooltip(warning, isShowingEstimated)} arrow>
-                          <Chip
-                            size='small'
-                            color={getWarningColor(warning, isShowingEstimated)}
-                            variant='outlined'
-                            icon={<WarningAmberRoundedIcon />}
-                            label={getWarningLabel(warning, isShowingEstimated)}
-                          />
-                        </Tooltip>
-                      </Box>
-                      )
-                    : null}
-                </>
+                <Typography
+                  variant='h4'
+                  color='text.secondary'
+                  sx={{ fontWeight: 700 }}
+                >
+                  No data
+                </Typography>
                 )
               : (
                 <>
@@ -146,21 +194,6 @@ const NumberCard = props => {
                       label={description}
                     />
                   </Box>
-                  {warning
-                    ? (
-                      <Box sx={{ mt: 1 }}>
-                        <Tooltip title={getWarningTooltip(warning, isShowingEstimated)} arrow>
-                          <Chip
-                            size='small'
-                            color={getWarningColor(warning, isShowingEstimated)}
-                            variant='outlined'
-                            icon={<WarningAmberRoundedIcon />}
-                            label={getWarningLabel(warning, isShowingEstimated)}
-                          />
-                        </Tooltip>
-                      </Box>
-                      )
-                    : null}
                   {Number.isFinite(change)
                     ? (
                       <Box sx={{ mt: 1 }}>

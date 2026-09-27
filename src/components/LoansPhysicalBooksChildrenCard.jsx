@@ -4,6 +4,12 @@ import { getServicesChildPopulation } from '../models/service'
 
 import LoansCategoryCard from './LoansCategoryCard'
 
+/**
+ * Summary KPI card component displaying physical book loans for children and young people (under 18)
+ * across active library services, along with average loans per child resident per year.
+ *
+ * @returns {JSX.Element} LoansCategoryCard configured for children's physical book loans.
+ */
 const LoansPhysicalBooksChildrenCard = () => {
   const filterLoan = useCallback(
     l =>

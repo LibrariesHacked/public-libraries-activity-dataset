@@ -2,10 +2,13 @@ import React, { useReducer } from 'react'
 
 import { ApplicationStateContext } from '../context/applicationStateContext'
 
-import { getMonthRangeForPeriods } from '../helpers/periods'
+import { getMonthRangeForPeriods, getPeriodsInMonthRange } from '../helpers/periods'
 
 import { getServicesForPeriods } from '../models/service'
 
+/**
+ * Default initial state configuration for the global application context.
+ */
 const initialApplicationState = {
   serviceRecords: null,
   services: null,
@@ -28,12 +31,23 @@ const initialApplicationState = {
   mapPosition: [-1.155414, 52.691432]
 }
 
-// Rebuilds the service aggregates whenever the selected financial years change.
+/**
+ * Recomputes derived service aggregates, service code lookups, and month date ranges
+ * whenever the selected financial years or estimation preferences change.
+ *
+ * @param {Object} state - Current application state.
+ * @param {import('../models/service').Service[]} serviceRecords - Raw annual service records.
+ * @param {string[]} selectedPeriods - Array of financial year periods (e.g. ['2022/23']).
+ * @param {boolean} [useEstimates=true] - Whether to use estimated or replaced data values.
+ * @param {[string, string]|null} [monthRange] - Optional specific month range to apply.
+ * @returns {Object} Updated application state slice containing recalculated services, ranges, and snapshot period.
+ */
 const buildPeriodState = (
   state,
   serviceRecords,
   selectedPeriods,
-  useEstimates = state.useEstimates !== false
+  useEstimates = state.useEstimates !== false,
+  monthRange = state.monthRange
 ) => {
   if (!serviceRecords) return state
   const services = getServicesForPeriods(serviceRecords, selectedPeriods, useEstimates)
@@ -41,7 +55,8 @@ const buildPeriodState = (
   services.forEach(service => {
     serviceLookup[service.code] = service
   })
-  const periodMonthRange = getMonthRangeForPeriods(selectedPeriods)
+  const allPeriodsMonthRange = getMonthRangeForPeriods(state.periods || selectedPeriods)
+  const periodMonthRange = state.periodMonthRange || allPeriodsMonthRange
   return {
     ...state,
     useEstimates,
@@ -51,10 +66,13 @@ const buildPeriodState = (
     selectedPeriods,
     snapshotPeriod: selectedPeriods[selectedPeriods.length - 1] || null,
     periodMonthRange,
-    monthRange: state.monthRange || periodMonthRange
+    monthRange: monthRange || state.monthRange || periodMonthRange
   }
 }
 
+/**
+ * List of activity dataset keys stored in application state that contain ActivityRecord instances.
+ */
 const ACTIVITY_KEYS = [
   'computers',
   'wifi',
@@ -65,6 +83,15 @@ const ACTIVITY_KEYS = [
   'users'
 ]
 
+/**
+ * Iterates through a collection of activity records and updates their active count property
+ * based on whether estimated figures should be included.
+ *
+ * @param {Array<import('../models/activityFactory').ActivityRecord>} records - Collection of activity records.
+ * @param {boolean} useEstimates - Whether to use estimated or replaced count values.
+ * @param {string} [fallbackProp] - Optional property name to update if record lacks `updateCount`.
+ * @returns {Array<import('../models/activityFactory').ActivityRecord>|null} The updated records array, or null if input was null.
+ */
 const updateRecordCounts = (records, useEstimates, fallbackProp) => {
   if (!records) return records
   return records.map(r => {
@@ -77,15 +104,38 @@ const updateRecordCounts = (records, useEstimates, fallbackProp) => {
   })
 }
 
+/**
+ * Reducer function managing global application state transitions for library data,
+ * filters, active periods, and map viewport settings.
+ *
+ * @param {Object} state - Current application state.
+ * @param {Object} action - Action payload with a `type` string and optional parameters.
+ * @returns {Object} New application state.
+ */
 const applicationReducer = (state, action) => {
+
   switch (action.type) {
     case 'AddServices': {
       const periods = [
         ...new Set(action.serviceRecords.map(record => record.period))
       ].sort()
+      const allPeriodsMonthRange = getMonthRangeForPeriods(periods)
+      const nextState = {
+        ...state,
+        periods,
+        periodMonthRange: allPeriodsMonthRange,
+        monthRange: state.monthRange || allPeriodsMonthRange
+      }
       return {
-        ...buildPeriodState(state, action.serviceRecords, periods, state.useEstimates),
-        periods
+        ...buildPeriodState(
+          nextState,
+          action.serviceRecords,
+          periods,
+          state.useEstimates
+        ),
+        periods,
+        periodMonthRange: allPeriodsMonthRange,
+        monthRange: state.monthRange || allPeriodsMonthRange
       }
     }
     case 'SetSelectedPeriods': {
@@ -93,7 +143,33 @@ const applicationReducer = (state, action) => {
         action.selectedPeriods.includes(period)
       )
       if (selectedPeriods.length === 0) return state
-      return buildPeriodState(state, state.serviceRecords, selectedPeriods, state.useEstimates)
+      const monthRange = getMonthRangeForPeriods(selectedPeriods)
+      return {
+        ...buildPeriodState(
+          state,
+          state.serviceRecords,
+          selectedPeriods,
+          state.useEstimates,
+          monthRange
+        ),
+        monthRange
+      }
+    }
+    case 'SetDateRange':
+    case 'SetMonthRange': {
+      const monthRange = action.monthRange
+      const selectedPeriods = getPeriodsInMonthRange(state.periods, monthRange)
+      if (selectedPeriods.length === 0) return state
+      return {
+        ...buildPeriodState(
+          state,
+          state.serviceRecords,
+          selectedPeriods,
+          state.useEstimates,
+          monthRange
+        ),
+        monthRange
+      }
     }
     case 'SetUseEstimates': {
       const useEstimates = action.useEstimates
@@ -108,13 +184,14 @@ const applicationReducer = (state, action) => {
         useEstimates,
         ...updatedDatasets
       }
-      return buildPeriodState(updatedState, state.serviceRecords, state.selectedPeriods, useEstimates)
+      return buildPeriodState(
+        updatedState,
+        state.serviceRecords,
+        state.selectedPeriods,
+        useEstimates,
+        state.monthRange
+      )
     }
-    case 'SetMonthRange':
-      return {
-        ...state,
-        monthRange: action.monthRange
-      }
     case 'SetFilteredServices':
       return {
         ...state,
@@ -166,6 +243,13 @@ const applicationReducer = (state, action) => {
   }
 }
 
+/**
+ * React context provider component that encapsulates global application state management.
+ *
+ * @param {Object} props - Component properties.
+ * @param {React.ReactNode} props.children - Child components to be wrapped with the application state context.
+ * @returns {JSX.Element} The provider component exposing [state, dispatch].
+ */
 export const ApplicationStateProvider = ({ children }) => (
   <ApplicationStateContext.Provider
     value={useReducer(applicationReducer, initialApplicationState)}

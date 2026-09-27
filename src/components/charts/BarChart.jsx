@@ -4,7 +4,12 @@ import { Bar } from 'react-chartjs-2'
 import '../../helpers/charts'
 
 /**
- * Bar chart primitive component wrapping react-chartjs-2 Bar.
+ * Bar chart component rendering categorical or discrete data distributions using Chart.js.
+ *
+ * @param {Object} props - Component properties.
+ * @param {Object} props.data - Chart.js data configuration containing labels and datasets.
+ * @param {Object} [props.options] - Chart.js options configuration.
+ * @returns {JSX.Element|null} The rendered Bar chart, or null if data is empty.
  */
 const BarChart = ({ data, options, ...props }) => {
   if (!data?.labels?.length && !data?.datasets?.length) return null

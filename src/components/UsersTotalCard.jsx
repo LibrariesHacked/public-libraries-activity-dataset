@@ -7,6 +7,12 @@ import { getServicePeriodChange } from '../models/service'
 
 import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total active library users across active library services,
+ * percentage of total resident population, and percentage change since the earliest selected financial year.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for total active users.
+ */
 const UsersTotalCard = () => {
   const [{ serviceRecords, selectedPeriods }] = useApplicationState()
 

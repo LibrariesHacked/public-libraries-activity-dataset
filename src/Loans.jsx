@@ -17,7 +17,8 @@ import { AppChart } from './components/charts'
 import {
   createTimelineChartOptions,
   createServiceBarChartOptions,
-  formatServiceLabelsWithNoData
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
 } from './helpers/charts'
 
 import {
@@ -29,12 +30,22 @@ import {
 import { getActiveServices } from './models/service'
 import * as loansModel from './models/loans'
 
+/**
+ * Chart configuration options for the stacked service comparison bar chart,
+ * displaying loans per resident population broken down by media format.
+ */
 const serviceChartOptions = createServiceBarChartOptions(
-  'Loans per population by service and format',
-  'Count of loans per population per year',
+  'Loans per resident population by service and format',
+  'Loans per resident population per year',
   { stacked: true }
 )
 
+/**
+ * Loans dashboard page view displaying summary KPI cards, monthly loan trends
+ * by media format and audience age group, and a per-capita service comparison bar chart.
+ *
+ * @returns {JSX.Element} The rendered Loans page view.
+ */
 const Loans = () => {
   const [
     { filteredServices, services, loans, monthRange, selectedPeriods },
@@ -102,7 +113,7 @@ const Loans = () => {
 
     itemFormats.forEach(format => {
       const formatChartOptions = createTimelineChartOptions(
-        `Loans per month of ${format}s by content age group`,
+        `Loans per month of ${format.toLowerCase()}s by content age group`,
         'Count of loans'
       )
 
@@ -134,9 +145,6 @@ const Loans = () => {
     const serviceLoans = filterByPeriods(loans, selectedPeriods)
     const yearCount = selectedPeriods?.length || 1
 
-    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
-    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
-
     // Pre-aggregate service loans: (serviceCode, format) -> sum
     const serviceFormatMap = new Map()
     for (let i = 0; i < serviceLoans.length; i++) {
@@ -149,6 +157,25 @@ const Loans = () => {
         )
       }
     }
+
+    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+    const getServiceTotalLoansPerCapita = service => {
+      if (!service?.totalPopulation) return 0
+      let totalLoans = 0
+      for (const fmt of itemFormats) {
+        totalLoans += serviceFormatMap.get(`${service.code}|||${fmt}`) || 0
+      }
+      return totalLoans / service.totalPopulation / yearCount
+    }
+
+    const sortedServices = sortServicesByMetric(
+      activeServices,
+      getServiceTotalLoansPerCapita,
+      s => s?.loans
+    )
+
+    const rawServiceLabels = sortedServices.map(s => s.niceName)
+    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
 
     const datasets = itemFormats.map(format => {
       const data = rawServiceLabels.map(serviceLabel => {

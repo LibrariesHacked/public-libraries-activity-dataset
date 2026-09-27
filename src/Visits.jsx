@@ -17,7 +17,8 @@ import { AppChart } from './components/charts'
 import {
   createTimelineChartOptions,
   createServiceBarChartOptions,
-  formatServiceLabelsWithNoData
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
 } from './helpers/charts'
 
 import {
@@ -29,16 +30,28 @@ import {
 import { getActiveServices } from './models/service'
 import * as visitsModel from './models/visits'
 
+/**
+ * Chart configuration options for the timeline line chart displaying monthly visits by facility type.
+ */
 const visitsChartOptions = createTimelineChartOptions(
   'Visits by location type over time'
 )
 
+/**
+ * Chart configuration options for the stacked service comparison bar chart displaying visits per resident population.
+ */
 const serviceChartOptions = createServiceBarChartOptions(
-  'Visits by service per resident population',
+  'Visits per resident population by service',
   'Visits per resident population per year',
   { stacked: true }
 )
 
+/**
+ * In-person library visits dashboard page view displaying summary KPI cards,
+ * monthly visits trends by service location type, and per-capita comparisons across authorities.
+ *
+ * @returns {JSX.Element} The rendered Visits page view.
+ */
 const Visits = () => {
   const [
     { filteredServices, services, visits, monthRange, selectedPeriods },
@@ -101,8 +114,6 @@ const Visits = () => {
     const yearCount = selectedPeriods?.length || 1
 
     const activeServices = getActiveServices(services, filteredServices)
-    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
-    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
 
     // Pre-aggregate service visits: (serviceCode, location) -> sum
     const serviceLocationMap = new Map()
@@ -116,6 +127,25 @@ const Visits = () => {
         )
       }
     }
+
+    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+    const getServiceTotalVisitsPerCapita = service => {
+      if (!service?.totalPopulation) return 0
+      let totalVisits = 0
+      for (const loc of locationTypes) {
+        totalVisits += serviceLocationMap.get(`${service.code}|||${loc}`) || 0
+      }
+      return totalVisits / service.totalPopulation / yearCount
+    }
+
+    const sortedServices = sortServicesByMetric(
+      activeServices,
+      getServiceTotalVisitsPerCapita,
+      s => s?.visits
+    )
+
+    const rawServiceLabels = sortedServices.map(s => s.niceName)
+    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
 
     const datasets = locationTypes.map(locationType => ({
       label: locationType,
@@ -154,7 +184,7 @@ const Visits = () => {
       <Markdown>{visitsByLocationMd}</Markdown>
       <AppChart type='line' options={visitsChartOptions} data={visitData} />
       <Typography variant='h5' gutterBottom>
-        Visits types by service
+        Visit types by service
       </Typography>
       <Markdown>{visitsByServiceMd}</Markdown>
       <AppChart

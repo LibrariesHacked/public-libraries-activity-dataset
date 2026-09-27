@@ -17,7 +17,8 @@ import { AppChart } from './components/charts'
 import {
   createTimelineChartOptions,
   createServiceBarChartOptions,
-  formatServiceLabelsWithNoData
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
 } from './helpers/charts'
 
 import {
@@ -30,17 +31,29 @@ import { getActiveServices } from './models/service'
 import * as computersModel from './models/computers'
 import * as wifiModel from './models/wifi'
 
+/**
+ * Chart configuration options for the dual-axis timeline chart comparing computer hours and Wi-Fi sessions over time.
+ */
 const computersWiFiChartOptions = createTimelineChartOptions(
-  'Computer usage hours vs WiFi sessions',
+  'Computer hours and WiFi sessions over time',
   'Computer hours',
   'WiFi sessions'
 )
 
+/**
+ * Chart configuration options for the service comparison bar chart displaying computer hours and Wi-Fi sessions by authority.
+ */
 const serviceChartOptions = createServiceBarChartOptions(
-  'Computer hours and WiFi sessions by service and format',
-  'Count of computer hours and WiFi sessions'
+  'Computer hours and WiFi sessions by service',
+  'Count of hours and sessions'
 )
 
+/**
+ * Computers and Wi-Fi dashboard page view displaying summary KPI cards,
+ * monthly dual-axis usage timelines (computer hours vs Wi-Fi sessions), and authority comparison charts.
+ *
+ * @returns {JSX.Element} The rendered Computers page view.
+ */
 const Computers = () => {
   const [
     { filteredServices, services, computers, wifi, monthRange, selectedPeriods },
@@ -130,9 +143,6 @@ const Computers = () => {
     const serviceComputers = filterByPeriods(filteredComputers, selectedPeriods)
     const serviceWifi = filterByPeriods(filteredWifi, selectedPeriods)
 
-    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
-    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
-
     // Pre-aggregate service computers and wifi
     const serviceComputersMap = new Map()
     for (let i = 0; i < serviceComputers.length; i++) {
@@ -155,6 +165,24 @@ const Computers = () => {
         )
       }
     }
+
+    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+    const getServiceTotalHoursSessions = service => {
+      if (!service?.code) return 0
+      return (
+        (serviceComputersMap.get(service.code) || 0) +
+        (serviceWifiMap.get(service.code) || 0)
+      )
+    }
+
+    const sortedServices = sortServicesByMetric(
+      activeServices,
+      getServiceTotalHoursSessions,
+      s => s?.computerHours || s?.wifiSessions
+    )
+
+    const rawServiceLabels = sortedServices.map(s => s.niceName)
+    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
 
     const serviceDatasets = [
       {

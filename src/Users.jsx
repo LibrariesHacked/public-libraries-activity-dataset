@@ -23,14 +23,45 @@ import { AppChart } from './components/charts'
 
 import {
   createServiceBarChartOptions,
-  formatServiceLabelsWithNoData
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
 } from './helpers/charts'
 
+/**
+ * Chart configuration options for the horizontal stacked bar chart displaying active users
+ * and remaining resident non-users by demographic age group.
+ */
 const ageGroupChartOptions = {
   plugins: {
+    legend: {
+      position: 'top',
+      labels: {
+        usePointStyle: true,
+        boxWidth: 8
+      }
+    },
     title: {
       display: true,
-      text: 'Active users by age group'
+      text: 'Active users by age group',
+      font: {
+        size: 14,
+        weight: 'bold'
+      },
+      padding: {
+        bottom: 12
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          let label = context.dataset.label || ''
+          if (label) label += ': '
+          if (context.parsed.x !== null && context.parsed.x !== undefined) {
+            label += Number(context.parsed.x).toLocaleString('en-GB')
+          }
+          return label
+        }
+      }
     }
   },
   responsive: true,
@@ -39,15 +70,34 @@ const ageGroupChartOptions = {
   scales: {
     x: {
       stacked: true,
-      title: { display: true, text: 'Count of active users' }
+      beginAtZero: true,
+      title: { display: true, text: 'Count of active users' },
+      grid: {
+        color: context =>
+          context.tick && context.tick.value === 0 ? '#707070' : '#e5e7eb',
+        lineWidth: context =>
+          context.tick && context.tick.value === 0 ? 1.5 : 1
+      },
+      ticks: {
+        callback: value => Number(value).toLocaleString('en-GB')
+      }
     },
     y: {
       stacked: true,
-      title: { display: true, text: 'Financial year' }
+      grid: {
+        display: false
+      }
     }
   }
 }
 
+/**
+ * Active library users dashboard page view displaying summary KPI cards,
+ * demographic age group proportions, an interactive geographic coverage/change map,
+ * and service population penetration bar charts.
+ *
+ * @returns {JSX.Element} The rendered Users page view.
+ */
 const Users = () => {
   const [
     {
@@ -61,14 +111,15 @@ const Users = () => {
     dispatchApplication
   ] = useApplicationState()
 
-  const serviceChartTitle = `Active users % population by service${
+  const serviceChartTitle = `Active users as % of population by service${
     snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
   }`
   const serviceChartOptions = useMemo(
     () =>
       createServiceBarChartOptions(
         serviceChartTitle,
-        'Active users as % of population'
+        'Active users as % of population',
+        { isPercentage: true }
       ),
     [serviceChartTitle]
   )
@@ -173,8 +224,20 @@ const Users = () => {
       datasets: ageGroupChartDatasets
     })
 
-    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
-    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
+    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+    const getServiceUserPercentage = svc => {
+      if (!svc || !svc.totalPopulation) return 0
+      return ((svc.users || 0) / svc.totalPopulation) * 100
+    }
+
+    const sortedServices = sortServicesByMetric(
+      activeServices,
+      getServiceUserPercentage,
+      s => s?.users
+    )
+
+    const rawServiceLabels = sortedServices.map(s => s.niceName)
+    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
 
     const serviceData = rawServiceLabels.map(serviceLabel => {
       const svc = serviceByNiceName.get(serviceLabel)

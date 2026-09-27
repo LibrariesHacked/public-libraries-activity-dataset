@@ -8,6 +8,21 @@ import { getServiceQualityWarning } from '../helpers/dataQuality'
 
 import NumberCard from './NumberCard'
 
+/**
+ * Generic KPI card component that aggregates a specific activity metric across active library services,
+ * calculates secondary descriptors and period-over-period changes, monitors data quality flags,
+ * and renders a styled NumberCard.
+ *
+ * @param {Object} props - Component properties.
+ * @param {string} props.metric - The property name on the Service model to aggregate (e.g. 'loans', 'visits').
+ * @param {string} props.title - Card title displayed in the header.
+ * @param {string} props.colour - Theme palette colour key for styling the card.
+ * @param {Function} [props.formatDescription] - Callback returning a human-readable subtitle string given summary context.
+ * @param {Function} [props.filterServices] - Optional custom filter callback to restrict which services are included.
+ * @param {Function} [props.computeChange] - Optional callback computing the percentage change between periods.
+ * @param {string} [props.changeDescription] - Context label for the change value (e.g. 'since 2022/23').
+ * @returns {JSX.Element} Rendered NumberCard component.
+ */
 const MetricTotalCard = ({
   metric,
   title,

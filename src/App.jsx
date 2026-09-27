@@ -26,6 +26,10 @@ const Loans = lazy(() => import('./Loans'))
 const Users = lazy(() => import('./Users'))
 const Visits = lazy(() => import('./Visits'))
 
+/**
+ * Custom Material-UI theme configuration featuring UK Government Analysis Function
+ * and ONS accessible color palettes, neutral backgrounds, and rounded card styling.
+ */
 const theme = createTheme({
   palette: {
     background: {
@@ -38,14 +42,14 @@ const theme = createTheme({
     },
     primary: { main: lightBlue[700] },
     secondary: { main: blueGrey[500] },
-    // Add a custom set of colors that match the chart.js 7 defaults.
-    chartRed: '#ff6384',
-    chartOrange: '#ff9f40',
-    chartYellow: '#ffcd56',
-    chartGreen: '#4bc0c0',
-    chartBlue: '#36a2eb',
-    chartPurple: '#9966ff',
-    chartGrey: '#c9cbcf'
+    // ONS & UK Government Analysis Function accessible color palette
+    chartRed: '#801650',
+    chartOrange: '#d25418',
+    chartYellow: '#a86a00',
+    chartGreen: '#007877',
+    chartBlue: '#206095',
+    chartPurple: '#672960',
+    chartGrey: '#3d3d3d'
   },
   shape: {
     borderRadius: 8
@@ -75,6 +79,13 @@ const theme = createTheme({
   }
 })
 
+/**
+ * Root application component rendering theme providers, global CSS resets,
+ * header filter controls (service, year period, data quality mode), navigation tabs,
+ * lazy-loaded routed content views, and footer links.
+ *
+ * @returns {JSX.Element} The rendered application shell.
+ */
 function App () {
   return (
     <ThemeProvider theme={theme}>
@@ -113,7 +124,7 @@ function App () {
               </Typography>
               <ServiceSelection />
               <Typography gutterBottom color='textSecondary' sx={{ mt: 2 }}>
-                Select years to filter.
+                Filter by date range
               </Typography>
               <PeriodSelection />
               <DataChoiceSelection />

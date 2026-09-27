@@ -4,6 +4,12 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total library events held across active library services,
+ * along with average events held per day.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for library events.
+ */
 const EventsTotalCard = () => {
   const formatDescription = useCallback(
     ({ total, yearCount }) =>

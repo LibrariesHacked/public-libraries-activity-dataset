@@ -4,6 +4,12 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total event attendees across active library services,
+ * along with average attendees per event.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for event attendance.
+ */
 const AttendanceTotalCard = () => {
   const filterServices = useCallback(
     services =>

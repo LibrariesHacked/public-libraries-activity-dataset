@@ -10,6 +10,19 @@ import { getRecordsQualityWarning } from '../helpers/dataQuality'
 
 import NumberCard from './NumberCard'
 
+/**
+ * Generic KPI card component for age-demographic active users ('Under 12', '12-17', 'Adult'),
+ * displaying annual snapshot user counts, population penetration percentage, period changes,
+ * and data quality warning status.
+ *
+ * @param {Object} props - Component properties.
+ * @param {string} props.title - Card title displayed in header.
+ * @param {string} props.colour - Palette colour key for card styling.
+ * @param {string} props.ageGroup - Age category identifier ('Under 12', '12-17', or 'Adult').
+ * @param {Function} props.populationFn - Function returning the resident population for this demographic across services.
+ * @param {string} props.descLabel - Context label for the subtitle percentage (e.g. 'residents aged 12-17').
+ * @returns {JSX.Element} Rendered NumberCard component.
+ */
 const UsersAgeGroupCard = ({
   title,
   colour,

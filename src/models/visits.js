@@ -1,5 +1,8 @@
 import { ActivityRecord, createActivityModel } from './activityFactory'
 
+/**
+ * Domain model representing in-person physical library visits categorized by location and month.
+ */
 export class Visits extends ActivityRecord {}
 
 const { fetchRecords: getVisits } = createActivityModel({
@@ -9,4 +12,10 @@ const { fetchRecords: getVisits } = createActivityModel({
   RecordClass: Visits
 })
 
+/**
+ * Fetches and deserializes all detailed library visit records from the static dataset.
+ *
+ * @returns {Promise<Visits[]>} Promise resolving to an array of Visits record instances.
+ */
 export { getVisits }
+

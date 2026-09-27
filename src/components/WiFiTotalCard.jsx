@@ -4,6 +4,12 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total public Wi-Fi sessions across active library services,
+ * along with average sessions logged per day.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for Wi-Fi sessions.
+ */
 const WiFiTotalCard = () => {
   const formatDescription = useCallback(
     ({ total, yearCount }) =>

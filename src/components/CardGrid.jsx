@@ -18,6 +18,12 @@ import UsersUnder12Card from './UsersUnder12Card'
 import VisitsTotalCard from './VisitsTotalCard'
 import WiFiTotalCard from './WiFiTotalCard'
 
+/**
+ * Responsive grid layout component that displays contextual KPI summary number cards
+ * matching the active route/page (e.g. Loans, Users, Visits, Events, Computers, or all on Home).
+ *
+ * @returns {JSX.Element} Grid container populated with summary cards.
+ */
 const CardGrid = () => {
   const location = useLocation()
 

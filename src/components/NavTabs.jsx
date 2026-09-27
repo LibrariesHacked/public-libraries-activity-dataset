@@ -5,6 +5,12 @@ import Tabs from '@mui/material/Tabs'
 
 import { Link, useLocation, matchPath } from 'react-router-dom'
 
+/**
+ * Custom React hook that tests the current browser URL path against an array of route pattern strings.
+ *
+ * @param {string[]} patterns - Array of URL route path strings to match against.
+ * @returns {import('react-router-dom').PathMatch|null} The first matching path object, or null if no route matches.
+ */
 const useRouteMatch = patterns => {
   const { pathname } = useLocation()
 
@@ -19,6 +25,11 @@ const useRouteMatch = patterns => {
   return null
 }
 
+/**
+ * Top navigation tabs component allowing users to switch between datasets and application views.
+ *
+ * @returns {JSX.Element} Navigation bar containing routed tabs.
+ */
 const NavTabs = () => {
   const routeMatch = useRouteMatch([
     '/',

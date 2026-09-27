@@ -4,6 +4,12 @@ import { formatCompactNumber } from '../helpers/numbers'
 
 import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total in-person library visits across active library services,
+ * along with average visits per resident per year.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for library visits.
+ */
 const VisitsTotalCard = () => {
   const formatDescription = useCallback(
     ({ total, totalPopulation, yearCount }) => {

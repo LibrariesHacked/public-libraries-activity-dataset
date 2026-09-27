@@ -15,11 +15,20 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import * as serviceModel from '../models/service'
 
+/**
+ * Dropdown menu and chip selection component allowing users to filter data down to
+ * specific library services, clear filters, or add statistical nearest neighbour authorities.
+ *
+ * @returns {JSX.Element} The service selector UI with chips and dropdown menu.
+ */
 const ServiceSelection = () => {
   const [{ services, serviceLookup, filteredServices }, dispatchApplication] =
     useApplicationState()
 
   useEffect(() => {
+    /**
+     * Loads the initial list of library services and registers them in state.
+     */
     async function getServices () {
       const serviceRecords = await serviceModel.getServices()
       dispatchApplication({
@@ -32,10 +41,23 @@ const ServiceSelection = () => {
 
   const [serviceMenuAnchor, setServiceMenuAnchor] = useState(null)
 
+  /**
+   * Opens the service selection menu anchored to the specified DOM element.
+   *
+   * @param {HTMLElement} element - Target button element.
+   */
   const openServiceMenu = element => setServiceMenuAnchor(element)
 
+  /**
+   * Closes the service selection menu.
+   */
   const closeServiceMenu = () => setServiceMenuAnchor(null)
 
+  /**
+   * Adds a library service to the active filter comparison list.
+   *
+   * @param {import('../models/service').Service} service - Selected library service.
+   */
   const addService = async service => {
     const newFilteredServices = [...filteredServices, service.code]
     dispatchApplication({
@@ -45,6 +67,11 @@ const ServiceSelection = () => {
     closeServiceMenu()
   }
 
+  /**
+   * Removes a specific library service from the active filter list.
+   *
+   * @param {string} service - Service code to remove.
+   */
   const deleteService = service => {
     const newFilteredServices = filteredServices.filter(fs => fs !== service)
     dispatchApplication({
@@ -53,6 +80,9 @@ const ServiceSelection = () => {
     })
   }
 
+  /**
+   * Clears all service filters, resetting the view to display all library authorities.
+   */
   const handleClearAll = () => {
     dispatchApplication({
       type: 'SetFilteredServices',
@@ -60,6 +90,10 @@ const ServiceSelection = () => {
     })
   }
 
+  /**
+   * Automatically adds the CIPFA nearest statistical neighbours of the currently
+   * selected service to form a benchmark comparison group.
+   */
   const handleNearestNeighbours = () => {
     if (filteredServices && filteredServices.length === 1) {
       const service = serviceLookup[filteredServices[0]]
@@ -73,6 +107,7 @@ const ServiceSelection = () => {
       })
     }
   }
+
 
   return (
     <>

@@ -2,6 +2,12 @@ import React, { useCallback } from 'react'
 
 import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total library loans (all formats) across active library services,
+ * along with average loans per resident per year.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for total loans.
+ */
 const LoansTotalCard = () => {
   const formatDescription = useCallback(
     ({ total, totalPopulation, yearCount }) => {

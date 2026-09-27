@@ -1,5 +1,8 @@
 import { ActivityRecord, createActivityModel } from './activityFactory'
 
+/**
+ * Domain model representing monthly public library computer and device usage hours.
+ */
 export class Computers extends ActivityRecord {}
 
 const { fetchRecords: getComputers } = createActivityModel({
@@ -9,4 +12,9 @@ const { fetchRecords: getComputers } = createActivityModel({
   RecordClass: Computers
 })
 
+/**
+ * Fetches and deserializes all monthly computer usage hour records from the static dataset.
+ *
+ * @returns {Promise<Computers[]>} Promise resolving to an array of Computers record instances.
+ */
 export { getComputers }

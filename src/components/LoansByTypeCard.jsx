@@ -13,6 +13,38 @@ import * as loansModel from '../models/loans'
 
 import { AppChart } from './charts'
 
+/**
+ * Chart.js display options for the loans breakdown doughnut chart,
+ * configuring bottom legend alignment and formatted number tooltips.
+ */
+const doughnutOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        usePointStyle: true,
+        boxWidth: 8
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          const label = context.label || ''
+          const value = context.parsed || 0
+          return `${label}: ${Number(value).toLocaleString('en-GB')}`
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Card component rendering a breakdown of library loans by media format (e.g. Physical books, E-books, Audiobooks)
+ * using an interactive DoughnutChart, with segments sorted descending by loan volume.
+ *
+ * @returns {JSX.Element} Card containing the loans-by-format doughnut chart.
+ */
 const LoansByTypeCard = () => {
   const [{ filteredServices, services, loans }, dispatchApplication] =
     useApplicationState()
@@ -30,24 +62,35 @@ const LoansByTypeCard = () => {
   }, [services, loans, dispatchApplication])
 
   useEffect(() => {
-    if (!loans || !filteredServices || !services) return
+    if (!loans || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
+    const activeServiceCodes = new Set(activeServices.map(s => s.code))
 
     const filteredLoans = loans.filter(loan =>
-      activeServices.includes(loan.serviceCode)
+      activeServiceCodes.has(loan.serviceCode)
     )
 
-    const itemFormats = [...new Set(filteredLoans.map(m => m.format))].sort()
+    const itemFormats = [...new Set(filteredLoans.map(m => m.format))]
+
+    // Pre-aggregate counts and sort segments descending by size per ONS guidance
+    const formatCounts = itemFormats
+      .map(format => ({
+        format,
+        count: filteredLoans.reduce(
+          (sum, loan) =>
+            loan.format === format ? sum + (loan.countLoans || 0) : sum,
+          0
+        )
+      }))
+      .sort((a, b) => b.count - a.count)
+
     const loansData = {
-      labels: itemFormats,
+      labels: formatCounts.map(f => f.format),
       datasets: [
         {
-          label: 'Loans by Format',
-          data: itemFormats.map(
-            format =>
-              filteredLoans.filter(loan => loan.format === format).length
-          )
+          label: 'Loans by format',
+          data: formatCounts.map(f => f.count)
         }
       ]
     }
@@ -66,7 +109,7 @@ const LoansByTypeCard = () => {
           sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 1 }}
         >
           <Stack sx={{ justifyContent: 'space-between' }}>
-            <AppChart type='doughnut' data={loansData} />
+            <AppChart type='doughnut' data={loansData} options={doughnutOptions} />
           </Stack>
         </Stack>
       </CardContent>

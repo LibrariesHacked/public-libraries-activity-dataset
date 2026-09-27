@@ -17,7 +17,8 @@ import { AppChart } from './components/charts'
 import {
   createTimelineChartOptions,
   createServiceBarChartOptions,
-  formatServiceLabelsWithNoData
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
 } from './helpers/charts'
 
 import {
@@ -30,6 +31,9 @@ import { getActiveServices } from './models/service'
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
 
+/**
+ * Configuration mapping event delivery medium keys to human-readable chart labels.
+ */
 const eventTypes = {
   Physical: {
     label: 'Physical'
@@ -39,11 +43,20 @@ const eventTypes = {
   }
 }
 
+/**
+ * Chart configuration options for the service comparison bar chart displaying event counts and attendee totals.
+ */
 const serviceChartOptions = createServiceBarChartOptions(
   'Event counts and attendance by service',
-  'Count of events and attendees'
+  'Events and attendance'
 )
 
+/**
+ * Events and attendance dashboard page view displaying summary KPI cards,
+ * monthly dual-axis timeline charts (events count vs attendance), and authority comparisons.
+ *
+ * @returns {JSX.Element} The rendered Events page view.
+ */
 const Events = () => {
   const [
     {
@@ -142,7 +155,7 @@ const Events = () => {
         },
         eventType,
         options: createTimelineChartOptions(
-          `Events and Attendance - ${eventTypes[eventType].label}`,
+          `Events and attendance - ${eventTypes[eventType].label}`,
           'Count of events (bars)',
           'Count of attendees (lines)',
           {
@@ -157,9 +170,6 @@ const Events = () => {
 
     const serviceEvents = filterByPeriods(events, selectedPeriods)
     const serviceAttendance = filterByPeriods(attendance, selectedPeriods)
-
-    const rawServiceLabels = activeServices.map(s => s.niceName).sort()
-    const serviceByNiceName = new Map(activeServices.map(s => [s.niceName, s]))
 
     // Pre-aggregate service events and attendance
     const serviceEventsMap = new Map()
@@ -183,6 +193,24 @@ const Events = () => {
         )
       }
     }
+
+    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+    const getServiceTotalEventsAttendance = service => {
+      if (!service?.code) return 0
+      return (
+        (serviceAttendanceMap.get(service.code) || 0) +
+        (serviceEventsMap.get(service.code) || 0)
+      )
+    }
+
+    const sortedServices = sortServicesByMetric(
+      activeServices,
+      getServiceTotalEventsAttendance,
+      s => s?.events || s?.attendance
+    )
+
+    const rawServiceLabels = sortedServices.map(s => s.niceName)
+    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
 
     const datasets = [
       {
