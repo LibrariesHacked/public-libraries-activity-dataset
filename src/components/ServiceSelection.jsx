@@ -91,7 +91,7 @@ const ServiceSelection = () => {
   }
 
   /**
-   * Automatically adds the CIPFA nearest statistical neighbours of the currently
+   * Automatically adds the nearest statistical neighbours of the currently
    * selected service to form a benchmark comparison group.
    */
   const handleNearestNeighbours = () => {
