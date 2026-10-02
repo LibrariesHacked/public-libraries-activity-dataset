@@ -1,17 +1,13 @@
 import React from 'react'
 
-import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded'
-import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded'
 import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded'
 
-import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Chip from '@mui/material/Chip'
+import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
@@ -24,24 +20,53 @@ const getChangeIcon = change => {
   return <TrendingFlatRoundedIcon />
 }
 
-const WARNING_CONFIG = {
-  [DataQualityStatus.EXCLUDED]: {
-    label: 'Data excluded',
-    color: 'error.main',
-    Icon: ErrorOutlineRoundedIcon
-  },
-  [DataQualityStatus.REPLACED]: {
-    getLabel: isShowingEstimated =>
-      isShowingEstimated ? 'Corrected data' : 'Original data',
-    getColor: isShowingEstimated =>
-      isShowingEstimated ? 'info.main' : 'warning.main',
-    Icon: InfoOutlinedIcon
-  },
-  [DataQualityStatus.SUSPICIOUS]: {
-    label: 'Data warning',
-    color: 'warning.main',
-    Icon: WarningAmberRoundedIcon
+const getSummaryTooltip = (warning, isShowingEstimated) => {
+  if (warning.summary) return warning.summary
+
+  const isExcluded = warning.status === DataQualityStatus.EXCLUDED
+  const isReplaced = warning.status === DataQualityStatus.REPLACED
+  const serviceCount = warning.serviceCount || 0
+  const serviceName = warning.serviceName
+
+  if (isExcluded) {
+    if (serviceName) {
+      return `Data excluded for ${serviceName} due to reporting issues.`
+    }
+    if (serviceCount > 1) {
+      return `Data excluded for ${serviceCount} services due to reporting issues.`
+    }
+    return 'Data excluded due to reporting issues.'
   }
+
+  if (isReplaced) {
+    const showingEst =
+      isShowingEstimated !== false && warning.isShowingEstimated !== false
+    if (showingEst) {
+      if (serviceName) {
+        return `Estimates applied for ${serviceName}.`
+      }
+      if (serviceCount > 1) {
+        return `Estimates applied for ${serviceCount} services.`
+      }
+      return 'Estimates applied due to reporting anomalies.'
+    } else {
+      if (serviceName) {
+        return `Showing unadjusted figures for ${serviceName}.`
+      }
+      if (serviceCount > 1) {
+        return `Showing unadjusted figures for ${serviceCount} services.`
+      }
+      return 'Showing unadjusted figures.'
+    }
+  }
+
+  if (serviceName) {
+    return `Data note applies for ${serviceName}.`
+  }
+  if (serviceCount > 1) {
+    return `Data notes apply to ${serviceCount} services.`
+  }
+  return 'Data note applies to this figure.'
 }
 
 const getWarningDetails = (warning, isShowingEstimated) => {
@@ -49,39 +74,18 @@ const getWarningDetails = (warning, isShowingEstimated) => {
 
   if (typeof warning === 'string') {
     return {
-      label: 'Data note',
+      label: 'Data warning',
       color: 'warning.main',
-      Icon: WarningAmberRoundedIcon,
       tooltip: warning
     }
   }
 
-  const showingEst =
-    isShowingEstimated !== false && warning.isShowingEstimated !== false
-  const config = WARNING_CONFIG[warning.status] || {
-    label: 'Data note',
-    color: 'warning.main',
-    Icon: WarningAmberRoundedIcon
-  }
+  const isExcluded = warning.status === DataQualityStatus.EXCLUDED
+  const color = isExcluded ? 'error.main' : 'warning.main'
+  const label = isExcluded ? 'Data excluded warning' : 'Data quality warning'
+  const tooltip = getSummaryTooltip(warning, isShowingEstimated)
 
-  const label = config.getLabel ? config.getLabel(showingEst) : config.label
-  const color = config.getColor ? config.getColor(showingEst) : config.color
-  const Icon = config.Icon
-
-  let tooltip = warning.notes || 'Data quality note'
-  if (warning.status === DataQualityStatus.REPLACED) {
-    if (showingEst) {
-      if (warning.original != null) {
-        tooltip += ` (Original data: ${Number(warning.original).toLocaleString('en-GB')})`
-      }
-    } else if (warning.estimated != null) {
-      tooltip += ` (Corrected data: ${Number(warning.estimated).toLocaleString('en-GB')})`
-    }
-  } else if (warning.original != null) {
-    tooltip += ` (Reported: ${Number(warning.original).toLocaleString('en-GB')})`
-  }
-
-  return { label, color, Icon, tooltip }
+  return { label, color, tooltip }
 }
 
 const NumberCard = props => {
@@ -90,6 +94,7 @@ const NumberCard = props => {
     number,
     description,
     descriptionIcon,
+    icon,
     change,
     changeDescription,
     colour,
@@ -99,6 +104,29 @@ const NumberCard = props => {
   } = props
 
   const warningDetails = getWarningDetails(warning, isShowingEstimated)
+
+  const renderDescriptionIcon = () => {
+    const IconToRender = descriptionIcon || icon
+    if (!IconToRender) return null
+
+    const iconSx = {
+      fontSize: '1rem',
+      color: theme =>
+        theme.palette[colour]?.main ||
+        theme.palette[colour] ||
+        colour ||
+        'primary.main'
+    }
+
+    if (React.isValidElement(IconToRender)) {
+      return React.cloneElement(IconToRender, {
+        sx: { ...iconSx, ...IconToRender.props?.sx }
+      })
+    }
+
+    const Component = IconToRender
+    return <Component sx={iconSx} />
+  }
 
   return (
     <Card
@@ -116,32 +144,18 @@ const NumberCard = props => {
           arrow
           placement='top-end'
         >
-          <Box
-            component='span'
+          <IconButton
+            size='small'
+            aria-label={warningDetails.label}
             sx={{
               position: 'absolute',
-              top: 8,
-              right: 8,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              p: 0.5,
-              borderRadius: '50%',
-              color: warningDetails.color,
-              cursor: 'help',
-              opacity: 0.8,
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                opacity: 1,
-                backgroundColor: 'action.hover'
-              }
+              top: 6,
+              right: 6,
+              color: warningDetails.color
             }}
-            tabIndex={0}
-            role='button'
-            aria-label={warningDetails.label}
           >
-            <warningDetails.Icon sx={{ fontSize: 18 }} />
-          </Box>
+            <WarningAmberRoundedIcon fontSize='small' />
+          </IconButton>
         </Tooltip>
       )}
       <CardContent>
@@ -181,32 +195,68 @@ const NumberCard = props => {
                 <>
                   <Typography
                     variant='h3'
-                    color={colour}
-                    sx={{ fontWeight: 700 }}
+                    sx={{
+                      fontWeight: 700,
+                      color: theme =>
+                        theme.palette[colour]?.main ||
+                        theme.palette[colour] ||
+                        colour ||
+                        'text.primary'
+                    }}
                   >
                     {number}
                   </Typography>
-                  <Box>
-                    <Chip
-                      sx={{ backgroundColor: 'rgb(245, 245, 245)' }}
-                      variant='filled'
-                      icon={descriptionIcon || <AutoAwesomeRoundedIcon />}
-                      label={description}
-                    />
-                  </Box>
+                  {description
+                    ? (
+                      <Stack
+                        direction='row'
+                        spacing={0.75}
+                        sx={{
+                          mt: 0.5,
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        {renderDescriptionIcon()}
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{ fontWeight: 500, lineHeight: 1.3 }}
+                        >
+                          {description}
+                        </Typography>
+                      </Stack>
+                      )
+                    : null}
                   {Number.isFinite(change)
                     ? (
-                      <Box sx={{ mt: 1 }}>
-                        <Chip
-                          size='small'
-                          sx={{ backgroundColor: 'rgb(245, 245, 245)' }}
-                          variant='filled'
-                          icon={getChangeIcon(change)}
-                          label={`${change > 0 ? '+' : ''}${change.toFixed(
+                      <Stack
+                        direction='row'
+                        spacing={0.5}
+                        sx={{
+                          mt: 0.5,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color:
+                            change > 0
+                              ? 'success.main'
+                              : change < 0
+                                ? 'error.main'
+                                : 'text.secondary'
+                        }}
+                      >
+                        {React.cloneElement(getChangeIcon(change), {
+                          sx: { fontSize: '1rem' }
+                        })}
+                        <Typography
+                          variant='caption'
+                          sx={{ fontWeight: 600, color: 'inherit' }}
+                        >
+                          {`${change > 0 ? '+' : ''}${change.toFixed(
                             1
                           )}% ${changeDescription}`}
-                        />
-                      </Box>
+                        </Typography>
+                      </Stack>
                       )
                     : null}
                 </>

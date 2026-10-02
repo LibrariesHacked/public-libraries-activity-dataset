@@ -1,1 +1,1 @@
-A loan is the issue or renewal of a book by a registered member of a library service.
+A loan is the issue or renewal of an item by a registered library member.

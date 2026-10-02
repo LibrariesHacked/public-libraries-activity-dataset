@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
@@ -23,11 +23,10 @@ import {
 
 import {
   filterByMonthRange,
-  filterByPeriods,
   getMonthsInRange
 } from './helpers/periods'
 
-import { getActiveServices } from './models/service'
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as visitsModel from './models/visits'
 
 /**
@@ -38,15 +37,6 @@ const visitsChartOptions = createTimelineChartOptions(
 )
 
 /**
- * Chart configuration options for the stacked service comparison bar chart displaying visits per resident population.
- */
-const serviceChartOptions = createServiceBarChartOptions(
-  'Visits per resident population by service',
-  'Visits per resident population per year',
-  { stacked: true }
-)
-
-/**
  * In-person library visits dashboard page view displaying summary KPI cards,
  * monthly visits trends by service location type, and per-capita comparisons across authorities.
  *
@@ -54,9 +44,30 @@ const serviceChartOptions = createServiceBarChartOptions(
  */
 const Visits = () => {
   const [
-    { filteredServices, services, visits, monthRange, selectedPeriods },
+    {
+      filteredServices,
+      services,
+      visits,
+      monthRange,
+      comparisonMode,
+      selectedRegions
+    },
     dispatchApplication
   ] = useApplicationState()
+
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        isRegionMode
+          ? 'Visits per resident population by region'
+          : 'Visits per resident population by service',
+        'Visits per resident population per year',
+        { stacked: true }
+      ),
+    [isRegionMode]
+  )
 
   const [visitData, setVisitData] = useState(null)
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
@@ -110,8 +121,8 @@ const Visits = () => {
 
     setVisitData(newVisitData)
 
-    const serviceVisits = filterByPeriods(filteredVisits, selectedPeriods)
-    const yearCount = selectedPeriods?.length || 1
+    const serviceVisits = filterByMonthRange(filteredVisits, monthRange)
+    const yearCount = (getMonthsInRange(monthRange).length || 12) / 12
 
     const activeServices = getActiveServices(services, filteredServices)
 
@@ -128,65 +139,135 @@ const Visits = () => {
       }
     }
 
-    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-    const getServiceTotalVisitsPerCapita = service => {
-      if (!service?.totalPopulation) return 0
-      let totalVisits = 0
-      for (const loc of locationTypes) {
-        totalVisits += serviceLocationMap.get(`${service.code}|||${loc}`) || 0
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
+
+      const getRegionTotalVisitsPerCapita = region => {
+        if (!region?.totalPopulation) return 0
+        let totalVisits = 0
+        for (const loc of locationTypes) {
+          for (const sCode of region.serviceCodes) {
+            totalVisits += serviceLocationMap.get(`${sCode}|||${loc}`) || 0
+          }
+        }
+        return totalVisits / region.totalPopulation / yearCount
       }
-      return totalVisits / service.totalPopulation / yearCount
+
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionTotalVisitsPerCapita,
+        r => r?.visits
+      )
+
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const datasets = locationTypes.map(locationType => ({
+        label: locationType,
+        data: rawRegionLabels.map(regionLabel => {
+          const region = regionByNiceName.get(regionLabel)
+          if (!region?.totalPopulation) return 0
+
+          let visitCount = 0
+          for (const sCode of region.serviceCodes) {
+            visitCount += serviceLocationMap.get(`${sCode}|||${locationType}`) || 0
+          }
+          const visitsPerCapita =
+            visitCount / region.totalPopulation / yearCount
+
+          return parseFloat(visitsPerCapita.toFixed(2))
+        })
+      }))
+
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.visits
+      )
+
+      setServiceChart({ labels: regionLabels, datasets })
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceTotalVisitsPerCapita = service => {
+        if (!service?.totalPopulation) return 0
+        let totalVisits = 0
+        for (const loc of locationTypes) {
+          totalVisits += serviceLocationMap.get(`${service.code}|||${loc}`) || 0
+        }
+        return totalVisits / service.totalPopulation / yearCount
+      }
+
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceTotalVisitsPerCapita,
+        s => s?.visits
+      )
+
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const datasets = locationTypes.map(locationType => ({
+        label: locationType,
+        data: rawServiceLabels.map(serviceLabel => {
+          const service = serviceByNiceName.get(serviceLabel)
+          const visitCount = service
+            ? serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
+            : 0
+
+          const visitsPerCapita = service?.totalPopulation
+            ? visitCount / service.totalPopulation / yearCount
+            : 0
+          return parseFloat(visitsPerCapita.toFixed(2))
+        })
+      }))
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.visits
+      )
+
+      setServiceChart({ labels: serviceLabels, datasets })
     }
-
-    const sortedServices = sortServicesByMetric(
-      activeServices,
-      getServiceTotalVisitsPerCapita,
-      s => s?.visits
-    )
-
-    const rawServiceLabels = sortedServices.map(s => s.niceName)
-    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
-
-    const datasets = locationTypes.map(locationType => ({
-      label: locationType,
-      data: rawServiceLabels.map(serviceLabel => {
-        const service = serviceByNiceName.get(serviceLabel)
-        const visitCount = service
-          ? serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
-          : 0
-
-        const visitsPerCapita = service?.totalPopulation
-          ? visitCount / service.totalPopulation / yearCount
-          : 0
-        return parseFloat(visitsPerCapita.toFixed(2))
-      })
-    }))
-
-    const serviceLabels = formatServiceLabelsWithNoData(
-      rawServiceLabels,
-      serviceByNiceName,
-      s => s?.visits
-    )
-
-    setServiceChart({ labels: serviceLabels, datasets })
-  }, [visits, filteredServices, services, monthRange, selectedPeriods])
+  }, [
+    visits,
+    filteredServices,
+    services,
+    monthRange,
+    isRegionMode,
+    selectedRegions
+  ])
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Visits
       </Typography>
       <CardGrid />
-      <Markdown>{visitsMd}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Visits by location
-      </Typography>
-      <Markdown>{visitsByLocationMd}</Markdown>
+      <Box sx={{ my: 2 }}>
+        <Markdown>{visitsMd}</Markdown>
+      </Box>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Visits by location
+        </Typography>
+        <Markdown>{visitsByLocationMd}</Markdown>
+      </Box>
       <AppChart type='line' options={visitsChartOptions} data={visitData} />
-      <Typography variant='h5' gutterBottom>
-        Visit types by service
-      </Typography>
-      <Markdown>{visitsByServiceMd}</Markdown>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Visit types by region' : 'Visit types by service'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Average annual visits per resident across regions, broken down by location type.'
+            : visitsByServiceMd}
+        </Markdown>
+      </Box>
       <AppChart
         type='service'
         data={serviceChart}

@@ -17,5 +17,5 @@ const { fetchRecords: getWiFi } = createActivityModel({
  *
  * @returns {Promise<WiFi[]>} Promise resolving to an array of WiFi record instances.
  */
-export { getWiFi }
+export { getWiFi, getWiFi as getWifi }
 

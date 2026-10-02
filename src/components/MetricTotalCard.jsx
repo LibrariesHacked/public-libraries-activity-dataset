@@ -4,9 +4,78 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices, getServicesPopulation } from '../models/service'
-import { getServiceQualityWarning } from '../helpers/dataQuality'
+import { getRecordsQualityWarning, getServiceQualityWarning } from '../helpers/dataQuality'
+import { filterByMonthRange, getMonthsInRange } from '../helpers/periods'
+
+import ComputerRoundedIcon from '@mui/icons-material/ComputerRounded'
+import EventRoundedIcon from '@mui/icons-material/EventRounded'
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded'
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
+import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
+import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded'
+import WifiRoundedIcon from '@mui/icons-material/WifiRounded'
+
+import * as loansModel from '../models/loans'
+import * as visitsModel from '../models/visits'
+import * as eventsModel from '../models/events'
+import * as attendanceModel from '../models/attendance'
+import * as computersModel from '../models/computers'
+import * as wifiModel from '../models/wifi'
 
 import NumberCard from './NumberCard'
+
+const METRIC_ICONS = {
+  loans: MenuBookRoundedIcon,
+  visits: PlaceRoundedIcon,
+  events: EventRoundedIcon,
+  attendance: GroupsRoundedIcon,
+  computerHours: ComputerRoundedIcon,
+  wifiSessions: WifiRoundedIcon,
+  users: PeopleRoundedIcon
+}
+
+/**
+ * Metric configuration mapping metric identifiers to application state keys,
+ * count property names, and asynchronous data fetchers.
+ */
+const METRIC_CONFIG = {
+  loans: {
+    stateKey: 'loans',
+    countProp: 'countLoans',
+    fetcher: loansModel.getLoans,
+    actionType: 'SetLoans'
+  },
+  visits: {
+    stateKey: 'visits',
+    countProp: 'countVisits',
+    fetcher: visitsModel.getVisits,
+    actionType: 'SetVisits'
+  },
+  events: {
+    stateKey: 'events',
+    countProp: 'countEvents',
+    fetcher: eventsModel.getEvents,
+    actionType: 'SetEvents'
+  },
+  attendance: {
+    stateKey: 'attendance',
+    countProp: 'countAttendance',
+    fetcher: attendanceModel.getAttendance,
+    actionType: 'SetAttendance'
+  },
+  computerHours: {
+    stateKey: 'computers',
+    countProp: 'countHours',
+    fetcher: computersModel.getComputers,
+    actionType: 'SetComputers'
+  },
+  wifiSessions: {
+    stateKey: 'wifi',
+    countProp: 'countSessions',
+    fetcher: wifiModel.getWiFi,
+    actionType: 'SetWiFi'
+  }
+}
 
 /**
  * Generic KPI card component that aggregates a specific activity metric across active library services,
@@ -27,13 +96,27 @@ const MetricTotalCard = ({
   metric,
   title,
   colour,
+  icon,
   formatDescription,
   filterServices,
   computeChange,
   changeDescription
 }) => {
-  const [{ filteredServices, services, selectedPeriods, useEstimates }] =
-    useApplicationState()
+  const [
+    {
+      filteredServices,
+      services,
+      loans,
+      visits,
+      events,
+      attendance,
+      computers,
+      wifi,
+      monthRange,
+      useEstimates
+    },
+    dispatchApplication
+  ] = useApplicationState()
 
   const [count, setCount] = useState(0)
   const [description, setDescription] = useState('')
@@ -41,50 +124,104 @@ const MetricTotalCard = ({
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const yearCount = selectedPeriods?.length || 1
+  const config = METRIC_CONFIG[metric]
+  const records = config
+    ? { loans, visits, events, attendance, computers, wifi }[config.stateKey]
+    : null
+
+  useEffect(() => {
+    if (config?.fetcher && !records) {
+      config.fetcher().then(data => {
+        dispatchApplication({ type: config.actionType, [config.stateKey]: data })
+      })
+    }
+  }, [config, records, dispatchApplication])
 
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
+    const activeServiceCodes = new Set((activeServices || []).map(s => s.code))
 
-    const validServices = filterServices
-      ? filterServices(activeServices)
-      : activeServices?.filter(s => Number.isInteger(s[metric]))
+    const months = getMonthsInRange(monthRange)
+    const yearCount = (months.length || 12) / 12
 
-    if (!validServices || validServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const total =
-      validServices?.reduce((acc, s) => acc + (s[metric] || 0), 0) || 0
-    const totalPopulation = getServicesPopulation(validServices)
-
-    setCount(total)
-
-    if (formatDescription) {
-      setDescription(
-        formatDescription({
-          total,
-          validServices,
-          activeServices,
-          totalPopulation,
-          yearCount
-        })
+    if (records && config) {
+      const rangeRecords = filterByMonthRange(records, monthRange)
+      const matched = rangeRecords.filter(
+        r =>
+          (!filteredServices.length || filteredServices.includes(r.serviceCode)) &&
+          activeServiceCodes.has(r.serviceCode)
       )
+
+      if (!matched.length) {
+        setNoData(true)
+        setCount(0)
+      } else {
+        setNoData(false)
+        const total = matched.reduce(
+          (acc, r) => acc + (r[config.countProp] || 0),
+          0
+        )
+        setCount(total)
+
+        const totalPopulation = getServicesPopulation(activeServices)
+        if (formatDescription) {
+          setDescription(
+            formatDescription({
+              total,
+              validServices: activeServices,
+              activeServices,
+              totalPopulation,
+              yearCount
+            })
+          )
+        }
+        setWarning(getRecordsQualityWarning(matched))
+      }
+    } else {
+      const validServices = filterServices
+        ? filterServices(activeServices)
+        : activeServices?.filter(s => Number.isInteger(s[metric]))
+
+      if (!validServices || validServices.length === 0) {
+        setNoData(true)
+      } else {
+        setNoData(false)
+      }
+
+      const total =
+        validServices?.reduce((acc, s) => acc + (s[metric] || 0), 0) || 0
+      const totalPopulation = getServicesPopulation(validServices)
+
+      setCount(total)
+
+      if (formatDescription) {
+        setDescription(
+          formatDescription({
+            total,
+            validServices,
+            activeServices,
+            totalPopulation,
+            yearCount
+          })
+        )
+      }
+
+      setWarning(getServiceQualityWarning(activeServices, metric))
     }
 
     if (computeChange) {
-      setChange(computeChange({ validServices, activeServices, useEstimates }))
+      setChange(
+        computeChange({ validServices: activeServices, activeServices, useEstimates })
+      )
     }
-
-    setWarning(getServiceQualityWarning(activeServices, metric))
   }, [
     services,
     filteredServices,
-    yearCount,
+    records,
+    monthRange,
     useEstimates,
     metric,
+    config,
     formatDescription,
     filterServices,
     computeChange
@@ -95,6 +232,7 @@ const MetricTotalCard = ({
       title={title}
       number={formatCompactNumber(count)}
       description={description}
+      icon={icon || METRIC_ICONS[metric]}
       change={change}
       changeDescription={changeDescription}
       colour={colour}

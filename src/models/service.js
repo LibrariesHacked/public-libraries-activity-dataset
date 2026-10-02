@@ -2,6 +2,12 @@ import axios from 'axios'
 
 import { DataQualityStatus, resolveEffectiveValue } from '../helpers/dataQuality'
 
+import libraryAuthorities from '../../data/library_authorities.json'
+
+const authorityByCode = new Map(
+  libraryAuthorities.map(auth => [auth.code, auth])
+)
+
 export { DataQualityStatus, resolveEffectiveValue }
 
 /**
@@ -46,6 +52,7 @@ export class Service {
     this.niceName = json[1]
     this.libraryService = json[2]
     this.period = json[3]
+    this.region = authorityByCode.get(this.code)?.region || null
 
     if (json.length >= 40) {
       this.usersOriginal = json[4]
@@ -388,5 +395,112 @@ export const getServicesAdultPopulation = services => {
       0
     ) || 0
   return totalPopulation
+}
+
+/**
+ * Returns a sorted unique list of all English regions represented in the library dataset.
+ *
+ * @param {Service[]} [services] - Optional list of services to extract regions from.
+ * @returns {string[]} Sorted array of region names.
+ */
+export const getAvailableRegions = (services = []) => {
+  const regions = new Set()
+  services.forEach(s => {
+    if (s.region) regions.add(s.region)
+  })
+  if (regions.size === 0) {
+    libraryAuthorities.forEach(a => {
+      if (a.nation === 'England' && a.region) regions.add(a.region)
+    })
+  }
+  return [...regions].sort()
+}
+
+/**
+ * Filters an array of library services down to those belonging to a specific region.
+ *
+ * @param {Service[]} services - List of library services.
+ * @param {string} region - Name of the geographic region (e.g. 'London').
+ * @returns {Service[]} Services located within the specified region.
+ */
+export const getServicesByRegion = (services, region) => {
+  if (!region) return services
+  return services.filter(s => s.region === region)
+}
+
+/**
+ * Filters an array of library services down to those belonging to any of the specified regions.
+ *
+ * @param {Service[]} services - List of library services.
+ * @param {string[]} regions - Array of region names.
+ * @returns {Service[]} Services located within the selected regions.
+ */
+export const getServicesByRegions = (services, regions) => {
+  if (!regions || regions.length === 0) return services
+  return services.filter(s => regions.includes(s.region))
+}
+
+/**
+ * Consolidates library services into regional aggregate entities with summed
+ * population demographics and total activity metrics.
+ *
+ * @param {Service[]} [services=[]] - List of consolidated library services.
+ * @param {string[]} [selectedRegions=[]] - User-selected regions, or empty for all available regions.
+ * @returns {Array<Object>} Array of regional aggregate objects.
+ */
+export const getRegionAggregates = (services = [], selectedRegions = []) => {
+  const availableRegions = getAvailableRegions(services)
+  const targetRegions =
+    selectedRegions && selectedRegions.length > 0
+      ? availableRegions.filter(r => selectedRegions.includes(r))
+      : availableRegions
+
+  return targetRegions.map(regionName => {
+    const regionServices = services.filter(s => s.region === regionName)
+    const serviceCodes = new Set(regionServices.map(s => s.code))
+
+    const totalPopulation = regionServices.reduce(
+      (sum, s) => sum + (s.totalPopulation || 0),
+      0
+    )
+    const populationUnder12 = regionServices.reduce(
+      (sum, s) => sum + (s.populationUnder12 || 0),
+      0
+    )
+    const population12To17 = regionServices.reduce(
+      (sum, s) => sum + (s.population12To17 || 0),
+      0
+    )
+    const populationAdult = regionServices.reduce(
+      (sum, s) => sum + (s.populationAdult || 0),
+      0
+    )
+
+    const sumMetricOrNull = prop => {
+      const reportingServices = regionServices.filter(
+        s => s[prop] != null && Number.isFinite(s[prop])
+      )
+      if (reportingServices.length === 0) return null
+      return reportingServices.reduce((sum, s) => sum + s[prop], 0)
+    }
+
+    return {
+      region: regionName,
+      niceName: regionName,
+      services: regionServices,
+      serviceCodes,
+      totalPopulation,
+      populationUnder12,
+      population12To17,
+      populationAdult,
+      loans: sumMetricOrNull('loans'),
+      visits: sumMetricOrNull('visits'),
+      events: sumMetricOrNull('events'),
+      attendance: sumMetricOrNull('attendance'),
+      computerHours: sumMetricOrNull('computerHours'),
+      wifiSessions: sumMetricOrNull('wifiSessions'),
+      users: sumMetricOrNull('users')
+    }
+  })
 }
 

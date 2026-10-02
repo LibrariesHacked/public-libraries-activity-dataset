@@ -1,78 +1,97 @@
 import React from 'react'
 
-import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded'
-import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded'
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
-
-import Box from '@mui/material/Box'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import FormControlLabel from '@mui/material/FormControlLabel'
+import Stack from '@mui/material/Stack'
+import Switch from '@mui/material/Switch'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
 /**
- * Toggle component allowing users to switch between displaying corrected figures
- * and the raw original figures as reported by local authorities.
+ * Option toggle allowing users to enable or disable automated data corrections
+ * for known reporting anomalies.
  *
- * @returns {JSX.Element} The toggle button group and explanatory tooltip UI.
+ * @returns {JSX.Element} The switch option with informational tooltip.
  */
 const DataChoiceSelection = () => {
   const [{ useEstimates }, dispatchApplication] = useApplicationState()
 
+  const isEstimated = useEstimates !== false
+
   /**
-   * Handles toggle change between 'estimated' (corrected) data and 'original' figures.
+   * Handles toggle change for data correction.
    *
-   * @param {React.MouseEvent} event - Click event.
-   * @param {'estimated'|'original'|null} newChoice - The newly selected choice.
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The switch change event.
    */
-  const handleDataChoiceChange = (event, newChoice) => {
-    if (!newChoice) return
+  const handleToggle = event => {
     dispatchApplication({
       type: 'SetUseEstimates',
-      useEstimates: newChoice === 'estimated'
+      useEstimates: event.target.checked
     })
   }
 
-
-  const isEstimated = useEstimates !== false
-
   return (
-    <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <ToggleButtonGroup
-        color='primary'
-        value={isEstimated ? 'estimated' : 'original'}
-        exclusive
-        onChange={handleDataChoiceChange}
-        size='small'
-        aria-label='Data quality display preference'
-      >
-        <ToggleButton value='estimated' aria-label='Show corrected data'>
-          <AutoFixHighRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
-          Corrected data
-        </ToggleButton>
-        <ToggleButton value='original' aria-label='Show original data'>
-          <HistoryRoundedIcon sx={{ mr: 1, fontSize: 18 }} />
-          Original data
-        </ToggleButton>
-      </ToggleButtonGroup>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.75 }}>
-        <Typography variant='caption' color='textSecondary'>
-          {isEstimated
-            ? 'Corrected data shown by default (typos & unit errors corrected; corrupted data excluded)'
-            : 'Original data shown (severely corrupted data remains excluded from aggregations)'}
-        </Typography>
-        <Tooltip
-          title='Official survey submissions contain known data entry anomalies (e.g. extra digits, minutes instead of hours). By default, corrected data is shown to prevent charts and totals from distorting. Choose "Original data" to inspect the figures as originally submitted. Severely corrupted entries (e.g. 2.2 billion hardware timer counts) remain excluded in both modes.'
-          arrow
-        >
-          <InfoOutlinedIcon
-            sx={{ fontSize: 15, color: 'text.secondary', cursor: 'pointer', verticalAlign: 'middle' }}
+    <Stack
+      direction='row'
+      sx={{ justifyContent: 'center', alignItems: 'center', mt: 1.5, mb: 0.5 }}
+    >
+      <FormControlLabel
+        control={
+          <Switch
+            checked={isEstimated}
+            onChange={handleToggle}
+            size='small'
+            inputProps={{
+              'aria-label': isEstimated
+                ? 'Data corrections applied'
+                : 'Data corrections not applied'
+            }}
+            sx={{
+              '& .MuiSwitch-switchBase': {
+                color: '#b58a8a',
+                '&:hover': {
+                  backgroundColor: 'rgba(181, 138, 138, 0.08)'
+                },
+                '&.Mui-checked': {
+                  color: 'success.main',
+                  '&:hover': {
+                    backgroundColor: 'rgba(46, 125, 50, 0.08)'
+                  },
+                  '& + .MuiSwitch-track': {
+                    backgroundColor: 'success.main',
+                    opacity: 0.5
+                  }
+                }
+              },
+              '& .MuiSwitch-track': {
+                backgroundColor: '#dec4c4',
+                opacity: 0.7
+              }
+            }}
           />
-        </Tooltip>
-      </Box>
-    </Box>
+        }
+        label={
+          <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+            <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+              {isEstimated ? 'Data corrections applied' : 'Data corrections not applied'}
+            </Typography>
+            <Tooltip
+              title='Fixes known anomalies (such as minutes reported instead of hours, or extra digits) in official survey returns to prevent chart distortion. Turn off to view unadjusted raw figures.'
+              arrow
+            >
+              <InfoOutlinedIcon
+                color='action'
+                sx={{ fontSize: 16, cursor: 'help' }}
+              />
+            </Tooltip>
+          </Stack>
+        }
+        sx={{ mr: 0 }}
+      />
+    </Stack>
   )
 }
 

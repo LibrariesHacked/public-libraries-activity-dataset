@@ -1,1 +1,1 @@
-The service comparison chart plots event counts and attendance for each service.
+Total event counts and attendance across library services.

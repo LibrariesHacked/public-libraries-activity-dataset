@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { getActiveServices } from '../models/service'
+import { filterByMonthRange } from '../helpers/periods'
 
 import * as loansModel from '../models/loans'
 
@@ -46,7 +47,7 @@ const doughnutOptions = {
  * @returns {JSX.Element} Card containing the loans-by-format doughnut chart.
  */
 const LoansByTypeCard = () => {
-  const [{ filteredServices, services, loans }, dispatchApplication] =
+  const [{ filteredServices, services, loans, monthRange }, dispatchApplication] =
     useApplicationState()
 
   const [loansData, setLoansData] = useState(null)
@@ -67,7 +68,7 @@ const LoansByTypeCard = () => {
     const activeServices = getActiveServices(services, filteredServices)
     const activeServiceCodes = new Set(activeServices.map(s => s.code))
 
-    const filteredLoans = loans.filter(loan =>
+    const filteredLoans = filterByMonthRange(loans, monthRange).filter(loan =>
       activeServiceCodes.has(loan.serviceCode)
     )
 
@@ -96,7 +97,7 @@ const LoansByTypeCard = () => {
     }
 
     setLoansData(loansData)
-  }, [services, filteredServices, loans])
+  }, [services, filteredServices, loans, monthRange])
 
   return (
     <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
@@ -105,12 +106,15 @@ const LoansByTypeCard = () => {
           Loans
         </Typography>
         <Stack
-          direction='column'
-          sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 1 }}
+          spacing={1}
+          sx={{ justifyContent: 'space-between', flexGrow: 1 }}
         >
-          <Stack sx={{ justifyContent: 'space-between' }}>
-            <AppChart type='doughnut' data={loansData} options={doughnutOptions} />
-          </Stack>
+          <AppChart
+            type='doughnut'
+            data={loansData}
+            options={doughnutOptions}
+            disablePaper
+          />
         </Stack>
       </CardContent>
     </Card>

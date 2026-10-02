@@ -8,13 +8,14 @@ import usersByAgeGroupMd from './content/users-by-age-group.md?raw'
 import usersByServiceMd from './content/users-by-service.md?raw'
 
 import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import { formatPeriod } from './helpers/periods'
 
-import { getActiveServices } from './models/service'
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as usersModel from './models/users'
 
 import CardGrid from './components/CardGrid'
@@ -106,14 +107,23 @@ const Users = () => {
       serviceRecords,
       users,
       selectedPeriods,
-      snapshotPeriod
+      snapshotPeriod,
+      comparisonMode,
+      selectedRegions
     },
     dispatchApplication
   ] = useApplicationState()
 
-  const serviceChartTitle = `Active users as % of population by service${
-    snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
-  }`
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartTitle = isRegionMode
+    ? `Active users as % of population by region${
+        snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
+      }`
+    : `Active users as % of population by service${
+        snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
+      }`
+
   const serviceChartOptions = useMemo(
     () =>
       createServiceBarChartOptions(
@@ -224,81 +234,152 @@ const Users = () => {
       datasets: ageGroupChartDatasets
     })
 
-    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-    const getServiceUserPercentage = svc => {
-      if (!svc || !svc.totalPopulation) return 0
-      return ((svc.users || 0) / svc.totalPopulation) * 100
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
+
+      const getRegionUserPercentage = region => {
+        if (!region || !region.totalPopulation) return 0
+        return ((region.users || 0) / region.totalPopulation) * 100
+      }
+
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionUserPercentage,
+        r => r?.users
+      )
+
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const regionData = rawRegionLabels.map(regionLabel => {
+        const region = regionByNiceName.get(regionLabel)
+        if (!region) return 0
+        const totalUsers = region.users || 0
+        const totalPopulation = region.totalPopulation || 0
+        const percentageUsers =
+          totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
+        return Math.round(percentageUsers)
+      })
+
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.users
+      )
+
+      setServiceChart({
+        labels: regionLabels,
+        datasets: [
+          {
+            label: '% of population',
+            data: regionData
+          }
+        ]
+      })
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceUserPercentage = svc => {
+        if (!svc || !svc.totalPopulation) return 0
+        return ((svc.users || 0) / svc.totalPopulation) * 100
+      }
+
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceUserPercentage,
+        s => s?.users
+      )
+
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const serviceData = rawServiceLabels.map(serviceLabel => {
+        const svc = serviceByNiceName.get(serviceLabel)
+        if (!svc) return 0
+        const totalUsers = svc.users || 0
+        const totalPopulation = svc.totalPopulation || 0
+        const percentageUsers =
+          totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
+        return Math.round(percentageUsers)
+      })
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.users
+      )
+
+      setServiceChart({
+        labels: serviceLabels,
+        datasets: [
+          {
+            label: '% of population',
+            data: serviceData
+          }
+        ]
+      })
     }
-
-    const sortedServices = sortServicesByMetric(
-      activeServices,
-      getServiceUserPercentage,
-      s => s?.users
-    )
-
-    const rawServiceLabels = sortedServices.map(s => s.niceName)
-    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
-
-    const serviceData = rawServiceLabels.map(serviceLabel => {
-      const svc = serviceByNiceName.get(serviceLabel)
-      if (!svc) return 0
-      const totalUsers = svc.users || 0
-      const totalPopulation = svc.totalPopulation || 0
-      const percentageUsers =
-        totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
-      return Math.round(percentageUsers)
-    })
-
-    const serviceLabels = formatServiceLabelsWithNoData(
-      rawServiceLabels,
-      serviceByNiceName,
-      s => s?.users
-    )
-
-    setServiceChart({
-      labels: serviceLabels,
-      datasets: [
-        {
-          label: '% of population',
-          data: serviceData
-        }
-      ]
-    })
-  }, [users, services, serviceRecords, filteredServices, selectedPeriods])
+  }, [
+    users,
+    services,
+    serviceRecords,
+    filteredServices,
+    selectedPeriods,
+    isRegionMode,
+    selectedRegions
+  ])
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Active users
       </Typography>
       <CardGrid />
-      <Markdown>{usersMd}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Active users by age group
-      </Typography>
-      <Markdown>{usersByAgeGroupMd}</Markdown>
+      <Box sx={{ my: 2 }}>
+        <Markdown>{usersMd}</Markdown>
+      </Box>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Active users by age group
+        </Typography>
+        <Markdown>{usersByAgeGroupMd}</Markdown>
+      </Box>
       <AppChart
         type='bar'
         options={ageGroupChartOptions}
         data={ageGroupChart}
         height={`${ageGroupChart.labels.length * 30 + 120}px`}
       />
-      <Typography variant='h5' gutterBottom>
-        Active users map
-      </Typography>
-      <Markdown>{usersMapMd}</Markdown>
-      <Box
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Active users map
+        </Typography>
+        <Markdown>{usersMapMd}</Markdown>
+      </Box>
+      <Paper
+        variant='outlined'
         sx={{
-          position: 'relative',
-          width: '100%'
+          borderRadius: 2,
+          mb: 3,
+          overflow: 'hidden'
         }}
       >
         <UsersMap />
+      </Paper>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Active users by region' : 'Active users by service'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Active users as a percentage of resident population by region (typically 5–20%). Commuters and students can push this percentage higher.'
+            : usersByServiceMd}
+        </Markdown>
       </Box>
-      <Typography variant='h5' gutterBottom>
-        Active users by service
-      </Typography>
-      <Markdown>{usersByServiceMd}</Markdown>
       <AppChart
         type='service'
         data={serviceChart}

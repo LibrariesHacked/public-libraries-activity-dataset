@@ -9,15 +9,17 @@ import homeMd from './content/home.md?raw'
 import CardGrid from './components/CardGrid'
 
 /**
- * Home landing page view presenting introductory markdown guidance
+ * Summary landing page view presenting introductory markdown guidance
  * and an overview grid of key library performance indicator summary cards across all domains.
  *
- * @returns {JSX.Element} The rendered home page view.
+ * @returns {JSX.Element} The rendered summary page view.
  */
 const Home = () => {
   return (
     <Box>
-      <Markdown>{homeMd}</Markdown>
+      <Box sx={{ mb: 2.5 }}>
+        <Markdown>{homeMd}</Markdown>
+      </Box>
       <CardGrid />
     </Box>
   )

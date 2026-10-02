@@ -1,1 +1,1 @@
-We can plot computer hours and WiFi sesstion over time in a single chart to see how they correlate.
+Monthly comparison of computer usage hours and WiFi sessions over time.

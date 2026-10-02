@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
@@ -368,12 +369,12 @@ const UsersMap = () => {
 
 
   return (
-    <Box sx={{ mb: 2, position: 'relative' }}>
+    <Box sx={{ position: 'relative', width: '100%', height: '480px' }}>
       <Map
         mapLib={maplibregl}
         style={{
           width: '100%',
-          height: '400px',
+          height: '100%',
           position: 'relative'
         }}
         mapStyle='https://api.maptiler.com/maps/dataviz/style.json?key=1OK05AJqNta7xYzrG2kA'
@@ -427,15 +428,13 @@ const UsersMap = () => {
         </Box>
 
         {hasMultipleYears && shadeBy === 'change' && (
-          <Box
+          <Paper
+            variant='outlined'
             sx={{
               position: 'absolute',
               bottom: 24,
               left: 8,
               zIndex: 1,
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
-              backdropFilter: 'blur(4px)',
-              borderRadius: 1,
               px: 1.5,
               py: 0.75,
               fontSize: '0.75rem',
@@ -443,7 +442,8 @@ const UsersMap = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 1.5,
-              boxShadow: 1
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              backdropFilter: 'blur(4px)'
             }}
           >
             {earliestPeriod && (
@@ -473,7 +473,7 @@ const UsersMap = () => {
               />
               <span>Increase</span>
             </Box>
-          </Box>
+          </Paper>
         )}
 
         <FullscreenControl />

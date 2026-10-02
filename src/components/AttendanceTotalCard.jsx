@@ -6,37 +6,27 @@ import MetricTotalCard from './MetricTotalCard'
 
 /**
  * Summary KPI card component displaying total event attendees across active library services,
- * along with average attendees per event.
+ * along with attendees per 1,000 residents per year.
  *
  * @returns {JSX.Element} MetricTotalCard configured for event attendance.
  */
 const AttendanceTotalCard = () => {
-  const filterServices = useCallback(
-    services =>
-      services?.filter(
-        service =>
-          Number.isInteger(service.attendance) &&
-          Number.isInteger(service.events)
-      ),
+  const formatDescription = useCallback(
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? Math.round((total / totalPopulation / yearCount) * 1000)
+          : 0
+      return `${formatCompactNumber(perCapita)} per 1,000 residents / yr`
+    },
     []
   )
-
-  const formatDescription = useCallback(({ total, validServices }) => {
-    const totalEvents =
-      validServices?.reduce(
-        (acc, service) => acc + (service.events || 0),
-        0
-      ) || 0
-    const attendancePerEvent = total / (totalEvents || 1)
-    return `${formatCompactNumber(attendancePerEvent)} per event`
-  }, [])
 
   return (
     <MetricTotalCard
       metric='attendance'
       title='Event attendees'
       colour='chartRed'
-      filterServices={filterServices}
       formatDescription={formatDescription}
     />
   )

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
@@ -23,11 +23,10 @@ import {
 
 import {
   filterByMonthRange,
-  filterByPeriods,
   getMonthsInRange
 } from './helpers/periods'
 
-import { getActiveServices } from './models/service'
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as computersModel from './models/computers'
 import * as wifiModel from './models/wifi'
 
@@ -41,14 +40,6 @@ const computersWiFiChartOptions = createTimelineChartOptions(
 )
 
 /**
- * Chart configuration options for the service comparison bar chart displaying computer hours and Wi-Fi sessions by authority.
- */
-const serviceChartOptions = createServiceBarChartOptions(
-  'Computer hours and WiFi sessions by service',
-  'Count of hours and sessions'
-)
-
-/**
  * Computers and Wi-Fi dashboard page view displaying summary KPI cards,
  * monthly dual-axis usage timelines (computer hours vs Wi-Fi sessions), and authority comparison charts.
  *
@@ -56,9 +47,30 @@ const serviceChartOptions = createServiceBarChartOptions(
  */
 const Computers = () => {
   const [
-    { filteredServices, services, computers, wifi, monthRange, selectedPeriods },
+    {
+      filteredServices,
+      services,
+      computers,
+      wifi,
+      monthRange,
+      comparisonMode,
+      selectedRegions
+    },
     dispatchApplication
   ] = useApplicationState()
+
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        isRegionMode
+          ? 'Computer hours and WiFi sessions by region'
+          : 'Computer hours and WiFi sessions by service',
+        'Count of hours and sessions'
+      ),
+    [isRegionMode]
+  )
 
   const [computersWiFiChart, setComputersWiFiChart] = useState({
     datasets: [],
@@ -140,8 +152,8 @@ const Computers = () => {
     })
 
     // The service chart is a total computer hours and wifi sessions by service per resident population
-    const serviceComputers = filterByPeriods(filteredComputers, selectedPeriods)
-    const serviceWifi = filterByPeriods(filteredWifi, selectedPeriods)
+    const serviceComputers = filterByMonthRange(filteredComputers, monthRange)
+    const serviceWifi = filterByMonthRange(filteredWifi, monthRange)
 
     // Pre-aggregate service computers and wifi
     const serviceComputersMap = new Map()
@@ -166,80 +178,156 @@ const Computers = () => {
       }
     }
 
-    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-    const getServiceTotalHoursSessions = service => {
-      if (!service?.code) return 0
-      return (
-        (serviceComputersMap.get(service.code) || 0) +
-        (serviceWifiMap.get(service.code) || 0)
-      )
-    }
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
 
-    const sortedServices = sortServicesByMetric(
-      activeServices,
-      getServiceTotalHoursSessions,
-      s => s?.computerHours || s?.wifiSessions
-    )
-
-    const rawServiceLabels = sortedServices.map(s => s.niceName)
-    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
-
-    const serviceDatasets = [
-      {
-        label: 'Computer hours',
-        data: rawServiceLabels.map(serviceLabel => {
-          const service = serviceByNiceName.get(serviceLabel)
-          return service ? serviceComputersMap.get(service.code) || 0 : 0
-        })
-      },
-      {
-        label: 'WiFi sessions',
-        data: rawServiceLabels.map(serviceLabel => {
-          const service = serviceByNiceName.get(serviceLabel)
-          return service ? serviceWifiMap.get(service.code) || 0 : 0
-        })
+      const getRegionTotalHoursSessions = region => {
+        let total = 0
+        for (const sCode of region.serviceCodes) {
+          total +=
+            (serviceComputersMap.get(sCode) || 0) +
+            (serviceWifiMap.get(sCode) || 0)
+        }
+        return total
       }
-    ]
 
-    const serviceLabels = formatServiceLabelsWithNoData(
-      rawServiceLabels,
-      serviceByNiceName,
-      s => s?.computerHours || s?.wifiSessions
-    )
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionTotalHoursSessions,
+        r => r?.computerHours || r?.wifiSessions
+      )
 
-    setServiceChart({
-      labels: serviceLabels,
-      datasets: serviceDatasets
-    })
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const serviceDatasets = [
+        {
+          label: 'Computer hours',
+          data: rawRegionLabels.map(regionLabel => {
+            const region = regionByNiceName.get(regionLabel)
+            if (!region) return 0
+            let total = 0
+            for (const sCode of region.serviceCodes) {
+              total += serviceComputersMap.get(sCode) || 0
+            }
+            return total
+          })
+        },
+        {
+          label: 'WiFi sessions',
+          data: rawRegionLabels.map(regionLabel => {
+            const region = regionByNiceName.get(regionLabel)
+            if (!region) return 0
+            let total = 0
+            for (const sCode of region.serviceCodes) {
+              total += serviceWifiMap.get(sCode) || 0
+            }
+            return total
+          })
+        }
+      ]
+
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.computerHours || r?.wifiSessions
+      )
+
+      setServiceChart({
+        labels: regionLabels,
+        datasets: serviceDatasets
+      })
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceTotalHoursSessions = service => {
+        if (!service?.code) return 0
+        return (
+          (serviceComputersMap.get(service.code) || 0) +
+          (serviceWifiMap.get(service.code) || 0)
+        )
+      }
+
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceTotalHoursSessions,
+        s => s?.computerHours || s?.wifiSessions
+      )
+
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const serviceDatasets = [
+        {
+          label: 'Computer hours',
+          data: rawServiceLabels.map(serviceLabel => {
+            const service = serviceByNiceName.get(serviceLabel)
+            return service ? serviceComputersMap.get(service.code) || 0 : 0
+          })
+        },
+        {
+          label: 'WiFi sessions',
+          data: rawServiceLabels.map(serviceLabel => {
+            const service = serviceByNiceName.get(serviceLabel)
+            return service ? serviceWifiMap.get(service.code) || 0 : 0
+          })
+        }
+      ]
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.computerHours || s?.wifiSessions
+      )
+
+      setServiceChart({
+        labels: serviceLabels,
+        datasets: serviceDatasets
+      })
+    }
   }, [
     filteredServices,
     services,
     computers,
     wifi,
     monthRange,
-    selectedPeriods
+    isRegionMode,
+    selectedRegions
   ])
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Computers and WiFi
       </Typography>
       <CardGrid />
-      <Markdown>{computersMd}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Computer hours and WiFi sessions over time
-      </Typography>
-      <Markdown>{computersWifiMd}</Markdown>
+      <Box sx={{ my: 2 }}>
+        <Markdown>{computersMd}</Markdown>
+      </Box>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Computer hours and WiFi sessions over time
+        </Typography>
+        <Markdown>{computersWifiMd}</Markdown>
+      </Box>
       <AppChart
         type='line'
         options={computersWiFiChartOptions}
         data={computersWiFiChart}
       />
-      <Typography variant='h5' gutterBottom>
-        Computer hours and WiFi sessions by service
-      </Typography>
-      <Markdown>{computersWiFiByServiceMd}</Markdown>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Computer hours and WiFi sessions by region' : 'Computer hours and WiFi sessions by service'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Total public computer usage hours and Wi-Fi sessions across regions.'
+            : computersWiFiByServiceMd}
+        </Markdown>
+      </Box>
       <AppChart
         type='service'
         data={serviceChart}

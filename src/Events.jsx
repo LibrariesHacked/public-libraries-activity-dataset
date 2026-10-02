@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
@@ -23,11 +23,10 @@ import {
 
 import {
   filterByMonthRange,
-  filterByPeriods,
   getMonthsInRange
 } from './helpers/periods'
 
-import { getActiveServices } from './models/service'
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
 
@@ -44,14 +43,6 @@ const eventTypes = {
 }
 
 /**
- * Chart configuration options for the service comparison bar chart displaying event counts and attendee totals.
- */
-const serviceChartOptions = createServiceBarChartOptions(
-  'Event counts and attendance by service',
-  'Events and attendance'
-)
-
-/**
  * Events and attendance dashboard page view displaying summary KPI cards,
  * monthly dual-axis timeline charts (events count vs attendance), and authority comparisons.
  *
@@ -65,10 +56,24 @@ const Events = () => {
       events,
       attendance,
       monthRange,
-      selectedPeriods
+      comparisonMode,
+      selectedRegions
     },
     dispatchApplication
   ] = useApplicationState()
+
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        isRegionMode
+          ? 'Event counts and attendance by region'
+          : 'Event counts and attendance by service',
+        'Events and attendance'
+      ),
+    [isRegionMode]
+  )
 
   const [eventsAttendanceChartData, setEventsAttendanceChartData] = useState([])
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
@@ -168,8 +173,8 @@ const Events = () => {
 
     setEventsAttendanceChartData(eventAttendanceCharts)
 
-    const serviceEvents = filterByPeriods(events, selectedPeriods)
-    const serviceAttendance = filterByPeriods(attendance, selectedPeriods)
+    const serviceEvents = filterByMonthRange(events, monthRange)
+    const serviceAttendance = filterByMonthRange(attendance, monthRange)
 
     // Pre-aggregate service events and attendance
     const serviceEventsMap = new Map()
@@ -194,71 +199,140 @@ const Events = () => {
       }
     }
 
-    // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-    const getServiceTotalEventsAttendance = service => {
-      if (!service?.code) return 0
-      return (
-        (serviceAttendanceMap.get(service.code) || 0) +
-        (serviceEventsMap.get(service.code) || 0)
-      )
-    }
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
 
-    const sortedServices = sortServicesByMetric(
-      activeServices,
-      getServiceTotalEventsAttendance,
-      s => s?.events || s?.attendance
-    )
-
-    const rawServiceLabels = sortedServices.map(s => s.niceName)
-    const serviceByNiceName = new Map(sortedServices.map(s => [s.niceName, s]))
-
-    const datasets = [
-      {
-        label: 'Events',
-        data: rawServiceLabels.map(serviceLabel => {
-          const service = serviceByNiceName.get(serviceLabel)
-          return service ? serviceEventsMap.get(service.code) || 0 : 0
-        })
-      },
-      {
-        label: 'Attendance',
-        data: rawServiceLabels.map(serviceLabel => {
-          const service = serviceByNiceName.get(serviceLabel)
-          return service ? serviceAttendanceMap.get(service.code) || 0 : 0
-        })
+      const getRegionTotalEventsAttendance = region => {
+        let total = 0
+        for (const sCode of region.serviceCodes) {
+          total +=
+            (serviceAttendanceMap.get(sCode) || 0) +
+            (serviceEventsMap.get(sCode) || 0)
+        }
+        return total
       }
-    ]
 
-    const serviceLabels = formatServiceLabelsWithNoData(
-      rawServiceLabels,
-      serviceByNiceName,
-      s => s?.events || s?.attendance
-    )
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionTotalEventsAttendance,
+        r => r?.events || r?.attendance
+      )
 
-    setServiceChart({
-      labels: serviceLabels,
-      datasets
-    })
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const datasets = [
+        {
+          label: 'Events',
+          data: rawRegionLabels.map(regionLabel => {
+            const region = regionByNiceName.get(regionLabel)
+            if (!region) return 0
+            let total = 0
+            for (const sCode of region.serviceCodes) {
+              total += serviceEventsMap.get(sCode) || 0
+            }
+            return total
+          })
+        },
+        {
+          label: 'Attendance',
+          data: rawRegionLabels.map(regionLabel => {
+            const region = regionByNiceName.get(regionLabel)
+            if (!region) return 0
+            let total = 0
+            for (const sCode of region.serviceCodes) {
+              total += serviceAttendanceMap.get(sCode) || 0
+            }
+            return total
+          })
+        }
+      ]
+
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.events || r?.attendance
+      )
+
+      setServiceChart({
+        labels: regionLabels,
+        datasets
+      })
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceTotalEventsAttendance = service => {
+        if (!service?.code) return 0
+        return (
+          (serviceAttendanceMap.get(service.code) || 0) +
+          (serviceEventsMap.get(service.code) || 0)
+        )
+      }
+
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceTotalEventsAttendance,
+        s => s?.events || s?.attendance
+      )
+
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const datasets = [
+        {
+          label: 'Events',
+          data: rawServiceLabels.map(serviceLabel => {
+            const service = serviceByNiceName.get(serviceLabel)
+            return service ? serviceEventsMap.get(service.code) || 0 : 0
+          })
+        },
+        {
+          label: 'Attendance',
+          data: rawServiceLabels.map(serviceLabel => {
+            const service = serviceByNiceName.get(serviceLabel)
+            return service ? serviceAttendanceMap.get(service.code) || 0 : 0
+          })
+        }
+      ]
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.events || s?.attendance
+      )
+
+      setServiceChart({
+        labels: serviceLabels,
+        datasets
+      })
+    }
   }, [
     filteredServices,
     services,
     events,
     attendance,
     monthRange,
-    selectedPeriods
+    isRegionMode,
+    selectedRegions
   ])
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Events and attendance
       </Typography>
       <CardGrid />
-      <Markdown>{eventsMd}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Event count and attendance by type
-      </Typography>
-      <Markdown>{eventsAttendanceMd}</Markdown>
+      <Box sx={{ my: 2 }}>
+        <Markdown>{eventsMd}</Markdown>
+      </Box>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Event count and attendance by type
+        </Typography>
+        <Markdown>{eventsAttendanceMd}</Markdown>
+      </Box>
       {eventsAttendanceChartData.map((chart, index) => (
         <AppChart
           key={index}
@@ -268,10 +342,17 @@ const Events = () => {
           options={chart.options}
         />
       ))}
-      <Typography variant='h5' gutterBottom>
-        Events and attendance by service
-      </Typography>
-      <Markdown>{eventsAttendanceByServiceMd}</Markdown>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Events and attendance by region' : 'Events and attendance by service'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Total event counts and attendance across regions.'
+            : eventsAttendanceByServiceMd}
+        </Markdown>
+      </Box>
       <AppChart
         type='service'
         data={serviceChart}

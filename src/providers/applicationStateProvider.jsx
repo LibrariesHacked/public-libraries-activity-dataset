@@ -13,6 +13,9 @@ const initialApplicationState = {
   serviceRecords: null,
   services: null,
   serviceLookup: null,
+  comparisonMode: 'services',
+  selectedServices: [],
+  selectedRegions: [],
   filteredServices: [],
   periods: [],
   selectedPeriods: [],
@@ -29,6 +32,35 @@ const initialApplicationState = {
   useEstimates: true,
   mapZoom: 7,
   mapPosition: [-1.155414, 52.691432]
+}
+
+/**
+ * Resolves the active list of service codes based on the current comparison mode and selection.
+ *
+ * @param {string} [comparisonMode='services'] - Active comparison mode ('services' or 'regions').
+ * @param {string[]} [selectedServices=[]] - Manually selected service codes in 'services' mode.
+ * @param {string[]} [selectedRegions=[]] - Selected region names in 'regions' mode.
+ * @param {import('../models/service').Service[]} [services=[]] - Current consolidated services list.
+ * @returns {string[]} Filtered list of service codes to apply across the dashboard.
+ */
+const resolveFilteredServices = (
+  comparisonMode = 'services',
+  selectedServices = [],
+  selectedRegions = [],
+  services = []
+) => {
+  if (comparisonMode === 'services') {
+    return selectedServices || []
+  }
+  if (comparisonMode === 'regions') {
+    if (!selectedRegions || selectedRegions.length === 0 || !services) {
+      return []
+    }
+    return services
+      .filter(s => s.region && selectedRegions.includes(s.region))
+      .map(s => s.code)
+  }
+  return []
 }
 
 /**
@@ -57,12 +89,19 @@ const buildPeriodState = (
   })
   const allPeriodsMonthRange = getMonthRangeForPeriods(state.periods || selectedPeriods)
   const periodMonthRange = state.periodMonthRange || allPeriodsMonthRange
+  const filteredServices = resolveFilteredServices(
+    state.comparisonMode,
+    state.selectedServices,
+    state.selectedRegions,
+    services
+  )
   return {
     ...state,
     useEstimates,
     serviceRecords,
     services,
     serviceLookup,
+    filteredServices,
     selectedPeriods,
     snapshotPeriod: selectedPeriods[selectedPeriods.length - 1] || null,
     periodMonthRange,
@@ -192,10 +231,55 @@ const applicationReducer = (state, action) => {
         state.monthRange
       )
     }
+    case 'SetComparisonMode': {
+      const comparisonMode = action.comparisonMode
+      const filteredServices = resolveFilteredServices(
+        comparisonMode,
+        state.selectedServices,
+        state.selectedRegions,
+        state.services
+      )
+      return {
+        ...state,
+        comparisonMode,
+        filteredServices
+      }
+    }
+    case 'SetSelectedServices': {
+      const selectedServices = action.selectedServices || []
+      const filteredServices = resolveFilteredServices(
+        'services',
+        selectedServices,
+        state.selectedRegions,
+        state.services
+      )
+      return {
+        ...state,
+        comparisonMode: 'services',
+        selectedServices,
+        filteredServices
+      }
+    }
+    case 'SetSelectedRegions': {
+      const selectedRegions = action.selectedRegions || []
+      const filteredServices = resolveFilteredServices(
+        'regions',
+        state.selectedServices,
+        selectedRegions,
+        state.services
+      )
+      return {
+        ...state,
+        comparisonMode: 'regions',
+        selectedRegions,
+        filteredServices
+      }
+    }
     case 'SetFilteredServices':
       return {
         ...state,
-        filteredServices: action.filteredServices
+        selectedServices: action.filteredServices || [],
+        filteredServices: action.filteredServices || []
       }
     case 'SetUsers':
       return {
@@ -228,6 +312,7 @@ const applicationReducer = (state, action) => {
         visits: updateRecordCounts(action.visits, state.useEstimates, 'countVisits')
       }
     case 'SetWiFi':
+    case 'SetWifi':
       return {
         ...state,
         wifi: updateRecordCounts(action.wifi, state.useEstimates, 'countSessions')

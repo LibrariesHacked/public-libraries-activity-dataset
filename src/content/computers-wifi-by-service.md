@@ -1,1 +1,1 @@
-The service comparison chart plots computer usage and WiFi sessions for each service.
+Computer usage hours and WiFi sessions across library services.

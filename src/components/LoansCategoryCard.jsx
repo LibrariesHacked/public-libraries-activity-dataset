@@ -4,7 +4,7 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
-import { filterByPeriods } from '../helpers/periods'
+import { filterByMonthRange, getMonthsInRange } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
 
 import NumberCard from './NumberCard'
@@ -28,7 +28,7 @@ const LoansCategoryCard = ({
   populationFn,
   perCapitaLabel
 }) => {
-  const [{ filteredServices, services, loans, selectedPeriods, useEstimates }] =
+  const [{ filteredServices, services, loans, monthRange, useEstimates }] =
     useApplicationState()
 
   const [count, setCount] = useState(0)
@@ -41,7 +41,7 @@ const LoansCategoryCard = ({
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const categoryLoans = filterByPeriods(loans, selectedPeriods).filter(
+    const categoryLoans = filterByMonthRange(loans, monthRange).filter(
       filterLoan
     )
 
@@ -68,10 +68,11 @@ const LoansCategoryCard = ({
 
     const totalPopulation = populationFn(loanServices)
 
+    const yearCount = (getMonthsInRange(monthRange).length || 12) / 12
     const rate =
       totalPopulation > 0
         ? Math.round(
-            totalLoans / totalPopulation / (selectedPeriods?.length || 1)
+            totalLoans / totalPopulation / yearCount
           )
         : 0
 
@@ -82,7 +83,7 @@ const LoansCategoryCard = ({
     services,
     filteredServices,
     loans,
-    selectedPeriods,
+    monthRange,
     useEstimates,
     filterLoan,
     populationFn

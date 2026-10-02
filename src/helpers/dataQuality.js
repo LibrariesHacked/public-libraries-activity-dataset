@@ -42,7 +42,7 @@ export const resolveEffectiveValue = (
  *
  * @param {Array<object>} activeServices - Currently active or filtered library service objects.
  * @param {string} prop - The metric property name to inspect (e.g. 'loans', 'visits', 'users').
- * @returns {{ status: string, original?: number, estimated?: number, notes: string }|null} Warning details or null.
+ * @returns {{ status: string, serviceCount?: number, serviceName?: string, original?: number, estimated?: number, notes?: string }|null} Warning details or null.
  */
 export const getServiceQualityWarning = (activeServices, prop) => {
   if (!activeServices || activeServices.length === 0) return null
@@ -57,6 +57,8 @@ export const getServiceQualityWarning = (activeServices, prop) => {
     if (s[statusProp]) {
       return {
         status: s[statusProp],
+        serviceCount: 1,
+        serviceName: s.niceName || s.name || null,
         original: s[origProp],
         estimated: s[estProp],
         notes: s[notesProp]
@@ -70,21 +72,30 @@ export const getServiceQualityWarning = (activeServices, prop) => {
 
   const hasExcluded = flagged.some(s => s[statusProp] === DataQualityStatus.EXCLUDED)
   const hasReplaced = flagged.some(s => s[statusProp] === DataQualityStatus.REPLACED)
+  const status = hasExcluded
+    ? DataQualityStatus.EXCLUDED
+    : (hasReplaced ? DataQualityStatus.REPLACED : DataQualityStatus.SUSPICIOUS)
+
   return {
-    status: hasExcluded
-      ? DataQualityStatus.EXCLUDED
-      : (hasReplaced ? DataQualityStatus.REPLACED : DataQualityStatus.SUSPICIOUS),
-    notes: `${flagged.length} service${flagged.length > 1 ? 's have' : ' has'} data quality notes: ${flagged.map(s => `${s.niceName} (${s[statusProp]})`).join(', ')}`
+    status,
+    serviceCount: flagged.length,
+    serviceName: flagged.length === 1 ? (flagged[0].niceName || flagged[0].name) : null,
+    original: flagged.reduce((s, r) => s + (r[origProp] || 0), 0),
+    estimated: flagged.reduce(
+      (s, r) => s + (r[estProp] != null ? r[estProp] : (r[origProp] || 0)),
+      0
+    ),
+    notes: flagged.length === 1 ? flagged[0][notesProp] : null
   }
 }
 
 /**
  * Generates an aggregated data quality warning object from an array of detailed activity records.
  *
- * Sums the original and estimated figures across all flagged records and combines distinct notes.
+ * Sums the original and estimated figures across all flagged records and identifies distinct services affected.
  *
- * @param {Array<{ status?: string, originalCount?: number, estimatedCount?: number, notes?: string }>} records - Activity records.
- * @returns {{ status: string, original: number, estimated: number, notes: string }|null} Warning summary or null if no records are flagged.
+ * @param {Array<{ status?: string, serviceCode?: string, service?: string, serviceName?: string, originalCount?: number, estimatedCount?: number, notes?: string }>} records - Activity records.
+ * @returns {{ status: string, serviceCount: number, recordCount: number, original: number, estimated: number, notes?: string }|null} Warning summary or null if no records are flagged.
  */
 export const getRecordsQualityWarning = records => {
   if (!records || records.length === 0) return null
@@ -94,17 +105,24 @@ export const getRecordsQualityWarning = records => {
 
   const hasExcluded = flagged.some(r => r.status === DataQualityStatus.EXCLUDED)
   const hasReplaced = flagged.some(r => r.status === DataQualityStatus.REPLACED)
-  const notes = flagged.map(r => r.notes).filter(Boolean)
+  const status = hasExcluded
+    ? DataQualityStatus.EXCLUDED
+    : (hasReplaced ? DataQualityStatus.REPLACED : DataQualityStatus.SUSPICIOUS)
+
+  const serviceCodes = new Set(
+    flagged.map(r => r.serviceCode || r.service || r.serviceName).filter(Boolean)
+  )
+  const serviceCount = serviceCodes.size || (flagged.length > 0 ? 1 : 0)
 
   return {
-    status: hasExcluded
-      ? DataQualityStatus.EXCLUDED
-      : (hasReplaced ? DataQualityStatus.REPLACED : DataQualityStatus.SUSPICIOUS),
+    status,
+    serviceCount,
+    recordCount: flagged.length,
     original: flagged.reduce((s, r) => s + (r.originalCount || 0), 0),
     estimated: flagged.reduce(
       (s, r) => s + (r.estimatedCount != null ? r.estimatedCount : (r.originalCount || 0)),
       0
     ),
-    notes: [...new Set(notes)].join('; ')
+    notes: flagged.length === 1 ? flagged[0].notes : null
   }
 }
