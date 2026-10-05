@@ -12,8 +12,13 @@ import MetricTotalCard from './MetricTotalCard'
  */
 const ComputerTotalCard = () => {
   const formatDescription = useCallback(
-    ({ total, yearCount }) =>
-      `${formatCompactNumber(total / (365 * yearCount))} computer hours per day`,
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? Math.round((total / totalPopulation / yearCount) * 1000)
+          : 0
+      return `${formatCompactNumber(perCapita)} hrs per 1,000 residents / yr`
+    },
     []
   )
 

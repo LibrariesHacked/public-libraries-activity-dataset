@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
 import { AppChart } from './components/charts'
 
 import {
@@ -358,6 +359,26 @@ const Events = () => {
         data={serviceChart}
         options={serviceChartOptions}
       />
+
+      <Box sx={{ mt: 5, mb: 4 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Events data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Monthly scheduled library events count by format and audience category.
+        </Typography>
+        <DatasetDataGrid datasetId='events' />
+      </Box>
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Event attendance data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Monthly attendee and participant counts across event delivery formats.
+        </Typography>
+        <DatasetDataGrid datasetId='attendance' />
+      </Box>
     </Box>
   )
 }

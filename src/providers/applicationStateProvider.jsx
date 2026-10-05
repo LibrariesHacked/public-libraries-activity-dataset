@@ -30,6 +30,7 @@ const initialApplicationState = {
   visits: null,
   wifi: null,
   useEstimates: true,
+  nationalGrossing: false,
   mapZoom: 7,
   mapPosition: [-1.155414, 52.691432]
 }
@@ -230,6 +231,12 @@ const applicationReducer = (state, action) => {
         useEstimates,
         state.monthRange
       )
+    }
+    case 'SetNationalGrossing': {
+      return {
+        ...state,
+        nationalGrossing: Boolean(action.nationalGrossing)
+      }
     }
     case 'SetComparisonMode': {
       const comparisonMode = action.comparisonMode

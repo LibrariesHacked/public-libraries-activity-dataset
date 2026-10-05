@@ -12,6 +12,7 @@ import visitsByServiceMd from './content/visits-by-service.md?raw'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
 import { AppChart } from './components/charts'
 
 import {
@@ -273,6 +274,16 @@ const Visits = () => {
         data={serviceChart}
         options={serviceChartOptions}
       />
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Visits data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Full dataset of monthly in-person library visits, reporting anomalies, and corrected figures.
+        </Typography>
+        <DatasetDataGrid datasetId='visits' />
+      </Box>
     </Box>
   )
 }

@@ -97,6 +97,7 @@ const NumberCard = props => {
     icon,
     change,
     changeDescription,
+    changeUnit = '%',
     colour,
     noData,
     warning,
@@ -206,56 +207,101 @@ const NumberCard = props => {
                   >
                     {number}
                   </Typography>
-                  {description
+                  {(description || Number.isFinite(change))
                     ? (
                       <Stack
                         direction='row'
                         spacing={0.75}
-                        sx={{
-                          mt: 0.5,
-                          alignItems: 'center',
-                          justifyContent: 'center'
-                        }}
-                      >
-                        {renderDescriptionIcon()}
-                        <Typography
-                          variant='body2'
-                          color='text.secondary'
-                          sx={{ fontWeight: 500, lineHeight: 1.3 }}
-                        >
-                          {description}
-                        </Typography>
-                      </Stack>
-                      )
-                    : null}
-                  {Number.isFinite(change)
-                    ? (
-                      <Stack
-                        direction='row'
-                        spacing={0.5}
+                        useFlexGap
                         sx={{
                           mt: 0.5,
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color:
-                            change > 0
-                              ? 'success.main'
-                              : change < 0
-                                ? 'error.main'
-                                : 'text.secondary'
+                          flexWrap: 'wrap'
                         }}
                       >
-                        {React.cloneElement(getChangeIcon(change), {
-                          sx: { fontSize: '1rem' }
-                        })}
-                        <Typography
-                          variant='caption'
-                          sx={{ fontWeight: 600, color: 'inherit' }}
-                        >
-                          {`${change > 0 ? '+' : ''}${change.toFixed(
-                            1
-                          )}% ${changeDescription}`}
-                        </Typography>
+                        {description
+                          ? (
+                            <Stack
+                              direction='row'
+                              spacing={0.5}
+                              sx={{
+                                alignItems: 'center'
+                              }}
+                            >
+                              {renderDescriptionIcon()}
+                              <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{ fontWeight: 500, lineHeight: 1.3 }}
+                              >
+                                {description}
+                              </Typography>
+                            </Stack>
+                            )
+                          : null}
+                        {Number.isFinite(change)
+                          ? (() => {
+                              const roundedChange =
+                                Math.abs(change) < 0.05 ? 0 : change
+                              const color =
+                                roundedChange > 0
+                                  ? 'success.main'
+                                  : roundedChange < 0
+                                    ? 'error.main'
+                                    : 'text.secondary'
+                              const sign = roundedChange > 0 ? '+' : ''
+                              const unitStr =
+                                changeUnit === '%' ? '%' : ` ${changeUnit}`
+                              const tooltipTitle = changeDescription
+                                ? `Change ${changeDescription}`
+                                : null
+                              const trendContent = (
+                                <Stack
+                                  direction='row'
+                                  spacing={0.25}
+                                  sx={{
+                                    alignItems: 'center',
+                                    color
+                                  }}
+                                  aria-label={
+                                    tooltipTitle ||
+                                    `Change: ${sign}${roundedChange.toFixed(1)}${unitStr}`
+                                  }
+                                >
+                                  {React.cloneElement(
+                                    getChangeIcon(roundedChange),
+                                    {
+                                      sx: { fontSize: '1rem' }
+                                    }
+                                  )}
+                                  <Typography
+                                    variant='caption'
+                                    sx={{
+                                      fontWeight: 600,
+                                      color: 'inherit',
+                                      whiteSpace: 'nowrap'
+                                    }}
+                                  >
+                                    {`${sign}${roundedChange.toFixed(
+                                      1
+                                    )}${unitStr}`}
+                                  </Typography>
+                                </Stack>
+                              )
+                              return tooltipTitle ? (
+                                <Tooltip
+                                  title={tooltipTitle}
+                                  arrow
+                                  placement='top'
+                                >
+                                  {trendContent}
+                                </Tooltip>
+                              ) : (
+                                trendContent
+                              )
+                            })()
+                          : null}
                       </Stack>
                       )
                     : null}

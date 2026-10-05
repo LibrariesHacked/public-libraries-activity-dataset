@@ -5,7 +5,8 @@ import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper'
 import Slider from '@mui/material/Slider'
 import Stack from '@mui/material/Stack'
-import Tooltip from '@mui/material/Tooltip'
+import ToggleButton from '@mui/material/ToggleButton'
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
@@ -17,8 +18,7 @@ import {
   formatMonth,
   formatPeriod,
   getMonthsInRange,
-  getPeriodForMonth,
-  getPeriodMonths
+  getPeriodForMonth
 } from '../helpers/periods'
 
 /**
@@ -50,8 +50,11 @@ const PeriodSelection = () => {
           label: formatMonth(month)
         }
       }
-      // Label the final month at the end of the range
-      if (index === availableMonths.length - 1) {
+      // Label the final month at the end of the range if not too close to the previous April
+      if (
+        index === availableMonths.length - 1 &&
+        !availableMonths.slice(Math.max(0, index - 2), index).some(m => m.endsWith('-04'))
+      ) {
         return {
           value: index,
           label: formatMonth(month)
@@ -100,24 +103,21 @@ const PeriodSelection = () => {
   }
 
   /**
-   * Toggles a financial year on or off, supporting multiple financial year selections.
-   * If toggling off the only remaining selected financial year, resets to all financial years.
+   * Handles toggling financial years on or off.
+   * If all periods are deselected, resets to selecting all financial years.
    *
-   * @param {string} period - The target financial year period string (e.g. '2023/2024').
+   * @param {React.MouseEvent<HTMLElement>} event - The click event.
+   * @param {string[]} newPeriods - Array of currently selected financial year strings.
    */
-  const handleTogglePeriod = period => {
-    const current = selectedPeriods || []
-    const isSelected = current.includes(period)
-    let next
-    if (isSelected) {
-      if (current.length <= 1) {
-        next = periods
-      } else {
-        next = current.filter(p => p !== period)
-      }
-    } else {
-      next = periods.filter(p => current.includes(p) || p === period)
+  const handlePeriodsChange = (event, newPeriods) => {
+    if (!newPeriods || newPeriods.length === 0) {
+      dispatchApplication({
+        type: 'SetSelectedPeriods',
+        selectedPeriods: periods
+      })
+      return
     }
+    const next = periods.filter(p => newPeriods.includes(p))
     dispatchApplication({
       type: 'SetSelectedPeriods',
       selectedPeriods: next
@@ -168,7 +168,7 @@ const PeriodSelection = () => {
         <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
           <CalendarMonthRoundedIcon color='primary' fontSize='small' />
           <Typography variant='subtitle2' sx={{ fontWeight: 700, color: 'text.primary' }}>
-            Date range: {formattedStart} – {formattedEnd}
+            {formattedStart} – {formattedEnd}
           </Typography>
         </Stack>
         {!isAllSelected && (
@@ -185,93 +185,28 @@ const PeriodSelection = () => {
         )}
       </Stack>
 
-      {/* Financial Year Span Blocks */}
-      <Paper
-        variant='outlined'
-        sx={{
-          display: 'flex',
-          width: '100%',
-          mb: 0.25,
-          borderRadius: 1,
-          overflow: 'hidden'
-        }}
+      {/* Year Toggle Buttons */}
+      <ToggleButtonGroup
+        value={selectedPeriods || []}
+        onChange={handlePeriodsChange}
+        fullWidth
+        aria-label='Years'
+        sx={{ mb: 0.75 }}
       >
-        {periods.map((period, index) => {
-          const isSelected = selectedPeriods?.includes(period)
-          const pMonths = getPeriodMonths(period)
-          const widthPercent = (pMonths.length / availableMonths.length) * 100
-          const startM = formatMonth(pMonths[0])
-          const endM = formatMonth(pMonths[pMonths.length - 1])
-
-          return (
-            <Tooltip
-              key={period}
-              title={
-                isSelected
-                  ? (selectedPeriods?.length === 1
-                      ? `${period} (${startM} – ${endM}) is currently selected. Click to select all years.`
-                      : `Click to turn off ${period} (${startM} – ${endM})`)
-                  : `Click to turn on ${period} (${startM} – ${endM})`
-              }
-              arrow
-            >
-              <Box
-                onClick={() => handleTogglePeriod(period)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    handleTogglePeriod(period)
-                  }
-                }}
-                role='button'
-                tabIndex={0}
-                aria-pressed={isSelected}
-                aria-label={
-                  isSelected
-                    ? (selectedPeriods?.length === 1
-                        ? `Financial year ${period} is selected. Click to select all years.`
-                        : `Turn off financial year ${period}`)
-                    : `Turn on financial year ${period}`
-                }
-                sx={{
-                  flex: `0 0 ${widthPercent}%`,
-                  py: 0.6,
-                  px: 0.75,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  userSelect: 'none',
-                  transition: 'all 0.15s ease-in-out',
-                  borderRight: index < periods.length - 1 ? '1px solid' : 'none',
-                  borderColor: 'divider',
-                  backgroundColor: isSelected
-                    ? 'rgba(32, 96, 149, 0.08)'
-                    : 'background.paper',
-                  '&:hover': {
-                    backgroundColor: isSelected
-                      ? 'rgba(32, 96, 149, 0.14)'
-                      : 'rgba(0, 0, 0, 0.04)'
-                  }
-                }}
-              >
-                <Typography
-                  variant='body2'
-                  sx={{
-                    fontWeight: isSelected ? 700 : 500,
-                    color: isSelected ? 'primary.main' : 'text.secondary',
-                    fontSize: '0.8rem',
-                    lineHeight: 1.2
-                  }}
-                >
-                  {period}
-                </Typography>
-              </Box>
-            </Tooltip>
-          )
-        })}
-      </Paper>
+        {periods.map(period => (
+          <ToggleButton
+            key={period}
+            value={period}
+            aria-label={formatPeriod(period)}
+            title={period}
+          >
+            {formatPeriod(period)}
+          </ToggleButton>
+        ))}
+      </ToggleButtonGroup>
 
       {/* Unified Range Slider */}
-      <Box sx={{ px: 1, pt: 0 }}>
+      <Box sx={{ px: { xs: 1.5, sm: 2 }, pt: 0 }}>
         <Slider
           value={[startIndex, endIndex]}
           onChange={handleSliderChange}
@@ -298,7 +233,7 @@ const PeriodSelection = () => {
             color: 'primary.main',
             height: 4,
             py: 1,
-            mb: 2,
+            mb: 1,
             '& .MuiSlider-thumb': {
               width: 16,
               height: 16,
@@ -328,10 +263,20 @@ const PeriodSelection = () => {
               backgroundColor: 'primary.main'
             },
             '& .MuiSlider-markLabel': {
-              fontSize: '0.7rem',
+              fontSize: '0.725rem',
               fontWeight: 500,
               color: 'text.secondary',
-              top: 22
+              top: 26,
+              whiteSpace: 'nowrap',
+              '@media (pointer: coarse)': {
+                top: 32
+              }
+            },
+            '& .MuiSlider-markLabel[data-index="0"]': {
+              transform: 'translateX(0)'
+            },
+            [`& .MuiSlider-markLabel[data-index="${availableMonths.length - 1}"]`]: {
+              transform: 'translateX(-100%)'
             }
           }}
         />
@@ -345,7 +290,7 @@ const PeriodSelection = () => {
             mt: 0
           }}
         >
-          Drag handles to adjust months, or click a financial year to turn on/off.
+          Drag handles to adjust months, or click a year to select.
         </Typography>
       </Box>
     </Paper>

@@ -17,9 +17,14 @@ import { useApplicationState } from '../hooks/useApplicationState'
  * @returns {JSX.Element} The switch option with informational tooltip.
  */
 const DataChoiceSelection = () => {
-  const [{ useEstimates }, dispatchApplication] = useApplicationState()
+  const [
+    { useEstimates, nationalGrossing, filteredServices },
+    dispatchApplication
+  ] = useApplicationState()
 
   const isEstimated = useEstimates !== false
+  const isNationalGrossed = Boolean(nationalGrossing)
+  const isNationalView = !filteredServices || filteredServices.length === 0
 
   /**
    * Handles toggle change for data correction.
@@ -33,10 +38,24 @@ const DataChoiceSelection = () => {
     })
   }
 
+  /**
+   * Handles toggle change for national population grossing (DCMS methodology).
+   *
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The switch change event.
+   */
+  const handleGrossingToggle = event => {
+    dispatchApplication({
+      type: 'SetNationalGrossing',
+      nationalGrossing: event.target.checked
+    })
+  }
+
   return (
     <Stack
       direction='row'
-      sx={{ justifyContent: 'center', alignItems: 'center', mt: 1.5, mb: 0.5 }}
+      spacing={{ xs: 1.5, sm: 3 }}
+      useFlexGap
+      sx={{ justifyContent: 'center', alignItems: 'center', mt: 1.5, mb: 0.5, flexWrap: 'wrap' }}
     >
       <FormControlLabel
         control={
@@ -45,9 +64,7 @@ const DataChoiceSelection = () => {
             onChange={handleToggle}
             size='small'
             inputProps={{
-              'aria-label': isEstimated
-                ? 'Data corrections applied'
-                : 'Data corrections not applied'
+              'aria-label': 'Data corrections'
             }}
             sx={{
               '& .MuiSwitch-switchBase': {
@@ -76,10 +93,10 @@ const DataChoiceSelection = () => {
         label={
           <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
             <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-              {isEstimated ? 'Data corrections applied' : 'Data corrections not applied'}
+              Data corrections
             </Typography>
             <Tooltip
-              title='Fixes known anomalies (such as minutes reported instead of hours, or extra digits) in official survey returns to prevent chart distortion. Turn off to view unadjusted raw figures.'
+              title='Adjusts known reporting errors to prevent chart distortion.'
               arrow
             >
               <InfoOutlinedIcon
@@ -91,6 +108,59 @@ const DataChoiceSelection = () => {
         }
         sx={{ mr: 0 }}
       />
+      {isNationalView && (
+        <FormControlLabel
+          control={
+            <Switch
+              checked={isNationalGrossed}
+              onChange={handleGrossingToggle}
+              size='small'
+              inputProps={{
+                'aria-label': 'Estimate England totals'
+              }}
+              sx={{
+                '& .MuiSwitch-switchBase': {
+                  color: '#8a9bb5',
+                  '&:hover': {
+                    backgroundColor: 'rgba(138, 155, 181, 0.08)'
+                  },
+                  '&.Mui-checked': {
+                    color: 'primary.main',
+                    '&:hover': {
+                      backgroundColor: 'rgba(25, 118, 210, 0.08)'
+                    },
+                    '& + .MuiSwitch-track': {
+                      backgroundColor: 'primary.main',
+                      opacity: 0.5
+                    }
+                  }
+                },
+                '& .MuiSwitch-track': {
+                  backgroundColor: '#c4d4de',
+                  opacity: 0.7
+                }
+              }}
+            />
+          }
+          label={
+            <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
+              <Typography variant='body2' sx={{ color: 'text.secondary' }}>
+                Estimate England totals
+              </Typography>
+              <Tooltip
+                title='Scales totals to England based on reporting population.'
+                arrow
+              >
+                <InfoOutlinedIcon
+                  color='action'
+                  sx={{ fontSize: 16, cursor: 'help' }}
+                />
+              </Tooltip>
+            </Stack>
+          }
+          sx={{ mr: 0 }}
+        />
+      )}
     </Stack>
   )
 }

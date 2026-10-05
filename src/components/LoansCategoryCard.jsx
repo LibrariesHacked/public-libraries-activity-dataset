@@ -4,14 +4,14 @@ import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
-import { filterByMonthRange, getMonthsInRange } from '../helpers/periods'
+import { filterByMonthRange, getActivityRecordsPeriodChange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
 
 import NumberCard from './NumberCard'
 
 /**
  * Generic KPI card component for categorized library loans (e.g. physical books, adult books, children's books),
- * computing category totals, per-capita rates relative to target demographics, and tracking data quality warnings.
+ * computing category totals, per-capita rates relative to target demographics, period changes, and tracking data quality warnings.
  *
  * @param {Object} props - Component properties.
  * @param {string} props.title - Card title displayed in header.
@@ -19,6 +19,7 @@ import NumberCard from './NumberCard'
  * @param {Function} props.filterLoan - Predicate function determining if a loan record matches this category.
  * @param {Function} props.populationFn - Function calculating the relevant population denominator from service records.
  * @param {string} props.perCapitaLabel - Descriptive label for the per-capita rate (e.g. 'resident', 'child resident').
+ * @param {React.ElementType} [props.icon] - Optional icon displayed next to the description.
  * @returns {JSX.Element} Rendered NumberCard component.
  */
 const LoansCategoryCard = ({
@@ -26,15 +27,20 @@ const LoansCategoryCard = ({
   colour,
   filterLoan,
   populationFn,
-  perCapitaLabel
+  perCapitaLabel,
+  icon
 }) => {
-  const [{ filteredServices, services, loans, monthRange, useEstimates }] =
-    useApplicationState()
+  const [
+    { filteredServices, services, loans, periods, selectedPeriods, monthRange, useEstimates }
+  ] = useApplicationState()
 
   const [count, setCount] = useState(0)
   const [perCapita, setPerCapita] = useState(0)
+  const [change, setChange] = useState(null)
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
+
+  const comparison = resolvePeriodComparison(selectedPeriods, periods)
 
   useEffect(() => {
     if (!loans || !services) return
@@ -79,11 +85,28 @@ const LoansCategoryCard = ({
     setCount(totalLoans)
     setPerCapita(rate)
     setWarning(getRecordsQualityWarning(matchedLoans))
+
+    if (comparison && loans) {
+      const activeCodes = activeServices?.map(s => s.code)
+      const chg = getActivityRecordsPeriodChange({
+        records: loans,
+        countProp: 'countLoans',
+        filterFn: filterLoan,
+        baselinePeriod: comparison.baselinePeriod,
+        targetPeriod: comparison.targetPeriod,
+        serviceCodes: activeCodes,
+        useEstimates
+      })
+      setChange(chg)
+    } else {
+      setChange(null)
+    }
   }, [
     services,
     filteredServices,
     loans,
     monthRange,
+    comparison,
     useEstimates,
     filterLoan,
     populationFn
@@ -94,6 +117,9 @@ const LoansCategoryCard = ({
       title={title}
       number={formatCompactNumber(count)}
       description={`${Math.round(perCapita)} per ${perCapitaLabel} per year`}
+      icon={icon}
+      change={change}
+      changeDescription={comparison?.changeDescription || ''}
       colour={colour}
       noData={noData}
       warning={warning}

@@ -12,6 +12,7 @@ import computersWiFiByServiceMd from './content/computers-wifi-by-service.md?raw
 import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
 import { AppChart } from './components/charts'
 
 import {
@@ -333,6 +334,26 @@ const Computers = () => {
         data={serviceChart}
         options={serviceChartOptions}
       />
+
+      <Box sx={{ mt: 5, mb: 4 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Computer usage data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Monthly public computer terminal and connected device session usage hours across library services.
+        </Typography>
+        <DatasetDataGrid datasetId='computers' />
+      </Box>
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Wi-Fi sessions data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Monthly public library wireless Wi-Fi internet login and connection sessions.
+        </Typography>
+        <DatasetDataGrid datasetId='wifi' />
+      </Box>
     </Box>
   )
 }

@@ -5,8 +5,8 @@ import { useLocation } from 'react-router-dom'
 import Grid from '@mui/material/Grid'
 
 import AttendanceTotalCard from './AttendanceTotalCard'
+import ComputerMonthlyPaceCard from './ComputerMonthlyPaceCard'
 import ComputerTotalCard from './ComputerTotalCard'
-import DigitalSessionsTotalCard from './DigitalSessionsTotalCard'
 import EventsAverageTurnoutCard from './EventsAverageTurnoutCard'
 import EventsChildrenAttendanceCard from './EventsChildrenAttendanceCard'
 import EventsTotalCard from './EventsTotalCard'
@@ -22,7 +22,7 @@ import VisitsBranchCard from './VisitsBranchCard'
 import VisitsMobileCard from './VisitsMobileCard'
 import VisitsMonthlyPaceCard from './VisitsMonthlyPaceCard'
 import VisitsTotalCard from './VisitsTotalCard'
-import WiFiShareCard from './WiFiShareCard'
+import WiFiMonthlyPaceCard from './WiFiMonthlyPaceCard'
 import WiFiTotalCard from './WiFiTotalCard'
 
 /**
@@ -51,10 +51,10 @@ const CardGrid = () => {
           <EventsTotalCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <AttendanceTotalCard />
+          <ComputerTotalCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <DigitalSessionsTotalCard />
+          <WiFiTotalCard />
         </Grid>
       </Grid>
     )
@@ -121,16 +121,16 @@ const CardGrid = () => {
     return (
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <DigitalSessionsTotalCard />
+          <ComputerTotalCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <ComputerTotalCard />
+          <ComputerMonthlyPaceCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <WiFiTotalCard />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <WiFiShareCard />
+          <WiFiMonthlyPaceCard />
         </Grid>
       </Grid>
     )

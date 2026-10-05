@@ -19,6 +19,7 @@ import { getActiveServices, getRegionAggregates } from './models/service'
 import * as usersModel from './models/users'
 
 import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
 import UsersMap from './components/UsersMap'
 import { AppChart } from './components/charts'
 
@@ -385,6 +386,16 @@ const Users = () => {
         data={serviceChart}
         options={serviceChartOptions}
       />
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Active users data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Full dataset of annual active library borrowers, reporting anomalies, and demographic breakdowns.
+        </Typography>
+        <DatasetDataGrid datasetId='users' />
+      </Box>
     </Box>
   )
 }

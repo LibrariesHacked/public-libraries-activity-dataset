@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 
+import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded'
+
 import { useApplicationState } from '../hooks/useApplicationState'
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
-import { filterByMonthRange } from '../helpers/periods'
+import { filterByMonthRange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
 import * as eventsModel from '../models/events'
 import * as attendanceModel from '../models/attendance'
@@ -12,19 +14,22 @@ import NumberCard from './NumberCard'
 
 /**
  * Summary KPI card component displaying average attendees per event session
- * across active library services.
+ * across active library services, along with period-over-period trend analysis.
  *
  * @returns {JSX.Element} NumberCard configured for event turnout.
  */
 const EventsAverageTurnoutCard = () => {
   const [
-    { filteredServices, services, events, attendance, monthRange, useEstimates },
+    { filteredServices, services, serviceRecords, events, attendance, periods, selectedPeriods, monthRange, useEstimates },
     dispatchApplication
   ] = useApplicationState()
 
   const [turnout, setTurnout] = useState(0)
+  const [change, setChange] = useState(null)
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
+
+  const comparison = resolvePeriodComparison(selectedPeriods, periods)
 
   useEffect(() => {
     if (!events) {
@@ -84,13 +89,44 @@ const EventsAverageTurnoutCard = () => {
     const avgTurnout = totalAttendance / totalEvents
     setTurnout(Math.round(avgTurnout))
     setWarning(getRecordsQualityWarning([...matchedEvents, ...matchedAttendance]))
-  }, [events, attendance, services, filteredServices, monthRange, useEstimates])
+
+    if (comparison && serviceRecords) {
+      const getTurnoutForPeriod = period => {
+        let totalAtt = 0
+        let totalEv = 0
+        serviceRecords.forEach(record => {
+          if (record.period !== period) return
+          if (activeCodes.size && !activeCodes.has(record.code)) return
+          const att = record.resolveMetric ? record.resolveMetric('attendance', useEstimates) : record.attendance
+          const ev = record.resolveMetric ? record.resolveMetric('events', useEstimates) : record.events
+          if (Number.isFinite(att) && Number.isFinite(ev) && ev > 0) {
+            totalAtt += att
+            totalEv += ev
+          }
+        })
+        return totalEv > 0 ? totalAtt / totalEv : null
+      }
+
+      const baseline = getTurnoutForPeriod(comparison.baselinePeriod)
+      const target = getTurnoutForPeriod(comparison.targetPeriod)
+      if (baseline && target && baseline > 0) {
+        setChange(((target - baseline) / baseline) * 100)
+      } else {
+        setChange(null)
+      }
+    } else {
+      setChange(null)
+    }
+  }, [events, attendance, services, serviceRecords, filteredServices, monthRange, comparison, useEstimates])
 
   return (
     <NumberCard
       title='Turnout per event'
       number={formatCompactNumber(turnout)}
       description='attendees per event'
+      icon={GroupsRoundedIcon}
+      change={change}
+      changeDescription={comparison?.changeDescription || ''}
       colour='chartBlue'
       noData={noData}
       warning={warning}

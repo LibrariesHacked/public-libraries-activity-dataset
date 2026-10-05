@@ -4,6 +4,7 @@ import Box from '@mui/material/Box'
 import Paper from '@mui/material/Paper'
 import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
+import Tooltip from '@mui/material/Tooltip'
 
 import { useTheme } from '@mui/material/styles'
 
@@ -447,9 +448,11 @@ const UsersMap = () => {
             }}
           >
             {earliestPeriod && (
-              <Box component='span' sx={{ color: 'text.secondary', mr: 0.5 }}>
-                Change (pp) since {formatPeriod(earliestPeriod)}:
-              </Box>
+              <Tooltip title={`Change since ${formatPeriod(earliestPeriod)}`} arrow placement='top'>
+                <Box component='span' sx={{ color: 'text.secondary', mr: 0.5, cursor: 'default' }}>
+                  Change (pp):
+                </Box>
+              </Tooltip>
             )}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <Box

@@ -142,3 +142,194 @@ export const formatMonth = month =>
     month: 'short',
     year: '2-digit'
   })
+
+/**
+ * Resolves the baseline and comparison financial year periods to evaluate for period-over-period trend analysis.
+ *
+ * If multiple financial years are selected (e.g. ['2022/2023', '2023/2024', '2024/2025']),
+ * the baseline is the earliest selected period and the comparison target is the latest, labeled 'since [earliest]'.
+ * If a single financial year is selected (e.g. ['2023/2024']), it compares against the immediately preceding
+ * financial year available in the dataset, labeled 'vs [preceding]'.
+ *
+ * @param {string[]} selectedPeriods - Array of currently selected financial year strings.
+ * @param {string[]} periods - Array of all available financial year strings in chronological order.
+ * @returns {{ baselinePeriod: string, targetPeriod: string, changeDescription: string }|null} Comparison configuration, or null if no baseline available.
+ */
+export const resolvePeriodComparison = (selectedPeriods, periods) => {
+  if (!selectedPeriods || selectedPeriods.length === 0) return null
+  if (selectedPeriods.length > 1) {
+    const earliest = selectedPeriods[0]
+    const latest = selectedPeriods[selectedPeriods.length - 1]
+    return {
+      baselinePeriod: earliest,
+      targetPeriod: latest,
+      changeDescription: `since ${formatPeriod(earliest)}`
+    }
+  }
+  const current = selectedPeriods[0]
+  const idx = (periods || []).indexOf(current)
+  if (idx > 0) {
+    const prev = periods[idx - 1]
+    return {
+      baselinePeriod: prev,
+      targetPeriod: current,
+      changeDescription: `vs ${formatPeriod(prev)}`
+    }
+  }
+  return null
+}
+
+/**
+ * Calculates the percentage change in activity between two financial year periods for a collection of activity records.
+ * Only services reporting in both periods are compared (like-for-like).
+ *
+ * @param {Object} options - Calculation options.
+ * @param {Array<Object>} options.records - Array of activity records with month and count properties.
+ * @param {string} options.countProp - Property name holding the record's numeric count (e.g. 'countLoans').
+ * @param {Function} [options.filterFn] - Optional predicate to filter records (e.g. format or category).
+ * @param {string} options.baselinePeriod - Baseline period (e.g. '2022/2023').
+ * @param {string} options.targetPeriod - Target comparison period (e.g. '2023/2024').
+ * @param {string[]|Set<string>} [options.serviceCodes] - Optional collection of active service codes to filter by.
+ * @param {boolean} [options.useEstimates=true] - Whether to use estimated/corrected counts.
+ * @returns {number|null} Percentage change, or null if insufficient data.
+ */
+export const getActivityRecordsPeriodChange = ({
+  records,
+  countProp,
+  filterFn,
+  baselinePeriod,
+  targetPeriod,
+  serviceCodes,
+  useEstimates = true
+}) => {
+  if (!records || !baselinePeriod || !targetPeriod) return null
+  if (baselinePeriod === targetPeriod) return null
+
+  const codeSet = serviceCodes instanceof Set
+    ? serviceCodes
+    : (serviceCodes ? new Set(serviceCodes) : null)
+
+  const sumForPeriod = period => {
+    const serviceTotals = new Map()
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i]
+      if (getPeriodForMonth(r.month) !== period) continue
+      if (codeSet && !codeSet.has(r.serviceCode)) continue
+      if (filterFn && !filterFn(r)) continue
+      const count = r.resolveCount
+        ? r.resolveCount(useEstimates)
+        : (r[countProp] ?? r.count ?? 0)
+      if (!Number.isFinite(count)) continue
+      serviceTotals.set(
+        r.serviceCode,
+        (serviceTotals.get(r.serviceCode) || 0) + count
+      )
+    }
+    return serviceTotals
+  }
+
+  const baselineTotals = sumForPeriod(baselinePeriod)
+  const targetTotals = sumForPeriod(targetPeriod)
+
+  let baselineSum = 0
+  let targetSum = 0
+  baselineTotals.forEach((val, code) => {
+    if (!targetTotals.has(code)) return
+    baselineSum += val
+    targetSum += targetTotals.get(code)
+  })
+
+  if (baselineSum === 0) return null
+  return ((targetSum - baselineSum) / baselineSum) * 100
+}
+
+/**
+ * Calculates the percentage point change in share for a subset of activity records
+ * (e.g. branch visits share of total visits, digital loans share of total loans)
+ * between two financial year periods.
+ * Only services reporting in both periods are compared (like-for-like).
+ *
+ * @param {Object} options - Calculation options.
+ * @param {Array<Object>} options.records - Array of activity records with month and count properties.
+ * @param {string} options.countProp - Property name holding the record's numeric count (e.g. 'countVisits').
+ * @param {Function} options.filterFn - Predicate to filter records belonging to the category.
+ * @param {Function} [options.totalFilterFn] - Optional predicate to filter records for the total denominator.
+ * @param {string} options.baselinePeriod - Baseline period (e.g. '2022/2023').
+ * @param {string} options.targetPeriod - Target comparison period (e.g. '2023/2024').
+ * @param {string[]|Set<string>} [options.serviceCodes] - Optional collection of active service codes to filter by.
+ * @param {boolean} [options.useEstimates=true] - Whether to use estimated/corrected counts.
+ * @returns {number|null} Percentage points difference (e.g. 1.5 for +1.5 pp), or null if insufficient data.
+ */
+export const getActivityRecordsSharePeriodChange = ({
+  records,
+  countProp,
+  filterFn,
+  totalFilterFn,
+  baselinePeriod,
+  targetPeriod,
+  serviceCodes,
+  useEstimates = true
+}) => {
+  if (!records || !baselinePeriod || !targetPeriod || !filterFn) return null
+  if (baselinePeriod === targetPeriod) return null
+
+  const codeSet = serviceCodes instanceof Set
+    ? serviceCodes
+    : (serviceCodes ? new Set(serviceCodes) : null)
+
+  const sumForPeriod = period => {
+    const serviceCategoryTotals = new Map()
+    const serviceAllTotals = new Map()
+
+    for (let i = 0; i < records.length; i++) {
+      const r = records[i]
+      if (getPeriodForMonth(r.month) !== period) continue
+      if (codeSet && !codeSet.has(r.serviceCode)) continue
+
+      const count = r.resolveCount
+        ? r.resolveCount(useEstimates)
+        : (r[countProp] ?? r.count ?? 0)
+      if (!Number.isFinite(count)) continue
+
+      if (!totalFilterFn || totalFilterFn(r)) {
+        serviceAllTotals.set(
+          r.serviceCode,
+          (serviceAllTotals.get(r.serviceCode) || 0) + count
+        )
+      }
+
+      if (filterFn(r)) {
+        serviceCategoryTotals.set(
+          r.serviceCode,
+          (serviceCategoryTotals.get(r.serviceCode) || 0) + count
+        )
+      }
+    }
+    return { serviceCategoryTotals, serviceAllTotals }
+  }
+
+  const baseline = sumForPeriod(baselinePeriod)
+  const target = sumForPeriod(targetPeriod)
+
+  let baselineCatSum = 0
+  let baselineTotalSum = 0
+  let targetCatSum = 0
+  let targetTotalSum = 0
+
+  baseline.serviceAllTotals.forEach((total, code) => {
+    if (!target.serviceAllTotals.has(code)) return
+    baselineTotalSum += total
+    baselineCatSum += baseline.serviceCategoryTotals.get(code) || 0
+
+    targetTotalSum += target.serviceAllTotals.get(code)
+    targetCatSum += target.serviceCategoryTotals.get(code) || 0
+  })
+
+  if (baselineTotalSum === 0 || targetTotalSum === 0) return null
+
+  const baselineShare = (baselineCatSum / baselineTotalSum) * 100
+  const targetShare = (targetCatSum / targetTotalSum) * 100
+
+  return targetShare - baselineShare
+}
+

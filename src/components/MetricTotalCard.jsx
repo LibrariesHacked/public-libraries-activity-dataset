@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
-import { getActiveServices, getServicesPopulation } from '../models/service'
+import { getActiveServices, getServicePeriodChange, getServicesPopulation } from '../models/service'
 import { getRecordsQualityWarning, getServiceQualityWarning } from '../helpers/dataQuality'
-import { filterByMonthRange, getMonthsInRange } from '../helpers/periods'
+import { filterByMonthRange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
 
 import ComputerRoundedIcon from '@mui/icons-material/ComputerRounded'
 import EventRoundedIcon from '@mui/icons-material/EventRounded'
@@ -100,12 +100,16 @@ const MetricTotalCard = ({
   formatDescription,
   filterServices,
   computeChange,
-  changeDescription
+  changeDescription,
+  changeUnit = '%'
 }) => {
   const [
     {
       filteredServices,
       services,
+      serviceRecords,
+      periods,
+      selectedPeriods,
       loans,
       visits,
       events,
@@ -113,7 +117,8 @@ const MetricTotalCard = ({
       computers,
       wifi,
       monthRange,
-      useEstimates
+      useEstimates,
+      nationalGrossing
     },
     dispatchApplication
   ] = useApplicationState()
@@ -140,6 +145,8 @@ const MetricTotalCard = ({
   useEffect(() => {
     const activeServices = getActiveServices(services, filteredServices)
     const activeServiceCodes = new Set((activeServices || []).map(s => s.code))
+    const isNationalView = !filteredServices || filteredServices.length === 0
+    const isGrossing = Boolean(nationalGrossing && isNationalView)
 
     const months = getMonthsInRange(monthRange)
     const yearCount = (months.length || 12) / 12
@@ -157,25 +164,52 @@ const MetricTotalCard = ({
         setCount(0)
       } else {
         setNoData(false)
-        const total = matched.reduce(
+        const sampleTotal = matched.reduce(
           (acc, r) => acc + (r[config.countProp] || 0),
           0
         )
-        setCount(total)
 
-        const totalPopulation = getServicesPopulation(activeServices)
+        let displayTotal = sampleTotal
+        let grossingWarning = null
+
+        const reportingServiceCodes = new Set(matched.map(r => r.serviceCode))
+        const reportingServices = (services || []).filter(s =>
+          reportingServiceCodes.has(s.code)
+        )
+        const reportingPop = getServicesPopulation(reportingServices)
+        const englandPop = getServicesPopulation(services) || 58620101
+        const popCoverage =
+          englandPop > 0 ? (reportingPop / englandPop) * 100 : 0
+        const reportingCount = reportingServices.length
+
+        if (isGrossing && reportingPop > 0 && englandPop > 0) {
+          displayTotal = Math.round((sampleTotal / reportingPop) * englandPop)
+          if (popCoverage < 70) {
+            grossingWarning = `Reporting coverage (${Math.round(popCoverage)}%, ${reportingCount}/153 LAs) is below the 70% threshold for national estimation.`
+          }
+        }
+
+        setCount(displayTotal)
+
+        const totalPopulation = isGrossing
+          ? englandPop
+          : getServicesPopulation(activeServices)
+
         if (formatDescription) {
           setDescription(
             formatDescription({
-              total,
-              validServices: activeServices,
+              total: displayTotal,
+              validServices: isGrossing ? services : activeServices,
               activeServices,
               totalPopulation,
-              yearCount
+              yearCount,
+              isGrossing,
+              popCoverage,
+              reportingCount
             })
           )
         }
-        setWarning(getRecordsQualityWarning(matched))
+        setWarning(grossingWarning || getRecordsQualityWarning(matched))
       }
     } else {
       const validServices = filterServices
@@ -188,44 +222,93 @@ const MetricTotalCard = ({
         setNoData(false)
       }
 
-      const total =
+      const sampleTotal =
         validServices?.reduce((acc, s) => acc + (s[metric] || 0), 0) || 0
-      const totalPopulation = getServicesPopulation(validServices)
 
-      setCount(total)
+      let displayTotal = sampleTotal
+      let grossingWarning = null
+
+      const reportingPop = getServicesPopulation(validServices)
+      const englandPop = getServicesPopulation(services) || 58620101
+      const popCoverage =
+        englandPop > 0 ? (reportingPop / englandPop) * 100 : 0
+      const reportingCount = validServices?.length || 0
+
+      if (isGrossing && reportingPop > 0 && englandPop > 0) {
+        displayTotal = Math.round((sampleTotal / reportingPop) * englandPop)
+        if (popCoverage < 70) {
+          grossingWarning = `Low coverage (${Math.round(popCoverage)}%, ${reportingCount}/153 authorities) — below 70% threshold.`
+        }
+      }
+
+      setCount(displayTotal)
+
+      const totalPopulation = isGrossing
+        ? englandPop
+        : getServicesPopulation(validServices)
 
       if (formatDescription) {
         setDescription(
           formatDescription({
-            total,
-            validServices,
+            total: displayTotal,
+            validServices: isGrossing ? services : validServices,
             activeServices,
             totalPopulation,
-            yearCount
+            yearCount,
+            isGrossing,
+            popCoverage,
+            reportingCount
           })
         )
       }
 
-      setWarning(getServiceQualityWarning(activeServices, metric))
+      setWarning(grossingWarning || getServiceQualityWarning(activeServices, metric))
     }
 
+    const comparison = resolvePeriodComparison(selectedPeriods, periods)
     if (computeChange) {
       setChange(
-        computeChange({ validServices: activeServices, activeServices, useEstimates })
+        computeChange({
+          validServices: activeServices,
+          activeServices,
+          useEstimates,
+          comparison,
+          isGrossing
+        })
       )
+    } else if (comparison && serviceRecords && metric) {
+      const chg = getServicePeriodChange(
+        serviceRecords,
+        metric,
+        comparison.baselinePeriod,
+        comparison.targetPeriod,
+        activeServiceCodes.size ? [...activeServiceCodes] : undefined,
+        useEstimates
+      )
+      setChange(chg)
+    } else {
+      setChange(null)
     }
   }, [
     services,
+    serviceRecords,
+    periods,
+    selectedPeriods,
     filteredServices,
     records,
     monthRange,
     useEstimates,
+    nationalGrossing,
     metric,
     config,
     formatDescription,
     filterServices,
     computeChange
   ])
+
+  const comparison = resolvePeriodComparison(selectedPeriods, periods)
+  const effectiveChangeDescription =
+    changeDescription || comparison?.changeDescription || ''
 
   return (
     <NumberCard
@@ -234,7 +317,8 @@ const MetricTotalCard = ({
       description={description}
       icon={icon || METRIC_ICONS[metric]}
       change={change}
-      changeDescription={changeDescription}
+      changeDescription={effectiveChangeDescription}
+      changeUnit={changeUnit}
       colour={colour}
       noData={noData}
       warning={warning}

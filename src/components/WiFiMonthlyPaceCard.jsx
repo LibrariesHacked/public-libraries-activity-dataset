@@ -7,19 +7,19 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsPeriodChange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
-import * as visitsModel from '../models/visits'
+import * as wifiModel from '../models/wifi'
 
 import NumberCard from './NumberCard'
 
 /**
- * Summary KPI card component displaying average monthly library visits,
- * along with average visits logged per day and period-over-period trend analysis.
+ * Summary KPI card component displaying average monthly public Wi-Fi sessions,
+ * along with average Wi-Fi sessions logged per day and period-over-period trend analysis.
  *
- * @returns {JSX.Element} NumberCard configured for monthly library visit pace.
+ * @returns {JSX.Element} NumberCard configured for monthly Wi-Fi usage pace.
  */
-const VisitsMonthlyPaceCard = () => {
+const WiFiMonthlyPaceCard = () => {
   const [
-    { filteredServices, services, visits, periods, selectedPeriods, monthRange, useEstimates },
+    { filteredServices, services, wifi, periods, selectedPeriods, monthRange, useEstimates },
     dispatchApplication
   ] = useApplicationState()
 
@@ -32,15 +32,15 @@ const VisitsMonthlyPaceCard = () => {
   const comparison = resolvePeriodComparison(selectedPeriods, periods)
 
   useEffect(() => {
-    if (!visits) {
-      visitsModel.getVisits().then(data => {
-        dispatchApplication({ type: 'SetVisits', visits: data })
+    if (!wifi) {
+      wifiModel.getWiFi().then(data => {
+        dispatchApplication({ type: 'SetWiFi', wifi: data })
       })
     }
-  }, [visits, dispatchApplication])
+  }, [wifi, dispatchApplication])
 
   useEffect(() => {
-    if (!visits || !services) return
+    if (!wifi || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
     const activeCodes = new Set((activeServices || []).map(s => s.code))
@@ -49,11 +49,11 @@ const VisitsMonthlyPaceCard = () => {
     const monthCount = months.length || 12
     const yearCount = monthCount / 12
 
-    const rangeVisits = filterByMonthRange(visits, monthRange)
-    const matched = rangeVisits.filter(
-      v =>
-        (!filteredServices.length || filteredServices.includes(v.serviceCode)) &&
-        activeCodes.has(v.serviceCode)
+    const rangeWifi = filterByMonthRange(wifi, monthRange)
+    const matched = rangeWifi.filter(
+      w =>
+        (!filteredServices.length || filteredServices.includes(w.serviceCode)) &&
+        activeCodes.has(w.serviceCode)
     )
 
     if (!matched.length) {
@@ -64,18 +64,18 @@ const VisitsMonthlyPaceCard = () => {
     }
 
     setNoData(false)
-    const totalAllVisits = matched.reduce((acc, v) => acc + (v.countVisits || 0), 0)
-    const avgMonthly = Math.round(totalAllVisits / monthCount)
-    const avgDaily = Math.round(totalAllVisits / (365 * yearCount))
+    const totalSessions = matched.reduce((acc, w) => acc + (w.countSessions || 0), 0)
+    const avgMonthly = Math.round(totalSessions / monthCount)
+    const avgDaily = Math.round(totalSessions / (365 * yearCount))
 
     setMonthlyAverage(avgMonthly)
-    setDescription(`${formatCompactNumber(avgDaily)} visits per day`)
+    setDescription(`${formatCompactNumber(avgDaily, 2)} sessions per day`)
     setWarning(getRecordsQualityWarning(matched))
 
-    if (comparison && visits) {
+    if (comparison && wifi) {
       const chg = getActivityRecordsPeriodChange({
-        records: visits,
-        countProp: 'countVisits',
+        records: wifi,
+        countProp: 'countSessions',
         baselinePeriod: comparison.baselinePeriod,
         targetPeriod: comparison.targetPeriod,
         serviceCodes: activeCodes,
@@ -85,17 +85,17 @@ const VisitsMonthlyPaceCard = () => {
     } else {
       setChange(null)
     }
-  }, [visits, services, filteredServices, monthRange, comparison, useEstimates])
+  }, [wifi, services, filteredServices, monthRange, comparison, useEstimates])
 
   return (
     <NumberCard
-      title='Monthly visits'
+      title='Monthly WiFi sessions'
       number={formatCompactNumber(monthlyAverage)}
       description={description}
       icon={CalendarMonthRoundedIcon}
       change={change}
       changeDescription={comparison?.changeDescription || ''}
-      colour='chartGreen'
+      colour='chartYellow'
       noData={noData}
       warning={warning}
       isShowingEstimated={useEstimates !== false}
@@ -103,4 +103,4 @@ const VisitsMonthlyPaceCard = () => {
   )
 }
 
-export default VisitsMonthlyPaceCard
+export default WiFiMonthlyPaceCard

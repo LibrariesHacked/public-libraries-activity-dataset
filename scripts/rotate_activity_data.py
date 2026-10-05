@@ -55,6 +55,8 @@ COMPUTER_USAGE = './data/computers.csv'
 WIFI_SESSIONS = './data/wifi.csv'
 # Click and collect lending order counts
 CLICK_COLLECT = './data/click_and_collect.csv'
+# Master log of reporting errors and data quality corrections
+ERRORS_CSV = './data/errors.csv'
 
 # =============================================================================
 # OUTPUT FILE PATHS (DASHBOARD JSON DATASETS)
@@ -69,6 +71,7 @@ EVENTS_JSON = './public/events.json'
 ATTENDANCE_JSON = './public/attendance.json'
 COMPUTER_USAGE_JSON = './public/computers.json'
 WIFI_SESSIONS_JSON = './public/wifi.json'
+ERRORS_JSON = './public/errors.json'
 
 # =============================================================================
 # CSV FIELDNAMES / SCHEMAS
@@ -372,464 +375,65 @@ SERVICE_TOTAL_GROUPS = {
     'wifi_sessions': (('computer_usage', 2),),
 }
 
-# Known reporting anomalies across survey workbooks with status, estimated values, and rationale.
-# Each entry is documented with the exact data entry error or reporting discrepancy.
-# Status values:
-# - 'replaced': Anomaly identified with high-confidence intended value (e.g. typos, scaling errors)
-# - 'excluded': Data corrupted or invalid beyond reliable estimation (e.g. hardware timer corruptions)
-# - 'suspicious': Data appears anomalous (e.g. cumulative members or civic footfall) but kept as reported
-DATA_QUALITY_ANOMALIES = {
-    # -------------------------------------------------------------------------
-    # 2023/2024 FINANCIAL YEAR
-    # -------------------------------------------------------------------------
-    ('2023/2024', 'users', 'E06000031'): {
-        # Peterborough: 170,757 cumulative historical cardholders (total pop ~217k)
-        'total': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported cumulative historical library card registrations (170,757) rather than active borrowers within the last 12 months',
-        },
-        'all': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported cumulative historical library card registrations rather than active borrowers within the last 12 months',
-        },
-    },
-    ('2023/2024', 'users', 'E06000036'): {
-        # Bracknell Forest: 259,229 cumulative historical cardholders (total pop ~126k)
-        'total': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported cumulative historical library card registrations (259,229) exceeding total population (126k) rather than active borrowers',
-        },
-        'all': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported cumulative historical library card registrations rather than active borrowers within the last 12 months',
-        },
-    },
-    ('2023/2024', 'computer_usage', 'E08000021'): {
-        # Newcastle upon Tyne: ~800k hrs/mo timestamp logging
-        'total': {
-            'status': 'excluded',
-            'estimate': None,
-            'notes': 'Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours',
-        },
-        'all': {
-            'status': 'excluded',
-            'estimate': None,
-            'notes': 'Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours',
-        },
-    },
-    ('2023/2024', 'computer_usage', 'E10000031'): {
-        # Warwickshire: ~300k hrs/mo timestamp logging
-        'total': {
-            'status': 'excluded',
-            'estimate': None,
-            'notes': 'Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours',
-        },
-        'all': {
-            'status': 'excluded',
-            'estimate': None,
-            'notes': 'Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours',
-        },
-    },
-    ('2023/2024', 'computer_usage', 'E09000014'): {
-        # Haringey: March entered as 2,236,995,718 (hardware counter overflow)
-        'values': {
-            '2236995718': {
-                'status': 'excluded',
-                'estimate': None,
-                'notes': 'March computer hours entered as 2,236,995,718 due to hardware counter corruption',
-            },
-        },
-        'total': {
-            'status': 'excluded',
-            'estimate': None,
-            'notes': 'March hardware counter corruption (2.2 billion hours) distorts annual total; excluded from headline figures',
-        },
-    },
-    ('2023/2024', 'computer_usage', 'E09000015'): {
-        # Harrow: April entered as 256,515 (100x typo for 2,565; other months ~2.5k)
-        'values': {
-            '256515': {
-                'status': 'replaced',
-                'estimate': 2565,
-                'notes': 'April computer hours entered as 256515 (100x typo for 2565; other months range 2.4k-2.7k)',
-            },
-        },
-    },
-    ('2023/2024', 'computer_usage', 'E09000018'): {
-        # Hounslow: December Q3 entered as 155,393 (10x typo for 15,539; other quarters ~16k-18k)
-        'values': {
-            '155393': {
-                'status': 'replaced',
-                'estimate': 15539,
-                'notes': 'December Q3 computer hours entered as 155393 (10x typo for 15539; other quarters range 16k-18k)',
-            },
-        },
-    },
-    ('2023/2024', 'visits', 'E09000029'): {
-        # Sutton: Reported 5.18M visits; April-Oct have extra trailing zeros (~500k/mo vs ~55k in Nov-Mar)
-        'total': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported 5.18M visits; April-October monthly figures appear to have an extra trailing zero (~500k/mo vs ~55k/mo in Nov-Mar)',
-        },
-        'all': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported visits appear inflated by an extra trailing zero in April-October',
-        },
-    },
-    ('2023/2024', 'visits', 'E06000050'): {
-        # Cheshire West and Chester: Reported 4.39M visits (capturing civic centre footfall)
-        'total': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reported 4.39M visits, reflecting whole civic centre footfall rather than library visits (typical footfall is ~1.69M)',
-        },
-        'all': {
-            'status': 'suspicious',
-            'estimate': None,
-            'notes': 'Reflects whole civic centre footfall rather than library visits',
-        },
-    },
-    ('2023/2024', 'visits', 'E06000001'): {
-        # Hartlepool: February physical visits entered as 211,261 (10x typo for 21,126)
-        'values': {
-            '211261': {
-                'status': 'replaced',
-                'estimate': 21126,
-                'notes': 'February physical visits entered as 211261 (10x typo for 21126; other months range 20k-23k)',
-            },
-        },
-    },
-    ('2023/2024', 'visits', 'E08000008'): {
-        # Tameside: November physical visits entered as 49,433 (10x typo for 4,943)
-        'values': {
-            '49433': {
-                'status': 'replaced',
-                'estimate': 4943,
-                'notes': 'November physical visits entered as 49433 (10x typo for 4943; other months range 3.2k-5.4k)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E06000058'): {
-        # BCP: March children's books entered as 262,343 (typo for 26,243; 67,522 - 39,825 - 1,454 = 26,243)
-        # April total physical books entered as 697,360 (10x typo for 69,736)
-        'values': {
-            '262343': {
-                'status': 'replaced',
-                'estimate': 26243,
-                'notes': 'March children physical book loans entered as 262343 (typo for 26243 based on total books 67,522 less adult and teen)',
-            },
-            '697360': {
-                'status': 'replaced',
-                'estimate': 69736,
-                'notes': 'April physical book loans total entered as 697360 (10x typo for 69736)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E08000014'): {
-        # Sefton: June Q1 adult books entered as 823,460 (10x typo for 82,346; other quarters 82,346).
-        # Total books was 1,244,990 (10x typo for 124,499)
-        'values': {
-            '823460': {
-                'status': 'replaced',
-                'estimate': 82346,
-                'notes': 'June Q1 adult book loans entered as 823460 (10x typo for 82346; other quarters are all 82,346)',
-            },
-            '1244990': {
-                'status': 'replaced',
-                'estimate': 124499,
-                'notes': 'Q1 total physical book loans entered as 1244990 (10x typo for 124499)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E08000029'): {
-        # Solihull: November children's books entered as 115,544 (typo for 15,550; total 30,374 - 14,300 - 524 = 15,550)
-        'values': {
-            '115544': {
-                'status': 'replaced',
-                'estimate': 15550,
-                'notes': 'November children book loans entered as 115544 (typo with extra leading 1 for 15550; total books was 30,374)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E08000007'): {
-        # Stockport: May adult books entered as 248,772 (10x typo for 24,877; other months ~24k)
-        'values': {
-            '248772': {
-                'status': 'replaced',
-                'estimate': 24877,
-                'notes': 'May adult book loans entered as 248772 (10x typo for 24877; other months range 23k-25k)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E08000005'): {
-        # Rochdale: March Q4 adult books entered as 200,000 (10x typo for 20,000; total 49,250 - 29,250 = 20,000)
-        'values': {
-            '200000': {
-                'status': 'replaced',
-                'estimate': 20000,
-                'notes': 'March Q4 adult book loans entered as 200000 (10x typo for 20000; other quarters are all 20,000)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E10000024'): {
-        # Nottinghamshire: November physical audiobooks entered as 32,722 (10x typo for 3,272)
-        'values': {
-            '32722': {
-                'status': 'replaced',
-                'estimate': 3272,
-                'notes': 'November physical audiobook loans entered as 32722 (10x typo for 3272; other months range 2.4k-3.6k)',
-            },
-        },
-    },
-    ('2023/2024', 'loans', 'E10000029'): {
-        # Suffolk: June Q1 ebooks entered as 785,260 (10x typo for 78,526; other quarters 79k-86k)
-        'values': {
-            '785260': {
-                'status': 'replaced',
-                'estimate': 78526,
-                'notes': 'June Q1 ebook loans entered as 785260 (10x typo for 78526; other quarters range 79k-86k)',
-            },
-        },
-    },
-    ('2023/2024', 'attendance', 'E10000029'): {
-        # Suffolk: March adult event attendees entered as 319,000 (10x typo for 31,900; total March attendance was 79,280)
-        'values': {
-            '319000': {
-                'status': 'replaced',
-                'estimate': 31900,
-                'notes': 'March adult event attendance entered as 319000 (10x typo for 31900; total March attendance was 79,280)',
-            },
-        },
-    },
+# =============================================================================
+# DATA QUALITY ANOMALIES & CORRECTIONS LOADER
+# =============================================================================
 
-    # -------------------------------------------------------------------------
-    # 2024/2025 FINANCIAL YEAR
-    # -------------------------------------------------------------------------
-    ('2024/2025', 'events', 'E08000003'): {
-        # Manchester: Entered monthly attendance into all-ages event rows (Q4_5, Q4_10)
-        'fields': {
-            'physical_events_all_ages': {
-                'status': 'excluded',
-                'estimate': None,
-                'notes': 'Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows',
-            },
-            'digital_events_all_ages': {
-                'status': 'excluded',
-                'estimate': None,
-                'notes': 'Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 15346,
-            'notes': 'Published total 270,355 mistakenly included event attendance (255,046 physical, 460 digital); true event count is 15,346 (15,309 physical + 37 digital)',
-        },
-    },
-    ('2024/2025', 'visits', 'E08000006'): {
-        # Salford: March shared visits entered as cumulative annual total 715,224
-        'values': {
-            '715224': {
-                'status': 'replaced',
-                'estimate': 66045,
-                'notes': 'March shared visits entered as cumulative annual total 715,224 instead of monthly increment; estimated as 66,045 (715,224 less Apr-Feb sum 649,179)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 730854,
-            'notes': 'Published total 1,364,403 inflated because March shared visits contained the annual total (715,224); true total visits is 730,854',
-        },
-    },
-    ('2024/2025', 'visits', 'E08000014'): {
-        # Sefton: Q1 visits entered as 508,530 (10x typo for 50,853; Q2=58k, Q3=53k, Q4=48k)
-        'values': {
-            '508530': {
-                'status': 'replaced',
-                'estimate': 50853,
-                'notes': 'Q1 visits entered as 508530 (10x typo for 50853; subsequent quarters are 58k, 53k, 48k)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 405059,
-            'notes': 'Published total 862,736 inflated by Q1 10x typo (508,530 vs intended 50,853); true total is 405,059',
-        },
-    },
-    ('2024/2025', 'computer_usage', 'E06000019'): {
-        # Herefordshire: June entered as 21,510 (typo for ~1,250; other months 1.1k-1.4k)
-        'values': {
-            '21510': {
-                'status': 'replaced',
-                'estimate': 1250,
-                'notes': 'June computer hours entered as 21510 (typo with extra digit for ~1250; other months range 1,123-1,416)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 15140,
-            'notes': 'Published total 35,400 inflated by June typo (21,510 vs estimated 1,250); true total is 15,140',
-        },
-    },
-    ('2024/2025', 'computer_usage', 'E08000018'): {
-        # Rotherham: December entered as 24,310 (10x typo for 2,431; other months 2.8k-4.0k)
-        'values': {
-            '24310': {
-                'status': 'replaced',
-                'estimate': 2431,
-                'notes': 'December computer hours entered as 24310 (10x typo for 2431; other months range 2.8k-4.0k)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 39216,
-            'notes': 'Published total 61,095 inflated by December 10x typo (24,310 vs intended 2,431); true total is 39,216',
-        },
-    },
-    ('2024/2025', 'loans', 'E09000021'): {
-        # Kingston upon Thames: August digital audiobooks entered as 36,998 (10x typo for 3,700)
-        'values': {
-            '36998': {
-                'status': 'replaced',
-                'estimate': 3700,
-                'notes': 'August digital audiobook loans entered as 36998 (10x typo for 3700; other months range 3.1k-4.2k)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 581661,
-            'notes': 'Published total 614,959 inflated by August digital audiobooks 10x typo (36,998 vs intended 3,700); true total is 581,661',
-        },
-    },
+def load_data_quality_anomalies(file_path=ERRORS_CSV):
+    """Load known reporting anomalies from errors.csv into the lookup dictionary.
 
-    # -------------------------------------------------------------------------
-    # 2025/2026 FINANCIAL YEAR
-    # -------------------------------------------------------------------------
-    ('2025/2026', 'computer_usage', 'E06000060'): {
-        # Buckinghamshire: Reported 4,156,838 hours (~349k/month); recorded in minutes rather than hours
-        'all': {
-            'status': 'replaced',
-            'estimate': lambda v: int(v) // 60 if str(v).isdigit() else None,
-            'notes': 'Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60',
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 69281,
-            'notes': 'Published total 4,156,838 recorded in minutes instead of hours; converted to 69,281 hours (divided by 60)',
-        },
-    },
-    ('2025/2026', 'computer_usage', 'E10000013'): {
-        # Gloucestershire: April entered as 55,702 (typo for 5,702; other months 5.2k-6.9k)
-        'values': {
-            '55702': {
-                'status': 'replaced',
-                'estimate': 5702,
-                'notes': 'April computer hours entered as 55702 (double-5 typo for 5702; other months range 5.2k-6.9k)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 73285,
-            'notes': 'Published total 123,285 inflated by 50,000 due to April typo (55,702 vs intended 5,702); true total is 73,285',
-        },
-    },
-    ('2025/2026', 'events', 'E06000046'): {
-        # Isle of Wight: April physical events entered as 100,183 (typo adding 100,000 prefix; 109+74=183)
-        'values': {
-            '100183': {
-                'status': 'replaced',
-                'estimate': 183,
-                'notes': 'April physical events entered as 100183 (typo adding 100,000 prefix; adult 109 + children 74 = 183)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 2889,
-            'notes': 'Published total 102,889 inflated by 100,000 due to April typo (100,183 vs intended 183); true total is 2,889',
-        },
-    },
-    ('2025/2026', 'loans', 'E09000005'): {
-        # Brent: September adult physical loans entered as 313,645 (typo for 31,365; total 48,373 - 13,265 - 3,743 = 31,365)
-        'values': {
-            '313645': {
-                'status': 'replaced',
-                'estimate': 31365,
-                'notes': 'September adult physical book loans entered as 313645 (typo for 31365 based on total books 48,373 less children and teen)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 722848,
-            'notes': 'Published total 1,005,128 inflated by September adult loans typo (313,645 vs intended 31,365); true total is 722,848',
-        },
-    },
-    ('2025/2026', 'loans', 'E06000058'): {
-        # BCP: January adult ebooks entered as 44,103 (typo for 4,103; total 4,592 - 353 - 136 = 4,103)
-        'values': {
-            '44103': {
-                'status': 'replaced',
-                'estimate': 4103,
-                'notes': 'January adult ebook loans entered as 44103 (typo for 4103 based on total ebooks 4,592 less children and teen)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 1226679,
-            'notes': 'Published total 1,266,679 inflated by 40,000 due to January adult ebooks typo (44,103 vs intended 4,103); true total is 1,226,679',
-        },
-    },
-    ('2025/2026', 'loans', 'E10000013'): {
-        # Gloucestershire: February children's digital audiobooks entered as 38,556 (typo for 3,856; total 23,882 - 19,107 - 919 = 3,856)
-        'values': {
-            '38556': {
-                'status': 'replaced',
-                'estimate': 3856,
-                'notes': 'February children digital audiobook loans entered as 38556 (typo for 3856 based on total audiobooks 23,882 less adult and teen)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 2117936,
-            'notes': 'Published total 2,152,636 inflated by 34,700 due to February digital audiobooks typo (38,556 vs intended 3,856); true total is 2,117,936',
-        },
-    },
-    ('2025/2026', 'loans', 'E06000062'): {
-        # West Northamptonshire: July digital audiobooks entered as 98,017 (10x typo for 9,802; other months 9.2k-10.4k)
-        'values': {
-            '98017': {
-                'status': 'replaced',
-                'estimate': 9802,
-                'notes': 'July digital audiobook loans entered as 98017 (10x typo for 9802; other months range 9.2k-10.4k)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 512917,
-            'notes': 'Published total 601,132 inflated by July digital audiobooks 10x typo (98,017 vs intended 9,802); true total is 512,917',
-        },
-    },
-    ('2025/2026', 'loans', 'E08000022'): {
-        # North Tyneside: August children's book loans entered as 208,859 (typo with extra digit for 20,859)
-        'values': {
-            '208859': {
-                'status': 'replaced',
-                'estimate': 20859,
-                'notes': 'August children book loans entered as 208859 (typo with extra digit for 20859; matching digital loans entry)',
-            },
-        },
-        'total': {
-            'status': 'replaced',
-            'estimate': 465496,
-            'notes': 'Published total 653,496 inflated by August children book loans typo (208,859 vs intended 20,859); true total is 465,496',
-        },
-    },
-}
+    Each rule is keyed by (period, dataset, authority_code) with scopes:
+    - 'values': matched against specific numeric strings (e.g. typos)
+    - 'fields': matched against column name substrings
+    - 'total': applied to annual headline service totals
+    - 'all': applied to all rows for that authority and dataset
+    """
+    anomalies = {}
+    with open(file_path, mode='r', newline='', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            key = (row['Period'], row['Dataset'], row['Authority code'])
+            if key not in anomalies:
+                anomalies[key] = {}
+            scope = row['Scope']
+            match_val = row.get('Match', '')
+            status = row['Status']
+            est_str = row.get('Estimated count', '').strip()
 
+            # Parse estimate (can be integer, division formula e.g. '// 60', or None)
+            if not est_str:
+                est = None
+            elif est_str.startswith('//'):
+                div = int(est_str.lstrip('/').strip())
+                est = (lambda d: lambda v: int(v) // d if str(v).isdigit() else None)(div)
+            elif est_str.startswith('/'):
+                div = float(est_str.lstrip('/').strip())
+                est = (lambda d: lambda v: int(float(v) / d) if str(v).replace('.', '', 1).isdigit() else None)(div)
+            else:
+                try:
+                    est = int(est_str)
+                except ValueError:
+                    est = est_str
+
+            notes = row.get('Notes', '')
+            rule_entry = {'status': status, 'estimate': est, 'notes': notes}
+
+            if scope == 'values':
+                if 'values' not in anomalies[key]:
+                    anomalies[key]['values'] = {}
+                anomalies[key]['values'][match_val] = rule_entry
+            elif scope == 'fields':
+                if 'fields' not in anomalies[key]:
+                    anomalies[key]['fields'] = {}
+                anomalies[key]['fields'][match_val] = rule_entry
+            elif scope == 'total':
+                anomalies[key]['total'] = rule_entry
+            elif scope == 'all':
+                anomalies[key]['all'] = rule_entry
+    return anomalies
+
+
+DATA_QUALITY_ANOMALIES = load_data_quality_anomalies(ERRORS_CSV)
 
 # =============================================================================
 # DATE & UTILITY FUNCTIONS
@@ -1265,6 +869,61 @@ def calculate_record_frequency(records):
     return 'Monthly'
 
 
+def is_pseudo_monthly_quarterly(records):
+    """Detect if records represent quarterly reporting entered with zero-placeholders for intermediate months."""
+    dated_records = [
+        r for r in records
+        if r.get('Period') and len(r['Period']) >= 10 and r['Period'][4] == '-' and r['Period'][7] == '-'
+    ]
+    if len(dated_records) < 4:
+        return False
+
+    non_q = [r for r in dated_records if int(r['Period'][5:7]) in (1, 2, 4, 5, 7, 8, 10, 11)]
+    q = [r for r in dated_records if int(r['Period'][5:7]) in (3, 6, 9, 12)]
+
+    if not non_q or not q:
+        return False
+
+    all_non_q_zero = all(
+        number_value(r.get('Count')) == 0 and
+        (r.get('Estimated count') in (None, '') or number_value(r.get('Estimated count')) == 0)
+        for r in non_q
+    )
+    q_pos = [
+        r for r in q
+        if number_value(r.get('Count')) > 0 or
+        (r.get('Estimated count') not in (None, '') and number_value(r.get('Estimated count')) > 0)
+    ]
+    return all_non_q_zero and len(q_pos) >= 3
+
+
+def standardize_period_records(group, start_year):
+    """Assign standard ISO 8601 period strings to a list of records for a single metric/group."""
+    if not group:
+        return []
+
+    # Check if this group represents quarterly reporting with zero-placeholders for intermediate months
+    if is_pseudo_monthly_quarterly(group):
+        q_records = [r for r in group if r.get('Period') and int(r['Period'][5:7]) in (3, 6, 9, 12)]
+        for record in q_records:
+            record['Period'] = convert_date_to_quarterly(record['Period'])
+        return q_records
+
+    frequency = calculate_record_frequency(group)
+    if frequency != 'Yearly':
+        group = [r for r in group if r.get('Period')]
+
+    for record in group:
+        if frequency == 'Monthly':
+            record['Period'] = f"{record['Period']}/P1M"
+        elif frequency == 'Quarterly':
+            record['Period'] = convert_date_to_quarterly(record['Period'])
+        elif frequency == 'Yearly':
+            record['Period'] = f'{start_year}-04-01/P1Y'
+
+    return group
+
+
 def standardize_grouped_periods(records, key_func, start_year):
     """Assign standard ISO 8601 period strings to records grouped by category.
     
@@ -1278,17 +937,10 @@ def standardize_grouped_periods(records, key_func, start_year):
             grouped_records[key] = []
         grouped_records[key].append(record)
 
+    output = []
     for group in grouped_records.values():
-        frequency = calculate_record_frequency(group)
-        for record in group:
-            if frequency == 'Monthly':
-                record['Period'] = f"{record['Period']}/P1M"
-            elif frequency == 'Quarterly':
-                record['Period'] = convert_date_to_quarterly(record['Period'])
-            elif frequency == 'Yearly':
-                record['Period'] = f'{start_year}-04-01/P1Y'
-
-    return [record for group in grouped_records.values() for record in group]
+        output.extend(standardize_period_records(group, start_year))
+    return output
 
 
 def standardize_loan_periods(records, start_year):
@@ -1305,21 +957,10 @@ def standardize_loan_periods(records, start_year):
             grouped_loans[key] = []
         grouped_loans[key].append(record)
 
-    for key, group in list(grouped_loans.items()):
-        frequency = calculate_record_frequency(group)
-        if frequency != 'Yearly':
-            group = [r for r in group if r.get('Period')]
-            grouped_loans[key] = group
-
-        for record in group:
-            if frequency == 'Monthly':
-                record['Period'] = f"{record['Period']}/P1M"
-            elif frequency == 'Quarterly':
-                record['Period'] = convert_date_to_quarterly(record['Period'])
-            elif frequency == 'Yearly':
-                record['Period'] = f'{start_year}-04-01/P1Y'
-
-    return [record for group in grouped_loans.values() for record in group]
+    output = []
+    for group in grouped_loans.values():
+        output.extend(standardize_period_records(group, start_year))
+    return output
 
 
 def standardize_ungrouped_periods(records, start_year):
@@ -1328,15 +969,8 @@ def standardize_ungrouped_periods(records, start_year):
     Used for metrics that do not have demographic or medium breakdowns
     (Click & Collect, Computer Usage, and Wi-Fi Sessions).
     """
-    frequency = calculate_record_frequency(records)
-    for record in records:
-        if frequency == 'Monthly':
-            record['Period'] = f"{record['Period']}/P1M"
-        elif frequency == 'Quarterly':
-            record['Period'] = convert_date_to_quarterly(record['Period'])
-        elif frequency == 'Yearly':
-            record['Period'] = f'{start_year}-04-01/P1Y'
-    return records
+    return standardize_period_records(records, start_year)
+
 
 
 def convert_values_to_monthly(data):
@@ -2047,6 +1681,9 @@ def rotate_activity_data():
         [w['Authority'], w['Period'], w['Effective count'], w['Count'], w.get('Status') or None, w.get('Notes') or None]
         for w in convert_values_to_monthly(wifi_sessions)
     ])
+    with open(ERRORS_CSV, mode='r', newline='', encoding='utf-8') as f:
+        errors_records = list(csv.DictReader(f))
+    write_json(ERRORS_JSON, errors_records)
 
 
 if __name__ == '__main__':

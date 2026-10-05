@@ -1,23 +1,26 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import { useApplicationState } from '../hooks/useApplicationState'
-
-import { formatPeriod } from '../helpers/periods'
-import { getServicePeriodChange } from '../models/service'
-
+import { getUsersPenetrationPeriodChange } from '../models/users'
+import * as usersModel from '../models/users'
 import MetricTotalCard from './MetricTotalCard'
 
 /**
  * Summary KPI card component displaying total active library users across active library services,
- * percentage of total resident population, and percentage change since the earliest selected financial year.
+ * percentage of total resident population, and percentage point change since the earliest selected financial year.
  *
  * @returns {JSX.Element} MetricTotalCard configured for total active users.
  */
 const UsersTotalCard = () => {
-  const [{ serviceRecords, selectedPeriods }] = useApplicationState()
+  const [{ users, services }, dispatchApplication] = useApplicationState()
 
-  const earliestPeriod = selectedPeriods?.[0]
-  const latestPeriod = selectedPeriods?.[selectedPeriods?.length - 1]
+  useEffect(() => {
+    if (!users) {
+      usersModel.getUsers().then(data => {
+        dispatchApplication({ type: 'SetUsers', users: data })
+      })
+    }
+  }, [users, dispatchApplication])
 
   const formatDescription = useCallback(({ total, validServices }) => {
     const totalPopulation =
@@ -37,16 +40,18 @@ const UsersTotalCard = () => {
   }, [])
 
   const computeChange = useCallback(
-    ({ validServices, useEstimates }) =>
-      getServicePeriodChange(
-        serviceRecords,
-        'users',
-        earliestPeriod,
-        latestPeriod,
-        validServices?.map(service => service.code),
-        useEstimates
-      ),
-    [serviceRecords, earliestPeriod, latestPeriod]
+    ({ activeServices, comparison }) => {
+      if (!comparison || !users || !services) return null
+      return getUsersPenetrationPeriodChange(
+        users,
+        services,
+        null,
+        comparison.baselinePeriod,
+        comparison.targetPeriod,
+        activeServices?.map(s => s.code)
+      )
+    },
+    [users, services]
   )
 
   return (
@@ -56,9 +61,7 @@ const UsersTotalCard = () => {
       colour='chartPurple'
       formatDescription={formatDescription}
       computeChange={computeChange}
-      changeDescription={
-        earliestPeriod ? `since ${formatPeriod(earliestPeriod)}` : ''
-      }
+      changeUnit='percentage points'
     />
   )
 }

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
 
+import ChildCareRoundedIcon from '@mui/icons-material/ChildCareRounded'
+
 import { useApplicationState } from '../hooks/useApplicationState'
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
-import { filterByMonthRange } from '../helpers/periods'
+import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
 import * as attendanceModel from '../models/attendance'
 
@@ -11,20 +13,23 @@ import NumberCard from './NumberCard'
 
 /**
  * Summary KPI card component displaying event attendance for children and young people
- * (under 18), along with their share of total event attendees.
+ * (under 18), along with their share of total event attendees and period-over-period trend analysis.
  *
  * @returns {JSX.Element} NumberCard configured for children's event attendance.
  */
 const EventsChildrenAttendanceCard = () => {
   const [
-    { filteredServices, services, attendance, monthRange, useEstimates },
+    { filteredServices, services, attendance, periods, selectedPeriods, monthRange, useEstimates },
     dispatchApplication
   ] = useApplicationState()
 
   const [count, setCount] = useState(0)
   const [description, setDescription] = useState('')
+  const [change, setChange] = useState(null)
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
+
+  const comparison = resolvePeriodComparison(selectedPeriods, periods)
 
   useEffect(() => {
     if (!attendance) {
@@ -60,9 +65,8 @@ const EventsChildrenAttendanceCard = () => {
       0
     )
 
-    const childRecords = matched.filter(
-      a => a.ageGroup === 'Under 12' || a.ageGroup === '12-17'
-    )
+    const childFilter = a => a.ageGroup === 'Under 12' || a.ageGroup === '12-17'
+    const childRecords = matched.filter(childFilter)
     const totalChildAttendance = childRecords.reduce(
       (acc, a) => acc + (a.countAttendance || 0),
       0
@@ -76,13 +80,32 @@ const EventsChildrenAttendanceCard = () => {
         : 0
     setDescription(`${Math.round(pct)}% of all attendees`)
     setWarning(getRecordsQualityWarning(childRecords))
-  }, [attendance, services, filteredServices, monthRange, useEstimates])
+
+    if (comparison && attendance) {
+      const chg = getActivityRecordsSharePeriodChange({
+        records: attendance,
+        countProp: 'countAttendance',
+        filterFn: childFilter,
+        baselinePeriod: comparison.baselinePeriod,
+        targetPeriod: comparison.targetPeriod,
+        serviceCodes: activeCodes,
+        useEstimates
+      })
+      setChange(chg)
+    } else {
+      setChange(null)
+    }
+  }, [attendance, services, filteredServices, monthRange, comparison, useEstimates])
 
   return (
     <NumberCard
       title="Children's attendance"
       number={formatCompactNumber(count)}
       description={description}
+      icon={ChildCareRoundedIcon}
+      change={change}
+      changeDescription={comparison?.changeDescription || ''}
+      changeUnit='percentage points'
       colour='chartPurple'
       noData={noData}
       warning={warning}

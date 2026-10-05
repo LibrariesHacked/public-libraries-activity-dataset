@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
-import { formatPeriod } from '../helpers/periods'
+import { resolvePeriodComparison } from '../helpers/periods'
 import { getActiveServices } from '../models/service'
-import { getUsersPeriodChange } from '../models/users'
+import { getUsersPenetrationPeriodChange } from '../models/users'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
 
 import NumberCard from './NumberCard'
@@ -21,6 +21,7 @@ import NumberCard from './NumberCard'
  * @param {string} props.ageGroup - Age category identifier ('Under 12', '12-17', or 'Adult').
  * @param {Function} props.populationFn - Function returning the resident population for this demographic across services.
  * @param {string} props.descLabel - Context label for the subtitle percentage (e.g. 'residents aged 12-17').
+ * @param {React.ElementType} [props.icon] - Optional icon displayed next to the description.
  * @returns {JSX.Element} Rendered NumberCard component.
  */
 const UsersAgeGroupCard = ({
@@ -28,10 +29,11 @@ const UsersAgeGroupCard = ({
   colour,
   ageGroup,
   populationFn,
-  descLabel
+  descLabel,
+  icon
 }) => {
   const [
-    { filteredServices, services, users, selectedPeriods, snapshotPeriod, useEstimates }
+    { filteredServices, services, users, periods, selectedPeriods, snapshotPeriod, useEstimates }
   ] = useApplicationState()
 
   const [usersCount, setUsersCount] = useState(0)
@@ -40,7 +42,7 @@ const UsersAgeGroupCard = ({
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const earliestPeriod = selectedPeriods?.[0]
+  const comparison = resolvePeriodComparison(selectedPeriods, periods)
 
   useEffect(() => {
     if (!users || !services) return
@@ -86,15 +88,20 @@ const UsersAgeGroupCard = ({
     setUsersCount(totalGroupUsers)
     setPercentageUsers(percentage)
 
-    setUsersChange(
-      getUsersPeriodChange(
-        users,
-        ageGroup,
-        earliestPeriod,
-        snapshotPeriod,
-        groupUserServices?.map(service => service.code)
+    if (comparison && users && services) {
+      setUsersChange(
+        getUsersPenetrationPeriodChange(
+          users,
+          services,
+          ageGroup,
+          comparison.baselinePeriod,
+          comparison.targetPeriod,
+          groupUserServices?.map(service => service.code)
+        )
       )
-    )
+    } else {
+      setUsersChange(null)
+    }
 
     setWarning(getRecordsQualityWarning(matchedUsers))
   }, [
@@ -102,7 +109,7 @@ const UsersAgeGroupCard = ({
     filteredServices,
     users,
     snapshotPeriod,
-    earliestPeriod,
+    comparison,
     useEstimates,
     ageGroup,
     populationFn
@@ -113,10 +120,10 @@ const UsersAgeGroupCard = ({
       title={title}
       number={formatCompactNumber(usersCount)}
       description={`${Math.round(percentageUsers)}% of ${descLabel}`}
+      icon={icon}
       change={usersChange}
-      changeDescription={`since ${
-        earliestPeriod ? formatPeriod(earliestPeriod) : ''
-      }`}
+      changeDescription={comparison?.changeDescription || ''}
+      changeUnit='percentage points'
       colour={colour}
       noData={noData}
       warning={warning}

@@ -255,16 +255,29 @@ const NationalEstimates = () => {
       </Typography>
 
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card variant='outlined' sx={{ height: '100%' }}>
-            <CardContent>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                 <PeopleRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
                   Active Users
                 </Typography>
               </Stack>
-              <Typography variant='h4' sx={{ fontWeight: 800, color: 'primary.main' }}>
+              <Typography
+                variant='h4'
+                title={usersEst ? formatNumber(usersEst.grossedTotal) : undefined}
+                sx={{
+                  fontWeight: 800,
+                  color: 'primary.main',
+                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
                 {usersEst ? formatNumber(usersEst.grossedTotal) : '—'}
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
@@ -277,16 +290,29 @@ const NationalEstimates = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card variant='outlined' sx={{ height: '100%' }}>
-            <CardContent>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                 <PlaceRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
                   Physical Visits
                 </Typography>
               </Stack>
-              <Typography variant='h4' sx={{ fontWeight: 800, color: 'primary.main' }}>
+              <Typography
+                variant='h4'
+                title={visitsEst ? formatNumber(visitsEst.grossedTotal) : undefined}
+                sx={{
+                  fontWeight: 800,
+                  color: 'primary.main',
+                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
                 {visitsEst ? formatNumber(visitsEst.grossedTotal) : '—'}
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
@@ -299,16 +325,29 @@ const NationalEstimates = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card variant='outlined' sx={{ height: '100%' }}>
-            <CardContent>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                 <MenuBookRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
                   Total Loans
                 </Typography>
               </Stack>
-              <Typography variant='h4' sx={{ fontWeight: 800, color: 'primary.main' }}>
+              <Typography
+                variant='h4'
+                title={loansEst ? formatNumber(loansEst.grossedTotal) : undefined}
+                sx={{
+                  fontWeight: 800,
+                  color: 'primary.main',
+                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
                 {loansEst ? formatNumber(loansEst.grossedTotal) : '—'}
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
@@ -321,16 +360,29 @@ const NationalEstimates = () => {
           </Card>
         </Grid>
 
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Card variant='outlined' sx={{ height: '100%' }}>
-            <CardContent>
+        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                 <PeopleRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
                   In-Person Events
                 </Typography>
               </Stack>
-              <Typography variant='h4' sx={{ fontWeight: 800, color: 'primary.main' }}>
+              <Typography
+                variant='h4'
+                title={eventsEst ? formatNumber(eventsEst.grossedTotal) : undefined}
+                sx={{
+                  fontWeight: 800,
+                  color: 'primary.main',
+                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
+                  lineHeight: 1.2,
+                  letterSpacing: '-0.02em',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
+              >
                 {eventsEst ? formatNumber(eventsEst.grossedTotal) : '—'}
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>

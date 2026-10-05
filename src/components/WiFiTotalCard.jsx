@@ -12,8 +12,13 @@ import MetricTotalCard from './MetricTotalCard'
  */
 const WiFiTotalCard = () => {
   const formatDescription = useCallback(
-    ({ total, yearCount }) =>
-      `${formatCompactNumber(total / (365 * yearCount), 2)} sessions per day`,
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? Math.round((total / totalPopulation / yearCount) * 1000)
+          : 0
+      return `${formatCompactNumber(perCapita)} per 1,000 residents / yr`
+    },
     []
   )
 

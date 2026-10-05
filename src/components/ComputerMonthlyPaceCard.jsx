@@ -7,19 +7,19 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsPeriodChange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
-import * as visitsModel from '../models/visits'
+import * as computersModel from '../models/computers'
 
 import NumberCard from './NumberCard'
 
 /**
- * Summary KPI card component displaying average monthly library visits,
- * along with average visits logged per day and period-over-period trend analysis.
+ * Summary KPI card component displaying average monthly public computer access hours,
+ * along with average computer hours logged per day and period-over-period trend analysis.
  *
- * @returns {JSX.Element} NumberCard configured for monthly library visit pace.
+ * @returns {JSX.Element} NumberCard configured for monthly computer usage pace.
  */
-const VisitsMonthlyPaceCard = () => {
+const ComputerMonthlyPaceCard = () => {
   const [
-    { filteredServices, services, visits, periods, selectedPeriods, monthRange, useEstimates },
+    { filteredServices, services, computers, periods, selectedPeriods, monthRange, useEstimates },
     dispatchApplication
   ] = useApplicationState()
 
@@ -32,15 +32,15 @@ const VisitsMonthlyPaceCard = () => {
   const comparison = resolvePeriodComparison(selectedPeriods, periods)
 
   useEffect(() => {
-    if (!visits) {
-      visitsModel.getVisits().then(data => {
-        dispatchApplication({ type: 'SetVisits', visits: data })
+    if (!computers) {
+      computersModel.getComputers().then(data => {
+        dispatchApplication({ type: 'SetComputers', computers: data })
       })
     }
-  }, [visits, dispatchApplication])
+  }, [computers, dispatchApplication])
 
   useEffect(() => {
-    if (!visits || !services) return
+    if (!computers || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
     const activeCodes = new Set((activeServices || []).map(s => s.code))
@@ -49,11 +49,11 @@ const VisitsMonthlyPaceCard = () => {
     const monthCount = months.length || 12
     const yearCount = monthCount / 12
 
-    const rangeVisits = filterByMonthRange(visits, monthRange)
-    const matched = rangeVisits.filter(
-      v =>
-        (!filteredServices.length || filteredServices.includes(v.serviceCode)) &&
-        activeCodes.has(v.serviceCode)
+    const rangeComputers = filterByMonthRange(computers, monthRange)
+    const matched = rangeComputers.filter(
+      c =>
+        (!filteredServices.length || filteredServices.includes(c.serviceCode)) &&
+        activeCodes.has(c.serviceCode)
     )
 
     if (!matched.length) {
@@ -64,18 +64,18 @@ const VisitsMonthlyPaceCard = () => {
     }
 
     setNoData(false)
-    const totalAllVisits = matched.reduce((acc, v) => acc + (v.countVisits || 0), 0)
-    const avgMonthly = Math.round(totalAllVisits / monthCount)
-    const avgDaily = Math.round(totalAllVisits / (365 * yearCount))
+    const totalHours = matched.reduce((acc, c) => acc + (c.countHours || 0), 0)
+    const avgMonthly = Math.round(totalHours / monthCount)
+    const avgDaily = Math.round(totalHours / (365 * yearCount))
 
     setMonthlyAverage(avgMonthly)
-    setDescription(`${formatCompactNumber(avgDaily)} visits per day`)
+    setDescription(`${formatCompactNumber(avgDaily)} hours per day`)
     setWarning(getRecordsQualityWarning(matched))
 
-    if (comparison && visits) {
+    if (comparison && computers) {
       const chg = getActivityRecordsPeriodChange({
-        records: visits,
-        countProp: 'countVisits',
+        records: computers,
+        countProp: 'countHours',
         baselinePeriod: comparison.baselinePeriod,
         targetPeriod: comparison.targetPeriod,
         serviceCodes: activeCodes,
@@ -85,17 +85,17 @@ const VisitsMonthlyPaceCard = () => {
     } else {
       setChange(null)
     }
-  }, [visits, services, filteredServices, monthRange, comparison, useEstimates])
+  }, [computers, services, filteredServices, monthRange, comparison, useEstimates])
 
   return (
     <NumberCard
-      title='Monthly visits'
+      title='Monthly computer hours'
       number={formatCompactNumber(monthlyAverage)}
       description={description}
       icon={CalendarMonthRoundedIcon}
       change={change}
       changeDescription={comparison?.changeDescription || ''}
-      colour='chartGreen'
+      colour='chartBlue'
       noData={noData}
       warning={warning}
       isShowingEstimated={useEstimates !== false}
@@ -103,4 +103,4 @@ const VisitsMonthlyPaceCard = () => {
   )
 }
 
-export default VisitsMonthlyPaceCard
+export default ComputerMonthlyPaceCard
