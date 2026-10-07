@@ -1,1 +1,1 @@
-Monthly visits by facility type: library sites, shared co-located sites, home deliveries, and mobile libraries.
+See monthly visits to library buildings, shared library sites, and mobile libraries, as well as home deliveries.

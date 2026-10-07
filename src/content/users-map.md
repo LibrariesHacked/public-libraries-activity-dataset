@@ -1,1 +1,1 @@
-Choropleth map of active users as a percentage of population across library services. Filter by demographic age group or view percentage point changes over time.
+The map compares active users with the population in each library service area. Choose an age group or view how the percentage has changed over time.

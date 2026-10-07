@@ -1,3 +1,3 @@
-The Arts Council [libraries activity dataset](https://www.artscouncil.org.uk/supporting-arts-museums-and-libraries/supporting-libraries) captures library activity across England, including active users, events, visits, loans, and computer sessions.
+The [Arts Council England libraries activity dataset](https://www.artscouncil.org.uk/supporting-arts-museums-and-libraries/supporting-libraries) brings together information about public libraries across England. Explore active users, events, visits, loans, and computer and Wi-Fi use.
 
-Explore national trends, compare services, and inspect headline metrics. Not all services reported data for every period.
+See how activity changes over time and compare library services. Some services did not report data for every period.

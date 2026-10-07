@@ -1,1 +1,1 @@
-Average annual visits per resident across library services, broken down by location type.
+Compare the average number of visits per resident each year across library services, by location type.

@@ -1,1 +1,1 @@
-Monthly loans grouped by format and content age rating: Adult (general/all-ages), Young People (12–17), and Children (under 12).
+See monthly loans by format and the age group the item is intended for: adult or all-ages, young people (ages 12–17), and children (under 12).

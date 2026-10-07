@@ -1,32 +1,32 @@
 # Privacy policy
 
-This privacy policy explains how the Public Libraries Activity Dataset website handles your privacy and data.
+This policy explains what information the Public Libraries Activity Dataset website collects and how it is used.
 
 ## Summary
 
-* We do not collect any personal data or personally identifiable information.
+* We do not collect personal information about you.
 * We do not use cookies.
-* We use privacy-friendly, self-hosted website analytics with no persistent tracking.
-* All data visualised on this website is aggregated public sector data; no individual library users are identifiable.
+* We use self-hosted analytics that do not track you over time.
+* The figures shown here are public, aggregated data and do not identify individual library users.
 
 ## Cookies and storage
 
-This website does not store tracking cookies, third-party cookies, or advertising cookies on your device.
+This website does not store tracking, third-party, or advertising cookies on your device.
 
-The site may use temporary in-memory browser storage during your visit to retain your interface preferences, such as selected financial years, services, or data quality modes. No personal information is stored.
+While you visit, the site may temporarily remember your choices, such as selected financial years, services, or data view. This information stays in your browser and is not saved as personal information.
 
 ## Analytics
 
-We use a self-hosted instance of [Plausible Analytics](https://plausible.io), an open-source and privacy-first web measurement tool, to understand overall visitor trends and popular pages.
+We use our own instance of [Plausible Analytics](https://plausible.io), an open-source tool, to see overall visitor numbers and which pages are popular.
 
-* **No tracking cookies:** Plausible does not use cookies and does not store anything on your device.
-* **No personal data:** IP addresses are not stored or logged. A daily rotating cryptographic hash is used to calculate unique visitor counts without identifying individual devices or people.
-* **Open metrics:** The aggregated traffic metrics for this website are publicly viewable on our [public analytics dashboard](https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk).
+* **No tracking cookies:** Plausible does not use cookies or store information on your device.
+* **IP addresses are not stored:** A daily changing hash helps count unique visits without identifying a person or device.
+* **Public figures:** View the site's combined visitor statistics on our [public analytics dashboard](https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk).
 
 ## External links
 
-This site includes links to external third-party websites, including Arts Council England, the Office for National Statistics, and GitHub. We are not responsible for the privacy practices or content of external websites.
+This site links to other websites, including Arts Council England, the Office for National Statistics, and GitHub. We are not responsible for their content or privacy practices.
 
 ## Contact
 
-If you have any questions about this privacy policy, please contact [Libraries Hacked](https://www.librarieshacked.org) or open an issue on the [project repository](https://github.com/LibrariesHacked/public-libraries-activity-dataset).
+For questions about this policy, contact [Libraries Hacked](https://www.librarieshacked.org) or open an issue in the [project repository](https://github.com/LibrariesHacked/public-libraries-activity-dataset).

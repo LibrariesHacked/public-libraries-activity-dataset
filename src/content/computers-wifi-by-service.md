@@ -1,1 +1,1 @@
-Computer usage hours and WiFi sessions across library services.
+Compare computer use and Wi-Fi sessions across library services. Computer use is measured in hours; Wi-Fi use is counted as sessions.

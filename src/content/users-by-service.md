@@ -1,1 +1,1 @@
-Active users as a percentage of resident population by service (typically 5–20%). Commuters and students can push this percentage higher.
+See active users as a share of the population in each library service area. The figure may be higher where services are also used by commuters or students from outside the area.

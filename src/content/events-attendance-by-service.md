@@ -1,1 +1,1 @@
-Total event counts and attendance across library services.
+Compare the number of events and people who attended them across library services.

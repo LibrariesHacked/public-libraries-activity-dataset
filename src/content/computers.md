@@ -1,1 +1,1 @@
-Computer hours measure public PC and loaned device usage in library buildings. WiFi sessions count wireless network connections.
+Computer use is measured in hours. This includes public computers and devices borrowed from the library for use in the building. Wi-Fi sessions count connections to the library's wireless network.

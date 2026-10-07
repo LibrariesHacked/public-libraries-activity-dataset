@@ -1,1 +1,1 @@
-Monthly comparison of computer usage hours and WiFi sessions over time.
+Compare computer use, measured in hours, with Wi-Fi sessions month by month.

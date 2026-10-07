@@ -1,16 +1,6 @@
 import { getServicePeriodChange } from '../models/service'
 
 /**
- * Total count of English library authorities represented in the dataset.
- */
-export const ENGLAND_TOTAL_AUTHORITIES = 153
-
-/**
- * Benchmark 2022/2023 ONS mid-year resident population for England.
- */
-export const ENGLAND_TOTAL_POPULATION = 58620101
-
-/**
  * Standard coverage threshold percentage (70% of authorities or population)
  * used to indicate robust sample size for national estimates.
  */
@@ -123,9 +113,11 @@ export const calculateNationalEstimates = (
   if (!serviceRecords || !period) return []
 
   const periodRecords = serviceRecords.filter(r => r.period === period)
-  const totalEnglandPopulation =
-    periodRecords.reduce((acc, r) => acc + (r.totalPopulation || 0), 0) ||
-    ENGLAND_TOTAL_POPULATION
+  const totalAuthorities = periodRecords.length
+  const totalEnglandPopulation = periodRecords.reduce(
+    (acc, r) => acc + (r.totalPopulation || 0),
+    0
+  )
 
   return CORE_METRICS.map(metric => {
     const reportingRecords = periodRecords.filter(r => {
@@ -137,7 +129,7 @@ export const calculateNationalEstimates = (
 
     const reportingAuthorities = reportingRecords.length
     const authorityCoveragePercent =
-      (reportingAuthorities / ENGLAND_TOTAL_AUTHORITIES) * 100
+      totalAuthorities > 0 ? (reportingAuthorities / totalAuthorities) * 100 : 0
 
     const reportingPopulation = reportingRecords.reduce(
       (acc, r) => acc + (r.totalPopulation || 0),
@@ -183,7 +175,7 @@ export const calculateNationalEstimates = (
       ...metric,
       period,
       reportingAuthorities,
-      totalAuthorities: ENGLAND_TOTAL_AUTHORITIES,
+      totalAuthorities,
       authorityCoveragePercent,
       reportingPopulation,
       totalPopulation: totalEnglandPopulation,

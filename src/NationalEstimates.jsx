@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -37,10 +38,9 @@ import {
   calculateMultiYearTrends,
   calculateRegionalEstimates,
   downloadNationalEstimatesCsv,
-  DCMS_PUBLICATION_URL,
   DCMS_BASELINE_PERIOD,
-  ENGLAND_TOTAL_AUTHORITIES
 } from './helpers/nationalEstimates'
+import nationalEstimatesNotesMd from './content/national-estimates-notes.md?raw'
 
 /**
  * Format a number with British English thousand-separator commas.
@@ -283,7 +283,7 @@ const NationalEstimates = () => {
                 {usersEst ? `${usersEst.grossedRate.toFixed(1)}% of population` : ''}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
-                {usersEst ? `${usersEst.reportingAuthorities}/${ENGLAND_TOTAL_AUTHORITIES} authorities` : ''}
+                {usersEst ? `${usersEst.reportingAuthorities}/${usersEst.totalAuthorities} authorities` : ''}
               </Typography>
             </CardContent>
           </Card>
@@ -318,7 +318,7 @@ const NationalEstimates = () => {
                 {visitsEst ? `${(visitsEst.grossedRate / 1000).toFixed(1)} per resident` : ''}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
-                {visitsEst ? `${visitsEst.reportingAuthorities}/${ENGLAND_TOTAL_AUTHORITIES} authorities` : ''}
+                {visitsEst ? `${visitsEst.reportingAuthorities}/${visitsEst.totalAuthorities} authorities` : ''}
               </Typography>
             </CardContent>
           </Card>
@@ -353,7 +353,7 @@ const NationalEstimates = () => {
                 {loansEst ? `${(loansEst.grossedRate / 1000).toFixed(1)} per resident` : ''}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
-                {loansEst ? `${loansEst.reportingAuthorities}/${ENGLAND_TOTAL_AUTHORITIES} authorities` : ''}
+                {loansEst ? `${loansEst.reportingAuthorities}/${loansEst.totalAuthorities} authorities` : ''}
               </Typography>
             </CardContent>
           </Card>
@@ -388,7 +388,7 @@ const NationalEstimates = () => {
                 {attendanceEst ? `${formatNumber(attendanceEst.grossedTotal)} attendees` : ''}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
-                {eventsEst ? `${eventsEst.reportingAuthorities}/${ENGLAND_TOTAL_AUTHORITIES} authorities` : ''}
+                {eventsEst ? `${eventsEst.reportingAuthorities}/${eventsEst.totalAuthorities} authorities` : ''}
               </Typography>
             </CardContent>
           </Card>
@@ -719,24 +719,21 @@ const NationalEstimates = () => {
           Notes
         </Typography>
 
-        <Stack spacing={1.5}>
-          <Typography variant='body2' color='text.secondary'>
-            <strong>Population grossing:</strong> Because not all 153 English library services report every metric, national totals are scaled proportionally to England’s population (58.6M) based on the resident population of reporting authorities: <code>(Sample total ÷ Reporting population) × 58,620,101</code>.
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            <strong>70% coverage threshold:</strong> A 70% participation threshold (107 of 153 authorities or 70% of population) is used as a benchmark for reliable national estimation. Metrics below this threshold are flagged with a caution note.
-          </Typography>
-          <Typography variant='body2' color='text.secondary'>
-            <strong>Source:</strong> Method follows the DCMS{' '}
-            <a
-              href={DCMS_PUBLICATION_URL}
-              target='_blank'
-              rel='noreferrer'
-            >
-              Secondary Data Analysis of Arts Council England’s English Public Libraries Activity Dataset 23/24
-            </a>.
-          </Typography>
-        </Stack>
+        <Markdown
+          components={{
+            p: ({ children }) => (
+              <Typography
+                variant='body2'
+                color='text.secondary'
+                sx={{ mb: 1.5, '&:last-of-type': { mb: 0 } }}
+              >
+                {children}
+              </Typography>
+            )
+          }}
+        >
+          {nationalEstimatesNotesMd}
+        </Markdown>
       </Box>
     </Box>
   )

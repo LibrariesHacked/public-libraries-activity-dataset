@@ -1,1 +1,1 @@
-Events are scheduled physical or virtual activities run by library services. Attendance tracks actual participant totals across booked and drop-in sessions.
+Events are activities organised by library services, either in person or online. Attendance is the number of people who took part, including both booked and drop-in sessions.

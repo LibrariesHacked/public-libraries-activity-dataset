@@ -1,1 +1,1 @@
-Average annual loans per resident across library services, broken down by format.
+Compare the average number of loans per resident each year across library services, by format.
