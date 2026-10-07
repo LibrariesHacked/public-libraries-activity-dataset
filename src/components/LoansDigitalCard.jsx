@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import LaptopChromebookRoundedIcon from '@mui/icons-material/LaptopChromebookRounded'
 
@@ -30,7 +30,10 @@ const LoansDigitalCard = () => {
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const comparison = resolvePeriodComparison(selectedPeriods, periods)
+  const comparison = useMemo(
+    () => resolvePeriodComparison(selectedPeriods, periods),
+    [selectedPeriods, periods]
+  )
 
   useEffect(() => {
     if (!loans) {

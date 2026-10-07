@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import ChildCareRoundedIcon from '@mui/icons-material/ChildCareRounded'
 
@@ -29,7 +29,10 @@ const EventsChildrenAttendanceCard = () => {
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const comparison = resolvePeriodComparison(selectedPeriods, periods)
+  const comparison = useMemo(
+    () => resolvePeriodComparison(selectedPeriods, periods),
+    [selectedPeriods, periods]
+  )
 
   useEffect(() => {
     if (!attendance) {

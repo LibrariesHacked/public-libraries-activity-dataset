@@ -1,7 +1,7 @@
 import { ActivityRecord, createActivityModel } from './activityFactory'
 
 /**
- * Domain model representing in-person physical library visits categorized by location and month.
+ * Domain model representing library visits and outreach interactions by location and month.
  */
 export class Visits extends ActivityRecord {}
 

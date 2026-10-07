@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { HashRouter, Link, Route, Routes, useLocation } from 'react-router-dom'
 
 import { ThemeProvider } from '@mui/material/styles'
+import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
 import Chip from '@mui/material/Chip'
@@ -17,6 +18,7 @@ import DataChoiceSelection from './components/DataChoiceSelection'
 import NavTabs from './components/NavTabs'
 import PeriodSelection from './components/PeriodSelection'
 import ServiceSelection from './components/ServiceSelection'
+import homeMd from './content/home.md?raw'
 
 import theme from './theme'
 
@@ -72,11 +74,27 @@ function AppContent () {
                   mb: 0.5
                 }}
               >
-                Library activity
+                English library activity
               </Typography>
-              <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
-                Compare library activity by service or region
-              </Typography>
+              {location.pathname === '/'
+                ? (
+                  <Markdown
+                    components={{
+                      p: ({ children }) => (
+                        <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                          {children}
+                        </Typography>
+                      )
+                    }}
+                  >
+                    {homeMd}
+                  </Markdown>
+                  )
+                : (
+                  <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                    Compare library activity by service or region
+                  </Typography>
+                  )}
               <ServiceSelection />
               <PeriodSelection />
               <DataChoiceSelection />

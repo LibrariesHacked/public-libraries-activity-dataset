@@ -12,8 +12,12 @@ import MetricTotalCard from './MetricTotalCard'
  */
 const EventsTotalCard = () => {
   const formatDescription = useCallback(
-    ({ total, yearCount }) =>
-      `${formatCompactNumber(total / (365 * yearCount))} events per day`,
+    ({ total, totalPopulation, yearCount }) => {
+      const rate = totalPopulation > 0
+        ? (total / totalPopulation / yearCount) * 1000
+        : 0
+      return `${formatCompactNumber(rate, 1)} events per 1,000 residents / yr`
+    },
     []
   )
 

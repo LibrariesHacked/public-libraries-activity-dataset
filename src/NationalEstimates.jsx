@@ -115,7 +115,7 @@ const renderTrendChip = change => {
  */
 const NationalEstimates = () => {
   const [
-    { serviceRecords, periods, useEstimates },
+    { serviceRecords, periods },
     dispatchApplication
   ] = useApplicationState()
 
@@ -144,16 +144,16 @@ const NationalEstimates = () => {
   }, [availablePeriods, selectedPeriod])
 
   const nationalEstimates = useMemo(() => {
-    return calculateNationalEstimates(serviceRecords, selectedPeriod, useEstimates)
-  }, [serviceRecords, selectedPeriod, useEstimates])
+    return calculateNationalEstimates(serviceRecords, selectedPeriod)
+  }, [serviceRecords, selectedPeriod])
 
   const multiYearTrends = useMemo(() => {
-    return calculateMultiYearTrends(serviceRecords, availablePeriods, useEstimates)
-  }, [serviceRecords, availablePeriods, useEstimates])
+    return calculateMultiYearTrends(serviceRecords, availablePeriods)
+  }, [serviceRecords, availablePeriods])
 
   const regionalEstimates = useMemo(() => {
-    return calculateRegionalEstimates(serviceRecords, selectedPeriod, useEstimates)
-  }, [serviceRecords, selectedPeriod, useEstimates])
+    return calculateRegionalEstimates(serviceRecords, selectedPeriod)
+  }, [serviceRecords, selectedPeriod])
 
   const handleExportCsv = () => {
     downloadNationalEstimatesCsv(
@@ -186,49 +186,25 @@ const NationalEstimates = () => {
 
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 2 }}
-        >
-          <Box>
-            <Typography
-              component='h1'
-              variant='h1'
-              sx={{
-                fontSize: '1.85rem',
-                fontWeight: 800,
-                color: 'text.primary',
-                letterSpacing: '-0.02em',
-                mt: 0,
-                mb: 0.5
-              }}
-            >
-              National estimates
-            </Typography>
-            <Typography variant='body1' color='text.secondary'>
-              Estimated annual activity totals for England based on reporting library services.
-            </Typography>
-          </Box>
-          <Stack direction='row' spacing={1} className='no-print' sx={{ flexShrink: 0 }}>
-            <Button
-              variant='outlined'
-              size='small'
-              startIcon={<DownloadRoundedIcon />}
-              onClick={handleExportCsv}
-            >
-              Export CSV
-            </Button>
-            <Button
-              variant='outlined'
-              size='small'
-              startIcon={<PrintRoundedIcon />}
-              onClick={() => window.print()}
-            >
-              Print
-            </Button>
-          </Stack>
-        </Stack>
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            component='h1'
+            variant='h1'
+            sx={{
+              fontSize: '1.85rem',
+              fontWeight: 800,
+              color: 'text.primary',
+              letterSpacing: '-0.02em',
+              mt: 0,
+              mb: 0.5
+            }}
+          >
+            National estimates
+          </Typography>
+          <Typography variant='body1' color='text.secondary'>
+            Estimated annual activity totals for England based on reporting library services.
+          </Typography>
+        </Box>
 
         {/* Period Selector */}
         <ButtonGroup size='small' variant='outlined'>
@@ -295,7 +271,7 @@ const NationalEstimates = () => {
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                 <PlaceRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
-                  Physical Visits
+                  Visits
                 </Typography>
               </Stack>
               <Typography
@@ -315,7 +291,7 @@ const NationalEstimates = () => {
                 {visitsEst ? formatNumber(visitsEst.grossedTotal) : '—'}
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                {visitsEst ? `${(visitsEst.grossedRate / 1000).toFixed(1)} per resident` : ''}
+                {visitsEst ? `${visitsEst.grossedRate.toFixed(1)} per 1,000 residents` : ''}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 {visitsEst ? `${visitsEst.reportingAuthorities}/${visitsEst.totalAuthorities} authorities` : ''}
@@ -350,7 +326,7 @@ const NationalEstimates = () => {
                 {loansEst ? formatNumber(loansEst.grossedTotal) : '—'}
               </Typography>
               <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                {loansEst ? `${(loansEst.grossedRate / 1000).toFixed(1)} per resident` : ''}
+                {loansEst ? `${loansEst.grossedRate.toFixed(1)} per 1,000 residents` : ''}
               </Typography>
               <Typography variant='caption' color='text.secondary'>
                 {loansEst ? `${loansEst.reportingAuthorities}/${loansEst.totalAuthorities} authorities` : ''}
@@ -365,7 +341,7 @@ const NationalEstimates = () => {
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
                 <PeopleRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
-                  In-Person Events
+                  Events
                 </Typography>
               </Stack>
               <Typography
@@ -405,7 +381,7 @@ const NationalEstimates = () => {
           Activity estimates
         </Typography>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
-          Totals scaled to England population (58.6M).
+          Totals are estimates scaled to England's population.
         </Typography>
 
         <TableContainer component={Paper} elevation={0} variant='outlined' sx={{ boxShadow: 'none' }}>
@@ -462,16 +438,23 @@ const NationalEstimates = () => {
                   </TableCell>
                   <TableCell align='center'>
                     {row.meetsThreshold ? (
-                      <Chip
-                        size='small'
-                        color='success'
-                        variant='outlined'
-                        icon={<CheckCircleRoundedIcon fontSize='small' />}
-                        label='≥70% coverage'
-                      />
+                      <Tooltip
+                        title={row.reportingAuthorities >= row.minimumReportingAuthorities
+                          ? `At least ${row.minimumReportingAuthorities} of ${row.totalAuthorities} authorities reported, meeting DCMS's published count benchmark.`
+                          : `Reporting services cover ${row.populationCoveragePercent.toFixed(1)}% of England's population, meeting DCMS's population benchmark.`}
+                        arrow
+                      >
+                        <Chip
+                          size='small'
+                          color='success'
+                          variant='outlined'
+                          icon={<CheckCircleRoundedIcon fontSize='small' />}
+                          label='≥70% coverage'
+                        />
+                      </Tooltip>
                     ) : (
                       <Tooltip
-                        title='Fewer than 70% of authorities or resident population reported data for this measure. Estimates should be treated with caution.'
+                        title={`Fewer than ${row.minimumReportingAuthorities} of ${row.totalAuthorities} authorities reported this measure, and population coverage is below 70%. Treat the estimate with caution.`}
                         arrow
                       >
                         <Chip
@@ -555,7 +538,7 @@ const NationalEstimates = () => {
                   .map(p => (
                     <TableCell
                       key={p}
-                      colSpan={2}
+                      colSpan={3}
                       align='center'
                       sx={{
                         fontWeight: 600,
@@ -584,7 +567,10 @@ const NationalEstimates = () => {
                         Estimate
                       </TableCell>
                       <TableCell align='center' sx={{ fontWeight: 600 }}>
-                        vs 23/24
+                        Estimate change
+                      </TableCell>
+                      <TableCell align='center' sx={{ fontWeight: 600 }}>
+                        Same services
                       </TableCell>
                     </React.Fragment>
                   ))}
@@ -615,6 +601,9 @@ const NationalEstimates = () => {
                         </TableCell>
                         <TableCell align='center'>
                           {renderTrendChip(row.changeFromBaseline[p])}
+                        </TableCell>
+                        <TableCell align='center'>
+                          {renderTrendChip(row.matchedCohortChange[p])}
                         </TableCell>
                       </React.Fragment>
                     ))}
@@ -735,6 +724,30 @@ const NationalEstimates = () => {
           {nationalEstimatesNotesMd}
         </Markdown>
       </Box>
+
+      <Stack
+        direction='row'
+        spacing={1}
+        className='no-print'
+        sx={{ justifyContent: 'flex-end', mt: 2 }}
+      >
+        <Button
+          variant='text'
+          size='small'
+          startIcon={<DownloadRoundedIcon />}
+          onClick={handleExportCsv}
+        >
+          Export CSV
+        </Button>
+        <Button
+          variant='text'
+          size='small'
+          startIcon={<PrintRoundedIcon />}
+          onClick={() => window.print()}
+        >
+          Print
+        </Button>
+      </Stack>
     </Box>
   )
 }

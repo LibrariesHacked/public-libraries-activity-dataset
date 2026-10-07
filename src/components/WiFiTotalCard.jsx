@@ -6,7 +6,7 @@ import MetricTotalCard from './MetricTotalCard'
 
 /**
  * Summary KPI card component displaying total public Wi-Fi sessions across active library services,
- * along with average sessions logged per day.
+ * along with average Wi-Fi sessions per 1,000 reporting residents per year.
  *
  * @returns {JSX.Element} MetricTotalCard configured for Wi-Fi sessions.
  */

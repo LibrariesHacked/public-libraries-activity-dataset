@@ -30,8 +30,7 @@ import {
 } from './helpers/charts'
 
 /**
- * Chart configuration options for the horizontal stacked bar chart displaying active users
- * and remaining resident non-users by demographic age group.
+ * Chart configuration for active-user penetration by age group and year.
  */
 const ageGroupChartOptions = {
   plugins: {
@@ -44,7 +43,7 @@ const ageGroupChartOptions = {
     },
     title: {
       display: true,
-      text: 'Active users by age group',
+      text: 'Active users as a share of reporting population',
       font: {
         size: 14,
         weight: 'bold'
@@ -59,7 +58,7 @@ const ageGroupChartOptions = {
           let label = context.dataset.label || ''
           if (label) label += ': '
           if (context.parsed.x !== null && context.parsed.x !== undefined) {
-            label += Number(context.parsed.x).toLocaleString('en-GB')
+            label += `${Number(context.parsed.x).toFixed(1)}%`
           }
           return label
         }
@@ -71,9 +70,9 @@ const ageGroupChartOptions = {
   indexAxis: 'y',
   scales: {
     x: {
-      stacked: true,
+      stacked: false,
       beginAtZero: true,
-      title: { display: true, text: 'Count of active users' },
+      title: { display: true, text: 'Active users as a share of reporting population' },
       grid: {
         color: context =>
           context.tick && context.tick.value === 0 ? '#707070' : '#e5e7eb',
@@ -81,11 +80,11 @@ const ageGroupChartOptions = {
           context.tick && context.tick.value === 0 ? 1.5 : 1
       },
       ticks: {
-        callback: value => Number(value).toLocaleString('en-GB')
+        callback: value => `${Number(value)}%`
       }
     },
     y: {
-      stacked: true,
+      stacked: false,
       grid: {
         display: false
       }
@@ -161,74 +160,59 @@ const Users = () => {
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    // Active users are a snapshot of each financial year, so they are never
-    // summed across years. Each selected year is its own bar.
+    // Active users are annual snapshots. Compare rates against the population
+    // covered by services reporting each age group, not raw headcounts.
     const periods = selectedPeriods?.length
       ? selectedPeriods
       : [...new Set(users.map(m => m.period))].sort()
 
     const yearLabels = periods.map(formatPeriod)
-    // We have a dataset for each age group
-    const ageGroups = [...new Set(users.map(m => m.ageGroup))].sort()
-
-    // Pre-aggregate user counts: (period, ageGroup) -> sum
-    const periodAgeGroupMap = new Map()
-    for (let i = 0; i < users.length; i++) {
-      const u = users[i]
-      if (!filteredSet || filteredSet.has(u.serviceCode)) {
-        const key = `${u.period}|||${u.ageGroup}`
-        periodAgeGroupMap.set(
-          key,
-          (periodAgeGroupMap.get(key) || 0) + u.countUsers
-        )
-      }
+    const ageGroups = [...new Set(users.map(user => user.ageGroup))].sort()
+    const populationPropertyByAgeGroup = {
+      'Under 12': 'populationUnder12',
+      '12-17': 'population12To17',
+      Adult: 'populationAdult',
+      Unknown: 'totalPopulation'
     }
 
-    // Pre-aggregate total population: period -> sum
-    const periodPopulationMap = new Map()
-    for (let i = 0; i < serviceRecords.length; i++) {
-      const s = serviceRecords[i]
-      if (!filteredSet || filteredSet.has(s.code)) {
-        periodPopulationMap.set(
-          s.period,
-          (periodPopulationMap.get(s.period) || 0) + (s.totalPopulation || 0)
-        )
-      }
-    }
+    const usersByPeriodAgeGroup = new Map()
+    const reportingServicesByPeriodAgeGroup = new Map()
+    users.forEach(user => {
+      if (filteredSet && !filteredSet.has(user.serviceCode)) return
+      if (!Number.isFinite(user.countUsers)) return
 
-    const allGroups = [...ageGroups, 'Non-users']
-    const ageGroupChartDatasets = allGroups.map(ageGroup => {
-      const data = periods.map(period => {
-        if (ageGroup === 'Non-users') {
-          return periodPopulationMap.get(period) || 0
-        }
-        return periodAgeGroupMap.get(`${period}|||${ageGroup}`) || 0
-      })
-      return {
-        label: ageGroup,
-        data,
-        hidden: ageGroup === 'Non-users'
+      const key = `${user.period}|||${user.ageGroup}`
+      usersByPeriodAgeGroup.set(
+        key,
+        (usersByPeriodAgeGroup.get(key) || 0) + user.countUsers
+      )
+      if (!reportingServicesByPeriodAgeGroup.has(key)) {
+        reportingServicesByPeriodAgeGroup.set(key, new Set())
       }
+      reportingServicesByPeriodAgeGroup.get(key).add(user.serviceCode)
     })
 
-    // Now we need to adjust the non-users to be total population minus users
-    const nonUserIndex = allGroups.indexOf('Non-users')
-    if (nonUserIndex !== -1) {
-      ageGroupChartDatasets[nonUserIndex].data = ageGroupChartDatasets[
-        nonUserIndex
-      ].data.map((totalNonUsers, index) => {
-        const totalUsers = ageGroupChartDatasets.reduce(
-          (sum, dataset, dsIndex) => {
-            if (dsIndex !== nonUserIndex) {
-              return sum + dataset.data[index]
-            }
-            return sum
-          },
-          0
-        )
-        return Math.max(0, totalNonUsers - totalUsers)
+    const ageGroupChartDatasets = ageGroups.map(ageGroup => {
+      const populationProperty = populationPropertyByAgeGroup[ageGroup]
+      const data = periods.map(period => {
+        const key = `${period}|||${ageGroup}`
+        const reportingCodes = reportingServicesByPeriodAgeGroup.get(key)
+        if (!populationProperty || !reportingCodes?.size) return null
+
+        const reportingPopulation = serviceRecords
+          .filter(record =>
+            record.period === period && reportingCodes.has(record.code)
+          )
+          .reduce(
+            (sum, record) => sum + (record[populationProperty] || 0),
+            0
+          )
+        if (reportingPopulation === 0) return null
+
+        return Number((usersByPeriodAgeGroup.get(key) / reportingPopulation * 100).toFixed(2))
       })
-    }
+      return { label: ageGroup, data }
+    })
 
     setAgeGroupChart({
       labels: yearLabels,

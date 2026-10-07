@@ -1,1 +1,1 @@
-Compare computer use and Wi-Fi sessions across library services. Computer use is measured in hours; Wi-Fi use is counted as sessions.
+Compare annual computer hours and Wi-Fi sessions per 1,000 residents across library services. Each rate uses only the months in which the service reported that measure.

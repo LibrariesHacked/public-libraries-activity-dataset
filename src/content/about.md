@@ -11,16 +11,18 @@ The figures come from the official Public Libraries Activity Dataset, collected 
 The dataset covers activity reported by library services in England, including:
 
 * **Loans:** Physical books, audiobooks, ebooks, and digital audio, recorded for adults, young people, and children.
-* **Visits:** In-person visits to library branches and mobile libraries.
+* **Visits:** Visits to library sites, plus mobile-library and home-delivery interactions.
 * **Events and attendance:** Events held in person or online, and the number of people who attended.
 * **Computers and Wi-Fi:** Hours spent using public computers and the number of wireless internet sessions.
-* **Active users:** Registered library members who borrowed items or used library services in the last 12 months.
+* **Active users:** Registered library members who borrowed at least one physical or digital item in the last 12 months. Each member is counted once.
+
+Not all services report every measure in every period, so data coverage varies. Check the reported service and population coverage when comparing estimates.
 
 ## Comparisons and population context
 
 Library services cover areas with different populations. To make comparisons fairer:
 
-* Rates per resident use population estimates from the Office for National Statistics (ONS).
+* Rates per 1,000 residents use population estimates from the Office for National Statistics (ONS).
 * You can compare individual services or view totals by region.
 * For each service, the dashboard shows five services with similar populations and characteristics, using the ONS Nearest Neighbours model.
 

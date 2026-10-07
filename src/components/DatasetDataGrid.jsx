@@ -28,7 +28,9 @@ import { DataGrid } from '@mui/x-data-grid'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import * as attendanceModel from '../models/attendance'
+import * as clickAndCollectModel from '../models/clickAndCollect'
 import * as computersModel from '../models/computers'
+import * as computerInventoryModel from '../models/computerInventory'
 import * as errorsModel from '../models/errors'
 import * as eventsModel from '../models/events'
 import * as loansModel from '../models/loans'
@@ -40,6 +42,8 @@ import { formatPeriod, formatMonth } from '../helpers/periods'
 
 const DATASET_DISPLAY_NAMES = {
   attendance: 'Attendance',
+  click_and_collect: 'Click and collect',
+  computer_inventory: 'Computer inventory',
   computers: 'Computers',
   computer_usage: 'Computers',
   events: 'Events',
@@ -74,7 +78,7 @@ const DATASET_CONFIGS = {
     filename: 'visits.csv',
     endpoint: './visits.json',
     fetcher: visitsModel.getVisits,
-    description: 'Monthly physical in-person library visits categorized by branch and mobile library location.',
+    description: 'Monthly library visits and outreach interactions by location type.',
     dimensions: [
       { field: 'location', headerName: 'Location', width: 160 },
       { field: 'month', headerName: 'Month', width: 110 }
@@ -109,6 +113,18 @@ const DATASET_CONFIGS = {
     ],
     metricName: 'Attendees'
   },
+  clickAndCollect: {
+    id: 'clickAndCollect',
+    name: 'Click and collect',
+    filename: 'click_and_collect.csv',
+    endpoint: './click_and_collect.json',
+    fetcher: clickAndCollectModel.getClickAndCollect,
+    description: 'Monthly click-and-collect interactions. Each collection is one interaction, regardless of how many items it includes.',
+    dimensions: [
+      { field: 'month', headerName: 'Month', width: 130 }
+    ],
+    metricName: 'Interactions'
+  },
   computers: {
     id: 'computers',
     name: 'Computer usage',
@@ -120,6 +136,20 @@ const DATASET_CONFIGS = {
       { field: 'month', headerName: 'Month', width: 130 }
     ],
     metricName: 'Hours'
+  },
+  computerInventory: {
+    id: 'computerInventory',
+    name: 'Computer and device inventory',
+    filename: 'computer_inventory.csv',
+    endpoint: './computer_inventory.json',
+    fetcher: computerInventoryModel.getComputerInventory,
+    description: 'Annual counts of public computers, devices available to borrow, and issues of loanable devices. These are year-end snapshots.',
+    dimensions: [
+      { field: 'measure', headerName: 'Measure', width: 230 },
+      { field: 'period', headerName: 'Financial year', width: 140 }
+    ],
+    metricName: 'Reported count',
+    simpleCount: true
   },
   wifi: {
     id: 'wifi',
@@ -188,10 +218,14 @@ function downloadCsv (rows, config, filename) {
         { key: 'serviceCode', label: 'Service code' },
         { key: 'serviceName', label: 'Service name' },
         ...config.dimensions.map(d => ({ key: d.field, label: d.headerName })),
-        { key: 'originalCount', label: `Original ${config.metricName.toLowerCase()}` },
-        { key: 'estimatedCount', label: `Corrected ${config.metricName.toLowerCase()}` },
-        { key: 'status', label: 'Data quality status' },
-        { key: 'notes', label: 'Data quality notes' }
+        ...(config.simpleCount
+          ? [{ key: 'originalCount', label: config.metricName }]
+          : [
+              { key: 'originalCount', label: `Original ${config.metricName.toLowerCase()}` },
+              { key: 'estimatedCount', label: `Corrected ${config.metricName.toLowerCase()}` },
+              { key: 'status', label: 'Data quality status' },
+              { key: 'notes', label: 'Data quality notes' }
+            ])
       ]
 
   const headerLine = headerKeys.map(h => `"${h.label.replace(/"/g, '""')}"`).join(',')
@@ -474,7 +508,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               return <Chip label='Corrected' color='warning' size='small' variant='filled' sx={{ fontWeight: 600, height: 24 }} />
             }
             if (status === 'suspicious') {
-              return <Chip label='Note' color='warning' size='small' variant='outlined' sx={{ fontWeight: 600, height: 24 }} />
+              return <Chip label='Review' color='warning' size='small' variant='outlined' sx={{ fontWeight: 600, height: 24 }} />
             }
             if (status === 'standardised') {
               return <Chip label='Standardised' color='info' size='small' variant='filled' sx={{ fontWeight: 600, height: 24 }} />
@@ -568,7 +602,21 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
       }
     }))
 
-    const countCols = [
+    const countCols = config.simpleCount
+      ? [{
+          field: 'originalCount',
+          headerName: config.metricName,
+          width: 155,
+          type: 'number',
+          headerAlign: 'right',
+          align: 'right',
+          renderCell: params => (
+            <Typography variant='body2' component='span' sx={{ fontVariantNumeric: 'tabular-nums' }}>
+              {Number(params.value || 0).toLocaleString('en-GB')}
+            </Typography>
+          )
+        }]
+      : [
       {
         field: 'originalCount',
         headerName: `Original (${config.metricName})`,
@@ -668,7 +716,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           if (status === 'suspicious') {
             return (
               <Chip
-                label='Note'
+                label='Review'
                 color='warning'
                 size='small'
                 variant='outlined'
@@ -829,7 +877,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
             {stats.suspiciousCount > 0 && (
               <Chip
-                label={`${stats.suspiciousCount} Notes`}
+                label={`${stats.suspiciousCount} Review flags`}
                 size='small'
                 color='warning'
                 variant={statusFilter === 'suspicious' ? 'filled' : 'outlined'}
@@ -927,7 +975,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               {stats.replacedCount > 0 && <MenuItem value='replaced'>Corrected figures ({stats.replacedCount})</MenuItem>}
               {stats.standardisedCount > 0 && <MenuItem value='standardised'>Standardised ({stats.standardisedCount})</MenuItem>}
               {stats.suspiciousCount > 0 && (
-                <MenuItem value='suspicious'>Notes only ({stats.suspiciousCount})</MenuItem>
+                <MenuItem value='suspicious'>Review flags only ({stats.suspiciousCount})</MenuItem>
               )}
               {stats.cleanCount > 0 && config.id !== 'errors' && <MenuItem value='clean'>Clean data only</MenuItem>}
             </Select>

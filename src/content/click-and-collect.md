@@ -1,0 +1,1 @@
+Each time someone uses click and collect counts as one interaction, regardless of how many items they collect. One person may use the service more than once.

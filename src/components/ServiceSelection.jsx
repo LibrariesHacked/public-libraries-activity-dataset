@@ -255,7 +255,7 @@ const ServiceSelection = () => {
                 onClick={e => setServiceMenuAnchor(e.currentTarget)}
                 startIcon={<AddChartIcon fontSize='small' />}
               >
-                Select service
+                Add service
               </Button>
             </Tooltip>
             {canAddNearestNeighbours && (
@@ -305,7 +305,7 @@ const ServiceSelection = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             {!hasSelectedServices ? (
               <Typography variant='body2' color='text.secondary' sx={{ py: 1 }}>
-                Displaying all available services
+                Displaying all services
               </Typography>
             ) : (
               <Stack
@@ -347,7 +347,7 @@ const ServiceSelection = () => {
                 onClick={e => setRegionMenuAnchor(e.currentTarget)}
                 startIcon={<HubRoundedIcon fontSize='small' />}
               >
-                Select region
+                Add region
               </Button>
             </Tooltip>
             {hasSelectedRegions && (
@@ -384,7 +384,7 @@ const ServiceSelection = () => {
           <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             {!hasSelectedRegions ? (
               <Typography variant='body2' color='text.secondary' sx={{ py: 1 }}>
-                Displaying all regions (all services)
+                Displaying all regions
               </Typography>
             ) : (
               <Stack

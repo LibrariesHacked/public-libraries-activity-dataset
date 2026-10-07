@@ -22,7 +22,7 @@ const LoansPhysicalBooksAdultsCard = () => {
       colour='chartBlue'
       filterLoan={filterLoan}
       populationFn={getServicesAdultPopulation}
-      perCapitaLabel='adult resident'
+      perCapitaLabel='adult residents'
     />
   )
 }

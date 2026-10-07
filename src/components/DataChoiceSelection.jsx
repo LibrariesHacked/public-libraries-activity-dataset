@@ -17,14 +17,9 @@ import { useApplicationState } from '../hooks/useApplicationState'
  * @returns {JSX.Element} The switch option with informational tooltip.
  */
 const DataChoiceSelection = () => {
-  const [
-    { useEstimates, nationalGrossing, filteredServices },
-    dispatchApplication
-  ] = useApplicationState()
+  const [{ useEstimates }, dispatchApplication] = useApplicationState()
 
   const isEstimated = useEstimates !== false
-  const isNationalGrossed = Boolean(nationalGrossing)
-  const isNationalView = !filteredServices || filteredServices.length === 0
 
   /**
    * Handles toggle change for data correction.
@@ -35,18 +30,6 @@ const DataChoiceSelection = () => {
     dispatchApplication({
       type: 'SetUseEstimates',
       useEstimates: event.target.checked
-    })
-  }
-
-  /**
-   * Handles toggle change for national population grossing (DCMS methodology).
-   *
-   * @param {React.ChangeEvent<HTMLInputElement>} event - The switch change event.
-   */
-  const handleGrossingToggle = event => {
-    dispatchApplication({
-      type: 'SetNationalGrossing',
-      nationalGrossing: event.target.checked
     })
   }
 
@@ -63,8 +46,10 @@ const DataChoiceSelection = () => {
             checked={isEstimated}
             onChange={handleToggle}
             size='small'
-            inputProps={{
-              'aria-label': 'Data corrections'
+            slotProps={{
+              input: {
+                'aria-label': 'Data corrections'
+              }
             }}
             sx={{
               '& .MuiSwitch-switchBase': {
@@ -108,59 +93,6 @@ const DataChoiceSelection = () => {
         }
         sx={{ mr: 0 }}
       />
-      {isNationalView && (
-        <FormControlLabel
-          control={
-            <Switch
-              checked={isNationalGrossed}
-              onChange={handleGrossingToggle}
-              size='small'
-              inputProps={{
-                'aria-label': 'Estimate England totals'
-              }}
-              sx={{
-                '& .MuiSwitch-switchBase': {
-                  color: '#8a9bb5',
-                  '&:hover': {
-                    backgroundColor: 'rgba(138, 155, 181, 0.08)'
-                  },
-                  '&.Mui-checked': {
-                    color: 'primary.main',
-                    '&:hover': {
-                      backgroundColor: 'rgba(25, 118, 210, 0.08)'
-                    },
-                    '& + .MuiSwitch-track': {
-                      backgroundColor: 'primary.main',
-                      opacity: 0.5
-                    }
-                  }
-                },
-                '& .MuiSwitch-track': {
-                  backgroundColor: '#c4d4de',
-                  opacity: 0.7
-                }
-              }}
-            />
-          }
-          label={
-            <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center' }}>
-              <Typography variant='body2' sx={{ color: 'text.secondary' }}>
-                Estimate England totals
-              </Typography>
-              <Tooltip
-                title='Scales totals to England based on reporting population.'
-                arrow
-              >
-                <InfoOutlinedIcon
-                  color='action'
-                  sx={{ fontSize: 16, cursor: 'help' }}
-                />
-              </Tooltip>
-            </Stack>
-          }
-          sx={{ mr: 0 }}
-        />
-      )}
     </Stack>
   )
 }

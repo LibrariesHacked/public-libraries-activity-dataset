@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import DirectionsBusRoundedIcon from '@mui/icons-material/DirectionsBusRounded'
 
@@ -7,6 +7,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportingCoverageByGroup, perThousandReportingPersonYears } from '../helpers/reportingRates'
 import * as visitsModel from '../models/visits'
 
 import NumberCard from './NumberCard'
@@ -29,7 +30,10 @@ const VisitsMobileCard = () => {
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const comparison = resolvePeriodComparison(selectedPeriods, periods)
+  const comparison = useMemo(
+    () => resolvePeriodComparison(selectedPeriods, periods),
+    [selectedPeriods, periods]
+  )
 
   useEffect(() => {
     if (!visits) {
@@ -69,12 +73,19 @@ const VisitsMobileCard = () => {
       0
     )
 
-    setCount(totalMobile)
+    const coverage = getReportingCoverageByGroup(
+      mobileRecords,
+      activeServices,
+      'countVisits',
+      () => 'mobile'
+    ).get('mobile')
+    const annualRate = perThousandReportingPersonYears(totalMobile, coverage) || 0
+    setCount(annualRate)
 
     const pct = totalAllVisits > 0 ? (totalMobile / totalAllVisits) * 100 : 0
     const formattedPct =
       pct > 0 && pct < 1 ? `${pct.toFixed(1)}%` : `${Math.round(pct)}%`
-    setDescription(`${formattedPct} of total visits`)
+    setDescription(`${formattedPct} of visits; per 1,000 reporting residents / yr`)
     setWarning(getRecordsQualityWarning(mobileRecords))
 
     if (comparison && visits) {

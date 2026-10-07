@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography'
 import computersMd from './content/computers.md?raw'
 import computersWifiMd from './content/computers-wifi.md?raw'
 import computersWiFiByServiceMd from './content/computers-wifi-by-service.md?raw'
+import computerInventoryMd from './content/computer-inventory.md?raw'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
@@ -21,6 +22,11 @@ import {
   formatServiceLabelsWithNoData,
   sortServicesByMetric
 } from './helpers/charts'
+import {
+  getReportingCoverageByGroup,
+  perThousandReportingPersonYears,
+  perThousandReportingResidents
+} from './helpers/reportingRates'
 
 import {
   filterByMonthRange,
@@ -36,8 +42,8 @@ import * as wifiModel from './models/wifi'
  */
 const computersWiFiChartOptions = createTimelineChartOptions(
   'Computer hours and WiFi sessions over time',
-  'Computer hours',
-  'WiFi sessions'
+  'Computer hours per 1,000 reporting residents',
+  'Wi-Fi sessions per 1,000 reporting residents'
 )
 
 /**
@@ -66,9 +72,9 @@ const Computers = () => {
     () =>
       createServiceBarChartOptions(
         isRegionMode
-          ? 'Computer hours and WiFi sessions by region'
-          : 'Computer hours and WiFi sessions by service',
-        'Count of hours and sessions'
+          ? 'Computer hours and Wi-Fi sessions per 1,000 reporting residents by region'
+          : 'Computer hours and Wi-Fi sessions per 1,000 reporting residents by service',
+        'Annual activity per 1,000 reporting residents'
       ),
     [isRegionMode]
   )
@@ -108,12 +114,24 @@ const Computers = () => {
     const chartWifi = filterByMonthRange(filteredWifi, monthRange)
 
     const monthLabels = getMonthsInRange(monthRange)
+    const monthlyComputerCoverage = getReportingCoverageByGroup(
+      chartComputers,
+      activeServices,
+      'countHours',
+      record => record.month
+    )
+    const monthlyWifiCoverage = getReportingCoverageByGroup(
+      chartWifi,
+      activeServices,
+      'countSessions',
+      record => record.month
+    )
 
     // Pre-aggregate monthly hours and sessions: month -> sum
     const computerMonthMap = new Map()
     for (let i = 0; i < chartComputers.length; i++) {
       const c = chartComputers[i]
-      if (c.countHours) {
+      if (Number.isFinite(c.countHours)) {
         computerMonthMap.set(
           c.month,
           (computerMonthMap.get(c.month) || 0) + c.countHours
@@ -124,7 +142,7 @@ const Computers = () => {
     const wifiMonthMap = new Map()
     for (let i = 0; i < chartWifi.length; i++) {
       const w = chartWifi[i]
-      if (w.countSessions) {
+      if (Number.isFinite(w.countSessions)) {
         wifiMonthMap.set(
           w.month,
           (wifiMonthMap.get(w.month) || 0) + w.countSessions
@@ -135,11 +153,21 @@ const Computers = () => {
     const computersWiFiDatasets = [
       {
         label: 'Computer hours',
-        data: monthLabels.map(label => computerMonthMap.get(label) || 0)
+        data: monthLabels.map(label => {
+          const total = computerMonthMap.get(label)
+          return total == null
+            ? null
+            : perThousandReportingResidents(total, monthlyComputerCoverage.get(label))
+        })
       },
       {
         label: 'WiFi sessions',
-        data: monthLabels.map(label => wifiMonthMap.get(label) || 0)
+        data: monthLabels.map(label => {
+          const total = wifiMonthMap.get(label)
+          return total == null
+            ? null
+            : perThousandReportingResidents(total, monthlyWifiCoverage.get(label))
+        })
       }
     ]
 
@@ -152,15 +180,40 @@ const Computers = () => {
       }))
     })
 
-    // The service chart is a total computer hours and wifi sessions by service per resident population
+    // Compare each measure using the population covered by its reporting services.
     const serviceComputers = filterByMonthRange(filteredComputers, monthRange)
     const serviceWifi = filterByMonthRange(filteredWifi, monthRange)
+    const serviceComputerCoverage = getReportingCoverageByGroup(
+      serviceComputers,
+      activeServices,
+      'countHours',
+      record => record.serviceCode
+    )
+    const serviceWifiCoverage = getReportingCoverageByGroup(
+      serviceWifi,
+      activeServices,
+      'countSessions',
+      record => record.serviceCode
+    )
+    const serviceByCode = new Map(activeServices.map(service => [service.code, service]))
+    const regionComputerCoverage = getReportingCoverageByGroup(
+      serviceComputers,
+      activeServices,
+      'countHours',
+      record => serviceByCode.get(record.serviceCode)?.region
+    )
+    const regionWifiCoverage = getReportingCoverageByGroup(
+      serviceWifi,
+      activeServices,
+      'countSessions',
+      record => serviceByCode.get(record.serviceCode)?.region
+    )
 
     // Pre-aggregate service computers and wifi
     const serviceComputersMap = new Map()
     for (let i = 0; i < serviceComputers.length; i++) {
       const c = serviceComputers[i]
-      if (c.countHours) {
+      if (Number.isFinite(c.countHours)) {
         serviceComputersMap.set(
           c.serviceCode,
           (serviceComputersMap.get(c.serviceCode) || 0) + c.countHours
@@ -171,7 +224,7 @@ const Computers = () => {
     const serviceWifiMap = new Map()
     for (let i = 0; i < serviceWifi.length; i++) {
       const w = serviceWifi[i]
-      if (w.countSessions) {
+      if (Number.isFinite(w.countSessions)) {
         serviceWifiMap.set(
           w.serviceCode,
           (serviceWifiMap.get(w.serviceCode) || 0) + w.countSessions
@@ -183,13 +236,21 @@ const Computers = () => {
       const regionAggregates = getRegionAggregates(services, selectedRegions)
 
       const getRegionTotalHoursSessions = region => {
-        let total = 0
-        for (const sCode of region.serviceCodes) {
-          total +=
-            (serviceComputersMap.get(sCode) || 0) +
-            (serviceWifiMap.get(sCode) || 0)
-        }
-        return total
+        const computerTotal = [...region.serviceCodes].reduce(
+          (sum, code) => sum + (serviceComputersMap.get(code) || 0),
+          0
+        )
+        const wifiTotal = [...region.serviceCodes].reduce(
+          (sum, code) => sum + (serviceWifiMap.get(code) || 0),
+          0
+        )
+        return (perThousandReportingPersonYears(
+          computerTotal,
+          regionComputerCoverage.get(region.region)
+        ) || 0) + (perThousandReportingPersonYears(
+          wifiTotal,
+          regionWifiCoverage.get(region.region)
+        ) || 0)
       }
 
       const sortedRegions = sortServicesByMetric(
@@ -206,24 +267,32 @@ const Computers = () => {
           label: 'Computer hours',
           data: rawRegionLabels.map(regionLabel => {
             const region = regionByNiceName.get(regionLabel)
-            if (!region) return 0
-            let total = 0
-            for (const sCode of region.serviceCodes) {
-              total += serviceComputersMap.get(sCode) || 0
-            }
-            return total
+            if (!region) return null
+            const total = [...region.serviceCodes].reduce(
+              (sum, code) => sum + (serviceComputersMap.get(code) || 0),
+              0
+            )
+            const rate = perThousandReportingPersonYears(
+              total,
+              regionComputerCoverage.get(region.region)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
           })
         },
         {
           label: 'WiFi sessions',
           data: rawRegionLabels.map(regionLabel => {
             const region = regionByNiceName.get(regionLabel)
-            if (!region) return 0
-            let total = 0
-            for (const sCode of region.serviceCodes) {
-              total += serviceWifiMap.get(sCode) || 0
-            }
-            return total
+            if (!region) return null
+            const total = [...region.serviceCodes].reduce(
+              (sum, code) => sum + (serviceWifiMap.get(code) || 0),
+              0
+            )
+            const rate = perThousandReportingPersonYears(
+              total,
+              regionWifiCoverage.get(region.region)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
           })
         }
       ]
@@ -242,10 +311,13 @@ const Computers = () => {
       // ONS: Order categories in bar charts by value descending (services with no data at bottom)
       const getServiceTotalHoursSessions = service => {
         if (!service?.code) return 0
-        return (
-          (serviceComputersMap.get(service.code) || 0) +
-          (serviceWifiMap.get(service.code) || 0)
-        )
+        return (perThousandReportingPersonYears(
+          serviceComputersMap.get(service.code) || 0,
+          serviceComputerCoverage.get(service.code)
+        ) || 0) + (perThousandReportingPersonYears(
+          serviceWifiMap.get(service.code) || 0,
+          serviceWifiCoverage.get(service.code)
+        ) || 0)
       }
 
       const sortedServices = sortServicesByMetric(
@@ -264,14 +336,24 @@ const Computers = () => {
           label: 'Computer hours',
           data: rawServiceLabels.map(serviceLabel => {
             const service = serviceByNiceName.get(serviceLabel)
-            return service ? serviceComputersMap.get(service.code) || 0 : 0
+            if (!service) return null
+            const rate = perThousandReportingPersonYears(
+              serviceComputersMap.get(service.code) || 0,
+              serviceComputerCoverage.get(service.code)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
           })
         },
         {
           label: 'WiFi sessions',
           data: rawServiceLabels.map(serviceLabel => {
             const service = serviceByNiceName.get(serviceLabel)
-            return service ? serviceWifiMap.get(service.code) || 0 : 0
+            if (!service) return null
+            const rate = perThousandReportingPersonYears(
+              serviceWifiMap.get(service.code) || 0,
+              serviceWifiCoverage.get(service.code)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
           })
         }
       ]
@@ -321,11 +403,13 @@ const Computers = () => {
 
       <Box sx={{ mt: 4, mb: 2 }}>
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
-          {isRegionMode ? 'Computer hours and WiFi sessions by region' : 'Computer hours and WiFi sessions by service'}
+          {isRegionMode
+            ? 'Computer hours and Wi-Fi sessions by region'
+            : 'Computer hours and Wi-Fi sessions by service'}
         </Typography>
         <Markdown>
           {isRegionMode
-            ? 'Total public computer usage hours and Wi-Fi sessions across regions.'
+            ? 'Annual computer hours and Wi-Fi sessions per 1,000 residents in services reporting each measure.'
             : computersWiFiByServiceMd}
         </Markdown>
       </Box>
@@ -353,6 +437,14 @@ const Computers = () => {
           Monthly public library wireless Wi-Fi internet login and connection sessions.
         </Typography>
         <DatasetDataGrid datasetId='wifi' />
+      </Box>
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Computer and device inventory
+        </Typography>
+        <Markdown>{computerInventoryMd}</Markdown>
+        <DatasetDataGrid datasetId='computerInventory' />
       </Box>
     </Box>
   )

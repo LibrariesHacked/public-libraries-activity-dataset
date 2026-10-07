@@ -112,6 +112,7 @@ const NumberCard = props => {
 
     const iconSx = {
       fontSize: '1rem',
+      transform: 'translateY(-1px)',
       color: theme =>
         theme.palette[colour]?.main ||
         theme.palette[colour] ||
@@ -210,14 +211,12 @@ const NumberCard = props => {
                   {(description || Number.isFinite(change))
                     ? (
                       <Stack
-                        direction='row'
+                        direction='column'
                         spacing={0.75}
-                        useFlexGap
                         sx={{
                           mt: 0.5,
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          flexWrap: 'wrap'
+                          justifyContent: 'center'
                         }}
                       >
                         {description

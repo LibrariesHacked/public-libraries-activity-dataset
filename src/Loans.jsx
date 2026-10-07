@@ -21,6 +21,11 @@ import {
   formatServiceLabelsWithNoData,
   sortServicesByMetric
 } from './helpers/charts'
+import {
+  getReportingCoverageByGroup,
+  perThousandReportingPersonYears,
+  perThousandReportingResidents
+} from './helpers/reportingRates'
 
 import {
   filterByMonthRange,
@@ -55,9 +60,9 @@ const Loans = () => {
     () =>
       createServiceBarChartOptions(
         isRegionMode
-          ? 'Loans per resident population by region and format'
-          : 'Loans per resident population by service and format',
-        'Loans per resident population per year',
+          ? 'Loans per 1,000 reporting residents by region and format'
+          : 'Loans per 1,000 reporting residents by service and format',
+        'Annual loans per 1,000 reporting residents',
         { stacked: true }
       ),
     [isRegionMode]
@@ -84,8 +89,16 @@ const Loans = () => {
 
     const formatCharts = []
 
-    const chartLoans = filterByMonthRange(loans, monthRange)
+    const chartLoans = filterByMonthRange(loans, monthRange).filter(loan =>
+      activeServiceCodes.has(loan.serviceCode)
+    )
     const formatLabels = getMonthsInRange(monthRange)
+    const monthlyCoverage = getReportingCoverageByGroup(
+      chartLoans,
+      activeServices,
+      'countLoans',
+      loan => `${loan.format}|||${loan.contentAgeGroup}|||${loan.month}`
+    )
 
     const itemFormats = [...new Set(loans.map(m => m.format))].sort((a, b) => {
       const order = ['Physical book', 'Ebook', 'Physical audiobook', 'Eaudio']
@@ -103,10 +116,7 @@ const Loans = () => {
 
     for (let i = 0; i < chartLoans.length; i++) {
       const loan = chartLoans[i]
-      if (
-        loan.countLoans &&
-        (!filteredServices.length || activeServiceCodes.has(loan.serviceCode))
-      ) {
+      if (Number.isFinite(loan.countLoans)) {
         const key = `${loan.format}|||${loan.contentAgeGroup}|||${loan.month}`
         formatGroupMonthMap.set(
           key,
@@ -125,7 +135,7 @@ const Loans = () => {
     itemFormats.forEach(format => {
       const formatChartOptions = createTimelineChartOptions(
         `Loans per month of ${format.toLowerCase()}s by content age group`,
-        'Count of loans'
+        'Loans per 1,000 reporting residents per month'
       )
 
       const groups = contentAgeGroupsByFormat.get(format)
@@ -134,7 +144,10 @@ const Loans = () => {
       const datasets = contentAgeGroups.map(contentAgeGroup => {
         const data = formatLabels.map(label => {
           const key = `${format}|||${contentAgeGroup}|||${label}`
-          return formatGroupMonthMap.get(key) || 0
+          const total = formatGroupMonthMap.get(key)
+          return total == null
+            ? null
+            : perThousandReportingResidents(total, monthlyCoverage.get(key))
         })
         return {
           label: contentAgeGroup,
@@ -153,14 +166,26 @@ const Loans = () => {
 
     setFormatCharts(formatCharts)
 
-    const serviceLoans = filterByMonthRange(loans, monthRange)
-    const yearCount = (getMonthsInRange(monthRange).length || 12) / 12
+    const serviceLoans = chartLoans
+    const serviceFormatCoverage = getReportingCoverageByGroup(
+      serviceLoans,
+      activeServices,
+      'countLoans',
+      loan => `${loan.serviceCode}|||${loan.format}`
+    )
+    const serviceByCode = new Map(activeServices.map(service => [service.code, service]))
+    const regionFormatCoverage = getReportingCoverageByGroup(
+      serviceLoans,
+      activeServices,
+      'countLoans',
+      loan => `${serviceByCode.get(loan.serviceCode)?.region}|||${loan.format}`
+    )
 
     // Pre-aggregate service loans: (serviceCode, format) -> sum
     const serviceFormatMap = new Map()
     for (let i = 0; i < serviceLoans.length; i++) {
       const loan = serviceLoans[i]
-      if (loan.countLoans) {
+      if (Number.isFinite(loan.countLoans)) {
         const key = `${loan.serviceCode}|||${loan.format}`
         serviceFormatMap.set(
           key,
@@ -173,14 +198,14 @@ const Loans = () => {
       const regionAggregates = getRegionAggregates(services, selectedRegions)
 
       const getRegionTotalLoansPerCapita = region => {
-        if (!region?.totalPopulation) return 0
-        let totalLoans = 0
-        for (const fmt of itemFormats) {
-          for (const sCode of region.serviceCodes) {
-            totalLoans += serviceFormatMap.get(`${sCode}|||${fmt}`) || 0
+        return itemFormats.reduce((rate, format) => {
+          let totalLoans = 0
+          for (const serviceCode of region.serviceCodes) {
+            totalLoans += serviceFormatMap.get(`${serviceCode}|||${format}`) || 0
           }
-        }
-        return totalLoans / region.totalPopulation / yearCount
+          const coverage = regionFormatCoverage.get(`${region.region}|||${format}`)
+          return rate + (perThousandReportingPersonYears(totalLoans, coverage) || 0)
+        }, 0)
       }
 
       const sortedRegions = sortServicesByMetric(
@@ -201,10 +226,9 @@ const Loans = () => {
           for (const sCode of region.serviceCodes) {
             totalLoans += serviceFormatMap.get(`${sCode}|||${format}`) || 0
           }
-          const loansPerCapita =
-            totalLoans / region.totalPopulation / yearCount
-
-          return parseFloat(loansPerCapita.toFixed(2))
+          const coverage = regionFormatCoverage.get(`${region.niceName}|||${format}`)
+          const rate = perThousandReportingPersonYears(totalLoans, coverage)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
         })
         return {
           label: format,
@@ -224,18 +248,18 @@ const Loans = () => {
       })
     } else {
       // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-      const getServiceTotalLoansPerCapita = service => {
-        if (!service?.totalPopulation) return 0
-        let totalLoans = 0
-        for (const fmt of itemFormats) {
-          totalLoans += serviceFormatMap.get(`${service.code}|||${fmt}`) || 0
-        }
-        return totalLoans / service.totalPopulation / yearCount
+      const getServiceLoansPerCapita = service => {
+        if (!service?.code) return 0
+        return itemFormats.reduce((rate, format) => {
+          const total = serviceFormatMap.get(`${service.code}|||${format}`) || 0
+          const coverage = serviceFormatCoverage.get(`${service.code}|||${format}`)
+          return rate + (perThousandReportingPersonYears(total, coverage) || 0)
+        }, 0)
       }
 
       const sortedServices = sortServicesByMetric(
         activeServices,
-        getServiceTotalLoansPerCapita,
+        getServiceLoansPerCapita,
         s => s?.loans
       )
 
@@ -252,11 +276,9 @@ const Loans = () => {
 
           const totalLoans =
             serviceFormatMap.get(`${serviceCode}|||${format}`) || 0
-          const loansPerCapita = service?.totalPopulation
-            ? totalLoans / service.totalPopulation / yearCount
-            : 0
-
-          return parseFloat(loansPerCapita.toFixed(2))
+          const coverage = serviceFormatCoverage.get(`${serviceCode}|||${format}`)
+          const rate = perThousandReportingPersonYears(totalLoans, coverage)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
         })
         return {
           label: format,
@@ -316,7 +338,7 @@ const Loans = () => {
         </Typography>
         <Markdown>
           {isRegionMode
-            ? 'Average annual loans per resident across regions, broken down by format.'
+            ? 'Annual loans per 1,000 residents in services reporting each format, by format.'
             : loansByServiceMd}
         </Markdown>
       </Box>

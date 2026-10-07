@@ -6,7 +6,7 @@ import LoansCategoryCard from './LoansCategoryCard'
 
 /**
  * Summary KPI card component displaying total physical book loans across active library services,
- * along with average physical book loans per resident per year.
+ * along with average annual physical book loans per 1,000 reporting residents.
  *
  * @returns {JSX.Element} LoansCategoryCard configured for physical book loans.
  */
@@ -19,7 +19,7 @@ const LoansPhysicalBooksCard = () => {
       colour='chartPurple'
       filterLoan={filterLoan}
       populationFn={getServicesPopulation}
-      perCapitaLabel='resident'
+      perCapitaLabel='residents'
     />
   )
 }

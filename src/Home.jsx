@@ -8,15 +8,12 @@ import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded'
 import SummarizeRoundedIcon from '@mui/icons-material/SummarizeRounded'
 
 import { Link } from 'react-router-dom'
-import Markdown from 'react-markdown'
-
-import homeMd from './content/home.md?raw'
 
 import CardGrid from './components/CardGrid'
 
 /**
- * Summary landing page view presenting introductory markdown guidance,
- * a policy briefing shortcut banner, and an overview grid of key library
+ * Summary landing page view presenting a policy briefing shortcut banner
+ * and an overview grid of key library
  * performance indicator summary cards across all domains.
  *
  * @returns {JSX.Element} The rendered summary page view.
@@ -24,14 +21,13 @@ import CardGrid from './components/CardGrid'
 const Home = () => {
   return (
     <Box>
-      <Box sx={{ mb: 2 }}>
-        <Markdown>{homeMd}</Markdown>
-      </Box>
+      <CardGrid />
 
       <Paper
         variant='outlined'
         sx={{
           p: { xs: 2, sm: 2.5 },
+          mt: 3,
           mb: 3,
           backgroundColor: 'rgba(25, 118, 210, 0.04)',
           borderColor: 'primary.light',
@@ -69,8 +65,6 @@ const Home = () => {
           </Button>
         </Stack>
       </Paper>
-
-      <CardGrid />
     </Box>
   )
 }

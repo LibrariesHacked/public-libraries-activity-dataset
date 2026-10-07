@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography'
 import visitsMd from './content/visits.md?raw'
 import visitsByLocationMd from './content/visits-by-location.md?raw'
 import visitsByServiceMd from './content/visits-by-service.md?raw'
+import clickAndCollectMd from './content/click-and-collect.md?raw'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
@@ -21,6 +22,11 @@ import {
   formatServiceLabelsWithNoData,
   sortServicesByMetric
 } from './helpers/charts'
+import {
+  getReportingCoverageByGroup,
+  perThousandReportingPersonYears,
+  perThousandReportingResidents
+} from './helpers/reportingRates'
 
 import {
   filterByMonthRange,
@@ -28,18 +34,24 @@ import {
 } from './helpers/periods'
 
 import { getActiveServices, getRegionAggregates } from './models/service'
+import * as clickAndCollectModel from './models/clickAndCollect'
 import * as visitsModel from './models/visits'
 
 /**
  * Chart configuration options for the timeline line chart displaying monthly visits by facility type.
  */
 const visitsChartOptions = createTimelineChartOptions(
-  'Visits by location type over time'
+  'Visits and outreach interactions by location type over time',
+  'Interactions per 1,000 reporting residents per month'
+)
+const clickAndCollectChartOptions = createTimelineChartOptions(
+  'Click-and-collect interactions over time',
+  'Interactions per 1,000 reporting residents per month'
 )
 
 /**
- * In-person library visits dashboard page view displaying summary KPI cards,
- * monthly visits trends by service location type, and per-capita comparisons across authorities.
+ * Library visits dashboard page displaying visits and outreach interactions,
+ * monthly trends by location type, and per-resident comparisons across authorities.
  *
  * @returns {JSX.Element} The rendered Visits page view.
  */
@@ -49,6 +61,7 @@ const Visits = () => {
       filteredServices,
       services,
       visits,
+      clickAndCollect,
       monthRange,
       comparisonMode,
       selectedRegions
@@ -62,15 +75,19 @@ const Visits = () => {
     () =>
       createServiceBarChartOptions(
         isRegionMode
-          ? 'Visits per resident population by region'
-          : 'Visits per resident population by service',
-        'Visits per resident population per year',
+          ? 'Visits per 1,000 reporting residents by region'
+          : 'Visits per 1,000 reporting residents by service',
+        'Annual visits per 1,000 reporting residents',
         { stacked: true }
       ),
     [isRegionMode]
   )
 
   const [visitData, setVisitData] = useState(null)
+  const [clickAndCollectData, setClickAndCollectData] = useState({
+    datasets: [],
+    labels: []
+  })
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
 
   useEffect(() => {
@@ -84,30 +101,74 @@ const Visits = () => {
   }, [services, visits, dispatchApplication])
 
   useEffect(() => {
+    const getClickAndCollect = async () => {
+      const data = await clickAndCollectModel.getClickAndCollect()
+      dispatchApplication({ type: 'SetClickAndCollect', clickAndCollect: data })
+    }
+
+    if (!clickAndCollect) getClickAndCollect()
+  }, [clickAndCollect, dispatchApplication])
+
+  useEffect(() => {
     if (!visits || !services) return
 
     const filteredServiceSet = filteredServices?.length
       ? new Set(filteredServices)
       : null
-
+    const activeServices = getActiveServices(services, filteredServices)
     const filteredVisits = filteredServiceSet
       ? visits.filter(v => filteredServiceSet.has(v.serviceCode))
       : visits
-
-    const locationTypes = [...new Set(visits.map(m => m.location))].sort()
-
     const chartVisits = filterByMonthRange(filteredVisits, monthRange)
     const labels = getMonthsInRange(monthRange)
+    const locationTypes = [...new Set(filteredVisits.map(visit => visit.location))].sort()
+    const monthlyVisitCoverage = getReportingCoverageByGroup(
+      chartVisits,
+      activeServices,
+      'countVisits',
+      visit => `${visit.location}|||${visit.month}`
+    )
 
-    // Pre-aggregate monthly visits: (location, month) -> sum
+    const filteredClickAndCollect = (clickAndCollect || []).filter(record =>
+      !filteredServiceSet || filteredServiceSet.has(record.serviceCode)
+    )
+    const chartInteractions = filterByMonthRange(filteredClickAndCollect, monthRange)
+    const interactionMonthMap = new Map()
+    chartInteractions.forEach(record => {
+      if (Number.isFinite(record.countInteractions)) {
+        interactionMonthMap.set(
+          record.month,
+          (interactionMonthMap.get(record.month) || 0) + record.countInteractions
+        )
+      }
+    })
+    const interactionCoverage = getReportingCoverageByGroup(
+      chartInteractions,
+      activeServices,
+      'countInteractions',
+      record => record.month
+    )
+    setClickAndCollectData({
+      labels,
+      datasets: [{
+        label: 'Click-and-collect interactions per 1,000 residents',
+        data: labels.map(month => {
+          const total = interactionMonthMap.get(month)
+          return total == null
+            ? null
+            : perThousandReportingResidents(total, interactionCoverage.get(month))
+        })
+      }]
+    })
+
     const locationMonthMap = new Map()
     for (let i = 0; i < chartVisits.length; i++) {
-      const v = chartVisits[i]
-      if (v.countVisits) {
-        const key = `${v.location}|||${v.month}`
+      const visit = chartVisits[i]
+      if (Number.isFinite(visit.countVisits)) {
+        const key = `${visit.location}|||${visit.month}`
         locationMonthMap.set(
           key,
-          (locationMonthMap.get(key) || 0) + v.countVisits
+          (locationMonthMap.get(key) || 0) + visit.countVisits
         )
       }
     }
@@ -116,22 +177,38 @@ const Visits = () => {
       labels,
       datasets: locationTypes.map(location => ({
         label: location,
-        data: labels.map(month => locationMonthMap.get(`${location}|||${month}`) || 0)
+        data: labels.map(month => {
+          const key = `${location}|||${month}`
+          const total = locationMonthMap.get(key)
+          return total == null
+            ? null
+            : perThousandReportingResidents(total, monthlyVisitCoverage.get(key))
+        })
       }))
     }
 
     setVisitData(newVisitData)
 
-    const serviceVisits = filterByMonthRange(filteredVisits, monthRange)
-    const yearCount = (getMonthsInRange(monthRange).length || 12) / 12
-
-    const activeServices = getActiveServices(services, filteredServices)
+    const serviceVisits = chartVisits
+    const serviceLocationCoverage = getReportingCoverageByGroup(
+      serviceVisits,
+      activeServices,
+      'countVisits',
+      visit => `${visit.serviceCode}|||${visit.location}`
+    )
+    const serviceByCode = new Map(activeServices.map(service => [service.code, service]))
+    const regionLocationCoverage = getReportingCoverageByGroup(
+      serviceVisits,
+      activeServices,
+      'countVisits',
+      visit => `${serviceByCode.get(visit.serviceCode)?.region}|||${visit.location}`
+    )
 
     // Pre-aggregate service visits: (serviceCode, location) -> sum
     const serviceLocationMap = new Map()
     for (let i = 0; i < serviceVisits.length; i++) {
       const v = serviceVisits[i]
-      if (v.countVisits) {
+      if (Number.isFinite(v.countVisits)) {
         const key = `${v.serviceCode}|||${v.location}`
         serviceLocationMap.set(
           key,
@@ -144,14 +221,16 @@ const Visits = () => {
       const regionAggregates = getRegionAggregates(services, selectedRegions)
 
       const getRegionTotalVisitsPerCapita = region => {
-        if (!region?.totalPopulation) return 0
-        let totalVisits = 0
-        for (const loc of locationTypes) {
-          for (const sCode of region.serviceCodes) {
-            totalVisits += serviceLocationMap.get(`${sCode}|||${loc}`) || 0
-          }
-        }
-        return totalVisits / region.totalPopulation / yearCount
+        return locationTypes.reduce((rate, locationType) => {
+          const total = [...region.serviceCodes].reduce(
+            (sum, serviceCode) => sum + (serviceLocationMap.get(`${serviceCode}|||${locationType}`) || 0),
+            0
+          )
+          return rate + (perThousandReportingPersonYears(
+            total,
+            regionLocationCoverage.get(`${region.region}|||${locationType}`)
+          ) || 0)
+        }, 0)
       }
 
       const sortedRegions = sortServicesByMetric(
@@ -167,16 +246,16 @@ const Visits = () => {
         label: locationType,
         data: rawRegionLabels.map(regionLabel => {
           const region = regionByNiceName.get(regionLabel)
-          if (!region?.totalPopulation) return 0
-
-          let visitCount = 0
-          for (const sCode of region.serviceCodes) {
-            visitCount += serviceLocationMap.get(`${sCode}|||${locationType}`) || 0
-          }
-          const visitsPerCapita =
-            visitCount / region.totalPopulation / yearCount
-
-          return parseFloat(visitsPerCapita.toFixed(2))
+          if (!region) return null
+          const visitCount = [...region.serviceCodes].reduce(
+            (sum, serviceCode) => sum + (serviceLocationMap.get(`${serviceCode}|||${locationType}`) || 0),
+            0
+          )
+          const rate = perThousandReportingPersonYears(
+            visitCount,
+            regionLocationCoverage.get(`${region.region}|||${locationType}`)
+          )
+          return rate == null ? null : parseFloat(rate.toFixed(2))
         })
       }))
 
@@ -190,12 +269,11 @@ const Visits = () => {
     } else {
       // ONS: Order categories in bar charts by value descending (services with no data at bottom)
       const getServiceTotalVisitsPerCapita = service => {
-        if (!service?.totalPopulation) return 0
-        let totalVisits = 0
-        for (const loc of locationTypes) {
-          totalVisits += serviceLocationMap.get(`${service.code}|||${loc}`) || 0
-        }
-        return totalVisits / service.totalPopulation / yearCount
+        return locationTypes.reduce((rate, locationType) => {
+          const total = serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
+          const coverage = serviceLocationCoverage.get(`${service.code}|||${locationType}`)
+          return rate + (perThousandReportingPersonYears(total, coverage) || 0)
+        }, 0)
       }
 
       const sortedServices = sortServicesByMetric(
@@ -217,10 +295,9 @@ const Visits = () => {
             ? serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
             : 0
 
-          const visitsPerCapita = service?.totalPopulation
-            ? visitCount / service.totalPopulation / yearCount
-            : 0
-          return parseFloat(visitsPerCapita.toFixed(2))
+          const coverage = serviceLocationCoverage.get(`${service.code}|||${locationType}`)
+          const rate = perThousandReportingPersonYears(visitCount, coverage)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
         })
       }))
 
@@ -234,6 +311,7 @@ const Visits = () => {
     }
   }, [
     visits,
+    clickAndCollect,
     filteredServices,
     services,
     monthRange,
@@ -261,11 +339,23 @@ const Visits = () => {
 
       <Box sx={{ mt: 4, mb: 2 }}>
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Click-and-collect interactions
+        </Typography>
+        <Markdown>{clickAndCollectMd}</Markdown>
+      </Box>
+      <AppChart
+        type='line'
+        options={clickAndCollectChartOptions}
+        data={clickAndCollectData}
+      />
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
           {isRegionMode ? 'Visit types by region' : 'Visit types by service'}
         </Typography>
         <Markdown>
           {isRegionMode
-            ? 'Average annual visits per resident across regions, broken down by location type.'
+            ? 'Annual visits and outreach interactions per 1,000 residents in services reporting each location type.'
             : visitsByServiceMd}
         </Markdown>
       </Box>
@@ -280,9 +370,16 @@ const Visits = () => {
           Visits data
         </Typography>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-          Full dataset of monthly in-person library visits, reporting anomalies, and corrected figures.
+          Monthly library visits and outreach interactions, including reporting notes and corrections.
         </Typography>
         <DatasetDataGrid datasetId='visits' />
+      </Box>
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Click-and-collect data
+        </Typography>
+        <DatasetDataGrid datasetId='clickAndCollect' />
       </Box>
     </Box>
   )

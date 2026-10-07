@@ -1,11 +1,13 @@
-import { getServicePeriodChange } from '../models/service'
-
 /**
  * Standard coverage threshold percentage (70% of authorities or population)
  * used to indicate robust sample size for national estimates.
  */
 export const DCMS_THRESHOLD_PERCENT = 70.0
-export const COVERAGE_THRESHOLD_PERCENT = 70.0
+
+const getMinimumReportingAuthorities = totalAuthorities =>
+  totalAuthorities > 0
+    ? Math.max(1, Math.floor(totalAuthorities * DCMS_THRESHOLD_PERCENT / 100))
+    : 0
 
 /**
  * Reference URL for the DCMS secondary analysis baseline report.
@@ -34,9 +36,9 @@ export const CORE_METRICS = [
   },
   {
     key: 'visits',
-    label: 'Physical visits',
+    label: 'Visits',
     shortLabel: 'Visits',
-    description: 'In-person visits to static and mobile library service points',
+    description: 'Library-location visits and mobile-library or home-delivery interactions',
     unit: 'visits',
     rateType: 'per1000',
     rateLabel: 'Visits per 1,000 residents',
@@ -54,9 +56,9 @@ export const CORE_METRICS = [
   },
   {
     key: 'events',
-    label: 'In-person events',
+    label: 'Events',
     shortLabel: 'Events',
-    description: 'Public activities and programming sessions held in libraries',
+    description: 'In-person and online events organised by library services',
     unit: 'events',
     rateType: 'per1000',
     rateLabel: 'Events per 1,000 residents',
@@ -96,20 +98,25 @@ export const CORE_METRICS = [
 
 export const POLICY_METRICS = CORE_METRICS
 
+const getNationalMetricValue = (record, metricKey) => {
+  const status = record[`${metricKey}Status`]
+  if (status === 'replaced' || status === 'excluded') return null
+
+  const original = record[`${metricKey}Original`]
+  if (original != null) return original
+
+  return record[metricKey] ?? null
+}
+
 /**
  * Calculates headline national estimates for a single financial year period
  * using population-weighting grossing methodology.
  *
  * @param {Array<import('../models/service').Service>} serviceRecords - All annual service records.
  * @param {string} period - Financial year period to analyze (e.g. '2023/2024').
- * @param {boolean} [useEstimates=true] - Whether to apply anomaly corrections.
  * @returns {Array<Object>} Array of calculated metric estimate summaries.
  */
-export const calculateNationalEstimates = (
-  serviceRecords,
-  period,
-  useEstimates = true
-) => {
+export const calculateNationalEstimates = (serviceRecords, period) => {
   if (!serviceRecords || !period) return []
 
   const periodRecords = serviceRecords.filter(r => r.period === period)
@@ -121,13 +128,12 @@ export const calculateNationalEstimates = (
 
   return CORE_METRICS.map(metric => {
     const reportingRecords = periodRecords.filter(r => {
-      const val = r.resolveMetric
-        ? r.resolveMetric(metric.key, useEstimates)
-        : r[metric.key]
+      const val = getNationalMetricValue(r, metric.key)
       return val != null && Number.isFinite(val)
     })
 
     const reportingAuthorities = reportingRecords.length
+    const minimumReportingAuthorities = getMinimumReportingAuthorities(totalAuthorities)
     const authorityCoveragePercent =
       totalAuthorities > 0 ? (reportingAuthorities / totalAuthorities) * 100 : 0
 
@@ -141,13 +147,11 @@ export const calculateNationalEstimates = (
         : 0
 
     const meetsThreshold =
-      authorityCoveragePercent >= DCMS_THRESHOLD_PERCENT ||
+      reportingAuthorities >= minimumReportingAuthorities ||
       populationCoveragePercent >= DCMS_THRESHOLD_PERCENT
 
     const sampleTotal = reportingRecords.reduce((acc, r) => {
-      const val = r.resolveMetric
-        ? r.resolveMetric(metric.key, useEstimates)
-        : r[metric.key]
+      const val = getNationalMetricValue(r, metric.key)
       return acc + (val || 0)
     }, 0)
 
@@ -176,6 +180,7 @@ export const calculateNationalEstimates = (
       period,
       reportingAuthorities,
       totalAuthorities,
+      minimumReportingAuthorities,
       authorityCoveragePercent,
       reportingPopulation,
       totalPopulation: totalEnglandPopulation,
@@ -196,14 +201,9 @@ export const calculateNationalEstimates = (
  *
  * @param {Array<import('../models/service').Service>} serviceRecords - All annual service records.
  * @param {string[]} periods - Sorted list of financial year periods.
- * @param {boolean} [useEstimates=true] - Whether to apply anomaly corrections.
  * @returns {Array<Object>} Multi-year trend summaries for each metric.
  */
-export const calculateMultiYearTrends = (
-  serviceRecords,
-  periods,
-  useEstimates = true
-) => {
+export const calculateMultiYearTrends = (serviceRecords, periods) => {
   if (!serviceRecords || !periods || periods.length === 0) return []
 
   const sortedPeriods = [...periods].sort()
@@ -213,7 +213,7 @@ export const calculateMultiYearTrends = (
 
   const estimatesByPeriod = {}
   sortedPeriods.forEach(p => {
-    estimatesByPeriod[p] = calculateNationalEstimates(serviceRecords, p, useEstimates)
+    estimatesByPeriod[p] = calculateNationalEstimates(serviceRecords, p)
   })
 
   return CORE_METRICS.map(metric => {
@@ -253,13 +253,11 @@ export const calculateMultiYearTrends = (
       }
 
       if (p !== baselinePeriod) {
-        matchedCohortChange[p] = getServicePeriodChange(
+        matchedCohortChange[p] = calculateMatchedCohortChange(
           serviceRecords,
           metric.key,
           baselinePeriod,
-          p,
-          null,
-          useEstimates
+          p
         )
       } else {
         matchedCohortChange[p] = 0
@@ -278,19 +276,43 @@ export const calculateMultiYearTrends = (
   })
 }
 
+const calculateMatchedCohortChange = (
+  serviceRecords,
+  metricKey,
+  baselinePeriod,
+  comparisonPeriod
+) => {
+  const baselineValues = new Map()
+  const comparisonValues = new Map()
+
+  serviceRecords.forEach(record => {
+    if (record.period !== baselinePeriod && record.period !== comparisonPeriod) return
+    const value = getNationalMetricValue(record, metricKey)
+    if (value == null || !Number.isFinite(value)) return
+    const values = record.period === baselinePeriod ? baselineValues : comparisonValues
+    values.set(record.code, value)
+  })
+
+  let baselineTotal = 0
+  let comparisonTotal = 0
+  baselineValues.forEach((value, code) => {
+    if (!comparisonValues.has(code)) return
+    baselineTotal += value
+    comparisonTotal += comparisonValues.get(code)
+  })
+
+  if (baselineTotal === 0) return null
+  return ((comparisonTotal - baselineTotal) / baselineTotal) * 100
+}
+
 /**
  * Calculates regional estimates across the 9 official English regions for a given period.
  *
  * @param {Array<import('../models/service').Service>} serviceRecords - All annual service records.
  * @param {string} period - Financial year period.
- * @param {boolean} [useEstimates=true] - Whether to apply anomaly corrections.
  * @returns {Array<Object>} Regional estimate breakdown by region.
  */
-export const calculateRegionalEstimates = (
-  serviceRecords,
-  period,
-  useEstimates = true
-) => {
+export const calculateRegionalEstimates = (serviceRecords, period) => {
   if (!serviceRecords || !period) return []
 
   const periodRecords = serviceRecords.filter(r => r.period === period)
@@ -319,13 +341,12 @@ export const calculateRegionalEstimates = (
 
     CORE_METRICS.forEach(metric => {
       const reportingRecords = regionRecords.filter(r => {
-        const val = r.resolveMetric
-          ? r.resolveMetric(metric.key, useEstimates)
-          : r[metric.key]
+        const val = getNationalMetricValue(r, metric.key)
         return val != null && Number.isFinite(val)
       })
 
       const reportingAuthorities = reportingRecords.length
+      const minimumReportingAuthorities = getMinimumReportingAuthorities(totalAuthorities)
       const authorityCoveragePercent =
         totalAuthorities > 0 ? (reportingAuthorities / totalAuthorities) * 100 : 0
 
@@ -337,13 +358,11 @@ export const calculateRegionalEstimates = (
         totalPopulation > 0 ? (reportingPopulation / totalPopulation) * 100 : 0
 
       const meetsThreshold =
-        authorityCoveragePercent >= DCMS_THRESHOLD_PERCENT ||
+        reportingAuthorities >= minimumReportingAuthorities ||
         populationCoveragePercent >= DCMS_THRESHOLD_PERCENT
 
       const sampleTotal = reportingRecords.reduce((acc, r) => {
-        const val = r.resolveMetric
-          ? r.resolveMetric(metric.key, useEstimates)
-          : r[metric.key]
+        const val = getNationalMetricValue(r, metric.key)
         return acc + (val || 0)
       }, 0)
 
@@ -363,6 +382,7 @@ export const calculateRegionalEstimates = (
       metricSummaries[metric.key] = {
         reportingAuthorities,
         totalAuthorities,
+        minimumReportingAuthorities,
         authorityCoveragePercent,
         reportingPopulation,
         totalPopulation,
@@ -418,7 +438,7 @@ export const generatePolicyBriefingCsv = (
       'Reporting Population',
       'Total Population',
       'Population Coverage (%)',
-      '70% Coverage Met',
+      'DCMS Coverage Threshold Met',
       'Reported Sample Total',
       'Grossed 100% England Estimate',
       'Grossing Multiplier',
@@ -439,7 +459,7 @@ export const generatePolicyBriefingCsv = (
         est.reportingPopulation,
         est.totalPopulation,
         est.populationCoveragePercent.toFixed(1),
-        est.meetsThreshold ? 'Yes (≥70%)' : 'Caution (<70%)',
+        est.meetsThreshold ? 'Yes' : 'Caution',
         est.sampleTotal,
         est.grossedTotal,
         est.multiplier.toFixed(3),

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -42,7 +42,10 @@ const UsersAgeGroupCard = ({
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const comparison = resolvePeriodComparison(selectedPeriods, periods)
+  const comparison = useMemo(
+    () => resolvePeriodComparison(selectedPeriods, periods),
+    [selectedPeriods, periods]
+  )
 
   useEffect(() => {
     if (!users || !services) return

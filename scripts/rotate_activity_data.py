@@ -55,6 +55,7 @@ COMPUTER_USAGE = './data/computers.csv'
 WIFI_SESSIONS = './data/wifi.csv'
 # Click and collect lending order counts
 CLICK_COLLECT = './data/click_and_collect.csv'
+COMPUTER_INVENTORY = './data/computer_inventory.csv'
 # Master log of reporting errors and data quality corrections
 ERRORS_CSV = './data/errors.csv'
 
@@ -71,6 +72,8 @@ EVENTS_JSON = './public/events.json'
 ATTENDANCE_JSON = './public/attendance.json'
 COMPUTER_USAGE_JSON = './public/computers.json'
 WIFI_SESSIONS_JSON = './public/wifi.json'
+CLICK_COLLECT_JSON = './public/click_and_collect.json'
+COMPUTER_INVENTORY_JSON = './public/computer_inventory.json'
 ERRORS_JSON = './public/errors.json'
 
 # =============================================================================
@@ -96,8 +99,15 @@ ATTENDANCE_FIELDNAMES = ['Authority', 'Event type', 'Age group', 'Period', 'Coun
 LOAN_FIELDNAMES = ['Authority', 'Format', 'Content age group', 'Period', 'Count', 'Estimated count', 'Status', 'Notes']
 VISIT_FIELDNAMES = ['Authority', 'Location', 'Period', 'Count', 'Estimated count', 'Status', 'Notes']
 CLICK_COLLECT_FIELDNAMES = ['Authority', 'Period', 'Count', 'Estimated count', 'Status', 'Notes']
+COMPUTER_INVENTORY_FIELDNAMES = ['Authority', 'Measure', 'Period', 'Count']
 COMPUTER_USAGE_FIELDNAMES = ['Authority', 'Period', 'Count', 'Estimated count', 'Status', 'Notes']
 WIFI_SESSIONS_FIELDNAMES = ['Authority', 'Period', 'Count', 'Estimated count', 'Status', 'Notes']
+
+COMPUTER_INVENTORY_METRICS = {
+    'inventory_computers_in_service': 'Computers and devices in service',
+    'inventory_devices_for_loan': 'Devices available to borrow',
+    'inventory_device_loan_issues': 'Issues of loanable devices',
+}
 
 # =============================================================================
 # CALENDAR & AUTHORITY NORMALIZATION
@@ -148,6 +158,11 @@ YEAR_SOURCES = {
         'workbook': ACTIVITY_WORKBOOK_2023_2024,
         'worksheet': 'Activity Data 2024',
         'mapper': 'published_labels',
+        'inventory_fields': {
+            'inventory_computers_in_service': 'Pcs & Devices In Service (31/03)',
+            'inventory_devices_for_loan': 'Devices Loan (31/03)',
+            'inventory_device_loan_issues': 'Device Loan Issues (31/03)',
+        },
     },
     '2024/2025': {
         'workbook': ACTIVITY_WORKBOOK_2024_2026,
@@ -197,6 +212,11 @@ YEAR_SOURCES = {
             'visits': ('physical_visits', 'physical_visits_no_colocation'),
             'additional_lending': ('click_and_collect', 'mobile_libraries', 'home_delivery'),
             'computer_usage': ('hours_public_computers', 'wifi_sessions'),
+        },
+        'inventory_fields': {
+            'inventory_computers_in_service': 'Q13_1_1',
+            'inventory_devices_for_loan': 'Q13_2_1',
+            'inventory_device_loan_issues': 'Q13_3_1',
         },
         'month_codes': {
             'events': tuple(range(1, 13)),
@@ -256,6 +276,11 @@ YEAR_SOURCES = {
             'visits': ('physical_visits', 'physical_visits_no_colocation'),
             'additional_lending': ('click_and_collect', 'mobile_libraries', 'home_delivery'),
             'computer_usage': ('hours_public_computers', 'wifi_sessions'),
+        },
+        'inventory_fields': {
+            'inventory_computers_in_service': 'Q16_1_1',
+            'inventory_devices_for_loan': 'Q16_2_1',
+            'inventory_device_loan_issues': 'Q16_3_1',
         },
         'month_codes': {
             'events': tuple(range(1, 13)),
@@ -717,7 +742,7 @@ def load_authorities_lookup(file_path, library_services, population, nearest_nei
 # WORKBOOK PARSING FUNCTIONS
 # =============================================================================
 
-def published_label_rows(worksheet, year):
+def published_label_rows(worksheet, year, source_config=None):
     """Parse 2023/24 workbook rows using descriptive text column headers."""
     headers = [cell.value for cell in next(worksheet.iter_rows(max_row=1))]
     for values in worksheet.iter_rows(min_row=2, values_only=True):
@@ -732,6 +757,9 @@ def published_label_rows(worksheet, year):
             'library_details': source.get('Library Details', authority),
             '_year': year,
         }
+
+        for field, source_name in (source_config or {}).get('inventory_fields', {}).items():
+            row[field] = numeric_cell_value(source.get(source_name, ''))
 
         # Active members
         for field, source_name in MEMBER_LABELS.items():
@@ -816,6 +844,9 @@ def question_code_rows(worksheet, year, source_config):
                         row[f'{field}_{month_name}'] = ''
                     row[field] = annual_total
 
+                for field, source_name in source_config.get('inventory_fields', {}).items():
+                    row[field] = numeric_cell_value(source.get(source_name, ''))
+
         yield string_values(row)
 
 
@@ -842,7 +873,7 @@ def load_activity_rows():
 
         worksheet = workbook[worksheet_name]
         if source_config['mapper'] == 'published_labels':
-            rows.extend(published_label_rows(worksheet, year))
+            rows.extend(published_label_rows(worksheet, year, source_config))
         elif source_config['mapper'] == 'question_codes':
             rows.extend(question_code_rows(worksheet, year, source_config))
         else:
@@ -952,7 +983,7 @@ def standardize_loan_periods(records, start_year):
     """
     grouped_loans = {}
     for record in records:
-        key = (record['Format'], record['Content age group'])
+        key = (record['Format'], record.get('Content age group', 'Total'))
         if key not in grouped_loans:
             grouped_loans[key] = []
         grouped_loans[key].append(record)
@@ -971,6 +1002,13 @@ def standardize_ungrouped_periods(records, start_year):
     """
     return standardize_period_records(records, start_year)
 
+
+def split_count_evenly(value, parts):
+    """Split a count across periods without losing its remainder."""
+    if value is None:
+        return [None] * parts
+    quotient, remainder = divmod(value, parts)
+    return [quotient + (index < remainder) for index in range(parts)]
 
 
 def convert_values_to_monthly(data):
@@ -1000,8 +1038,8 @@ def convert_values_to_monthly(data):
             })
 
         elif 'Period' in record and 'P3M' in record['Period']:
-            monthly_orig = int(count_val / 3)
-            monthly_effective = int(effective / 3) if effective is not None else None
+            monthly_orig = split_count_evenly(count_val, 3)
+            monthly_effective = split_count_evenly(effective, 3)
             original_period = record['Period']
             original_date_obj = datetime.strptime(original_period.split('/')[0], "%Y-%m-%d")
 
@@ -1019,34 +1057,27 @@ def convert_values_to_monthly(data):
                 month_2 = original_date_obj.replace(month=month + 1, year=year).strftime("%Y-%m")
                 month_3 = original_date_obj.replace(month=month + 2, year=year).strftime("%Y-%m")
 
-            for m_date in (original_date_obj.strftime("%Y-%m"), month_2, month_3):
+            for index, m_date in enumerate((original_date_obj.strftime("%Y-%m"), month_2, month_3)):
                 result.append({
                     **record,
                     'Period': m_date,
-                    'Count': monthly_orig,
-                    'Effective count': monthly_effective,
+                    'Count': monthly_orig[index],
+                    'Effective count': monthly_effective[index],
                 })
 
         elif 'Period' in record and 'P1Y' in record['Period']:
-            monthly_orig = int(count_val / 12)
-            monthly_effective = int(effective / 12) if effective is not None else None
+            monthly_orig = split_count_evenly(count_val, 12)
+            monthly_effective = split_count_evenly(effective, 12)
             original_period = record['Period']
             start_year = int(original_period[:4])
-            result.append({
-                **record,
-                'Period': f'{start_year}-04',
-                'Count': monthly_orig,
-                'Effective count': monthly_effective,
-            })
-
-            for i in range(1, 12):
+            for i in range(12):
                 new_month = (4 + i - 1) % 12 + 1
                 new_year = start_year + ((4 + i - 1) // 12)
                 result.append({
                     **record,
                     'Period': f"{new_year}-{new_month:02d}",
-                    'Count': monthly_orig,
-                    'Effective count': monthly_effective,
+                    'Count': monthly_orig[i],
+                    'Effective count': monthly_effective[i],
                 })
 
         else:
@@ -1056,6 +1087,83 @@ def convert_values_to_monthly(data):
             })
 
     return result
+
+
+def reconcile_loan_unknown_rows(detail_records, total_records, start_year):
+    """Create non-overlapping age rows, using format totals only for the Unknown remainder."""
+    standardized_details = standardize_loan_periods(detail_records, start_year)
+    standardized_totals = standardize_loan_periods(total_records, start_year)
+    monthly_details = convert_values_to_monthly(standardized_details)
+    monthly_totals = convert_values_to_monthly(standardized_totals)
+    details_by_key = {}
+
+    for record in monthly_details:
+        key = (record['Authority'], record['Format'], record['Period'])
+        details_by_key.setdefault(key, []).append(record)
+
+    unknown_records = []
+    for total in monthly_totals:
+        key = (total['Authority'], total['Format'], total['Period'])
+        detail_rows = [
+            record for record in details_by_key.get(key, [])
+            if record.get('Content age group') != 'Unknown'
+        ]
+        total_original = number_value(total.get('Count'))
+        detail_original = sum(number_value(record.get('Count')) for record in detail_rows)
+        detail_overage = max(0, detail_original - total_original)
+        unknown_original = max(0, total_original - detail_original)
+
+        total_effective = total.get('Effective count')
+        if total_effective is None:
+            unknown_effective = None
+            effective_overage = 0
+        else:
+            detail_effective = sum(
+                number_value(record.get('Effective count')) for record in detail_rows
+            )
+            effective_overage = max(0, detail_effective - total_effective)
+            unknown_effective = max(0, total_effective - detail_effective)
+
+        total_status = total.get('Status') or ''
+        if total_status == 'excluded':
+            status = 'excluded'
+        elif total_status == 'replaced' or unknown_effective != unknown_original:
+            status = 'replaced'
+        elif total_status == 'suspicious' or detail_overage or effective_overage:
+            status = 'suspicious'
+        else:
+            status = ''
+
+        if (unknown_original == 0 and unknown_effective in (None, 0)
+                and not status and not detail_overage and not effective_overage):
+            continue
+
+        notes = total.get('Notes') or ''
+        if not notes:
+            notes = 'Difference between the reported format total and age-group detail.'
+        if detail_overage:
+            notes += f' Reported age-group detail exceeds the reported format total by {detail_overage} loans.'
+        if effective_overage:
+            notes += f' Corrected age-group detail exceeds the corrected format total by {effective_overage} loans.'
+
+        audit_only_zero = status == 'suspicious' and unknown_original == 0 and unknown_effective == 0
+
+        unknown_records.append({
+            **total,
+            'Content age group': 'Unknown',
+            'Period': total['Period'],
+            'Count': None if audit_only_zero else unknown_original,
+            'Estimated count': unknown_effective if status == 'replaced' else '',
+            'Status': status,
+            'Notes': notes,
+            'Effective count': None if audit_only_zero else unknown_effective,
+        })
+
+    unknown_export_records = [
+        {key: value for key, value in record.items() if key != 'Effective count'}
+        for record in unknown_records
+    ]
+    return standardized_details + unknown_export_records, monthly_details + unknown_records
 
 
 def convert_values_to_yearly(data):
@@ -1121,6 +1229,7 @@ def rotate_activity_data():
     attendance = []
     loans = []
     click_collect = []
+    computer_inventory = []
     visits = []
     computer_usage = []
     wifi_sessions = []
@@ -1142,10 +1251,21 @@ def rotate_activity_data():
         authority_neighbours = nearest_neighbours.get(authority_code, empty_neighbours)
         authority_population = population.get(authority_code, {'under_12': 0, '12_17': 0, 'adult': 0})
 
+        for field, measure in COMPUTER_INVENTORY_METRICS.items():
+            value = row.get(field, '')
+            if value not in (None, ''):
+                computer_inventory.append({
+                    'Authority': authority_code,
+                    'Measure': measure,
+                    'Period': financial_year_label(start_year),
+                    'Count': number_value(value),
+                })
+
         authority_users = []
         authority_events = []
         authority_attendance = []
         authority_loans = []
+        authority_loan_totals = []
         authority_click_collect = []
         authority_visits = []
         authority_computer_usage = []
@@ -1154,9 +1274,11 @@ def rotate_activity_data():
         for header, value in row.items():
             # Determine calendar start date for monthly metrics (April = offset 0)
             period_start = None
+            period_month_name = None
             for month_offset, month_name in enumerate(MONTHS):
-                if month_name in header:
+                if header.endswith((f'_{month_name}', f'_{month_name}_digital')):
                     period_start = financial_year_month_start(start_year, month_offset)
+                    period_month_name = month_name
                     break
 
             # Determine demographic age group
@@ -1352,72 +1474,56 @@ def rotate_activity_data():
                     })
 
             if header.startswith('total_physical_book_issues'):
-                # Record total physical book loans if no monthly breakdown is provided
-                if not has_positive_count(row, [f for f in row if f.startswith('loans_') and not f.endswith('_digital')],
-                                          row['_year'], 'loans', authority_code):
-                    if value is not None and value != "":
-                        status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
-                        authority_loans.append({
-                            'Authority': authority_code,
-                            'Format': format_type,
-                            'Content age group': 'Unknown',
-                            'Period': period_start,
-                            'Count': value,
-                            'Estimated count': est if est is not None else '',
-                            'Status': status or '',
-                            'Notes': notes or '',
-                        })
+                if value is not None and value != "":
+                    status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
+                    authority_loan_totals.append({
+                        'Authority': authority_code,
+                        'Format': 'Physical book',
+                        'Period': period_start,
+                        'Count': value,
+                        'Estimated count': est if est is not None else '',
+                        'Status': status or '',
+                        'Notes': notes or '',
+                    })
 
             if header.startswith('total_physical_audiobook_issues'):
-                # Record total physical audiobook loans if no monthly breakdown is provided
-                if not has_positive_count(row, [f for f in row if f.startswith('loans_') and f.endswith('_digital')],
-                                          row['_year'], 'loans', authority_code):
-                    if value is not None and value != "":
-                        status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
-                        authority_loans.append({
-                            'Authority': authority_code,
-                            'Format': format_type,
-                            'Content age group': 'Unknown',
-                            'Period': period_start,
-                            'Count': value,
-                            'Estimated count': est if est is not None else '',
-                            'Status': status or '',
-                            'Notes': notes or '',
-                        })
+                if value is not None and value != "":
+                    status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
+                    authority_loan_totals.append({
+                        'Authority': authority_code,
+                        'Format': 'Physical audiobook',
+                        'Period': period_start,
+                        'Count': value,
+                        'Estimated count': est if est is not None else '',
+                        'Status': status or '',
+                        'Notes': notes or '',
+                    })
 
             if header.startswith('total_ebook_issues'):
-                # Record total ebook loans if no monthly breakdown is provided
-                if not has_positive_count(row, [f for f in row if f.startswith('ebooks_')],
-                                          row['_year'], 'loans', authority_code):
-                    if value is not None and value != "":
-                        status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
-                        authority_loans.append({
-                            'Authority': authority_code,
-                            'Format': format_type,
-                            'Content age group': 'Unknown',
-                            'Period': period_start,
-                            'Count': value,
-                            'Estimated count': est if est is not None else '',
-                            'Status': status or '',
-                            'Notes': notes or '',
-                        })
+                if value is not None and value != "":
+                    status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
+                    authority_loan_totals.append({
+                        'Authority': authority_code,
+                        'Format': 'Ebook',
+                        'Period': period_start,
+                        'Count': value,
+                        'Estimated count': est if est is not None else '',
+                        'Status': status or '',
+                        'Notes': notes or '',
+                    })
 
             if header.startswith('total_digital_audiobook_issues'):
-                # Record total digital audiobook loans if no monthly breakdown is provided
-                if not has_positive_count(row, [f for f in row if f.startswith('digital_audiobook_issues_')],
-                                          row['_year'], 'loans', authority_code):
-                    if value is not None and value != "":
-                        status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
-                        authority_loans.append({
-                            'Authority': authority_code,
-                            'Format': format_type,
-                            'Content age group': 'Unknown',
-                            'Period': period_start,
-                            'Count': value,
-                            'Estimated count': est if est is not None else '',
-                            'Status': status or '',
-                            'Notes': notes or '',
-                        })
+                if value is not None and value != "":
+                    status, est, notes = get_anomaly_info(row['_year'], 'loans', authority_code, value, field=header)
+                    authority_loan_totals.append({
+                        'Authority': authority_code,
+                        'Format': 'Eaudio',
+                        'Period': period_start,
+                        'Count': value,
+                        'Estimated count': est if est is not None else '',
+                        'Status': status or '',
+                        'Notes': notes or '',
+                    })
 
             # -----------------------------------------------------------------
             # Visits (Library, Shared Building, Mobile Library, Home Delivery)
@@ -1494,6 +1600,12 @@ def rotate_activity_data():
                         'Notes': notes or '',
                     })
 
+        authority_loans, authority_loans_for_totals = reconcile_loan_unknown_rows(
+            authority_loans,
+            authority_loan_totals,
+            start_year
+        )
+
         # ---------------------------------------------------------------------
         # 3. Calculate headline service totals for services.csv
         # ---------------------------------------------------------------------
@@ -1504,7 +1616,7 @@ def rotate_activity_data():
         att_orig, att_est, att_status, att_notes = calculate_service_metric_total(
             row, '_service_attendance', authority_attendance, row['_year'], 'attendance', authority_code)
         loans_orig, loans_est, loans_status, loans_notes = calculate_service_metric_total(
-            row, '_service_loans', authority_loans, row['_year'], 'loans', authority_code)
+            row, '_service_loans', authority_loans_for_totals, row['_year'], 'loans', authority_code)
         visits_orig, visits_est, visits_status, visits_notes = calculate_service_metric_total(
             row, None, authority_visits, row['_year'], 'visits', authority_code)
         comp_orig, comp_est, comp_status, comp_notes = calculate_service_metric_total(
@@ -1572,7 +1684,7 @@ def rotate_activity_data():
             start_year=start_year,
         ))
 
-        loans.extend(standardize_loan_periods(authority_loans, start_year=start_year))
+        loans.extend(authority_loans)
 
         visits.extend(standardize_grouped_periods(
             authority_visits,
@@ -1646,6 +1758,7 @@ def rotate_activity_data():
     write_csv(LOANS, LOAN_FIELDNAMES, loans)
     write_csv(VISITS, VISIT_FIELDNAMES, visits)
     write_csv(CLICK_COLLECT, CLICK_COLLECT_FIELDNAMES, click_collect)
+    write_csv(COMPUTER_INVENTORY, COMPUTER_INVENTORY_FIELDNAMES, computer_inventory)
     write_csv(COMPUTER_USAGE, COMPUTER_USAGE_FIELDNAMES, computer_usage)
     write_csv(WIFI_SESSIONS, WIFI_SESSIONS_FIELDNAMES, wifi_sessions)
 
@@ -1658,7 +1771,18 @@ def rotate_activity_data():
         for u in convert_values_to_yearly(users)
     ])
     write_json(LOANS_JSON, [
-        [l['Authority'], l['Format'], l['Content age group'], l['Period'], l['Effective count'], l['Count'], l.get('Status') or None, l.get('Notes') or None]
+        [
+            l['Authority'], l['Format'], l['Content age group'], l['Period'],
+            None if (l.get('Content age group') == 'Unknown'
+                    and l.get('Status') == 'suspicious'
+                    and l.get('Count') in (None, 0)
+                    and l.get('Effective count') == 0) else l['Effective count'],
+            None if (l.get('Content age group') == 'Unknown'
+                    and l.get('Status') == 'suspicious'
+                    and l.get('Count') in (None, 0)
+                    and l.get('Effective count') == 0) else l['Count'],
+            l.get('Status') or None, l.get('Notes') or None
+        ]
         for l in convert_values_to_monthly(loans)
     ])
     write_json(VISITS_JSON, [
@@ -1680,6 +1804,14 @@ def rotate_activity_data():
     write_json(WIFI_SESSIONS_JSON, [
         [w['Authority'], w['Period'], w['Effective count'], w['Count'], w.get('Status') or None, w.get('Notes') or None]
         for w in convert_values_to_monthly(wifi_sessions)
+    ])
+    write_json(CLICK_COLLECT_JSON, [
+        [c['Authority'], c['Period'], c['Effective count'], c['Count'], c.get('Status') or None, c.get('Notes') or None]
+        for c in convert_values_to_monthly(click_collect)
+    ])
+    write_json(COMPUTER_INVENTORY_JSON, [
+        [r['Authority'], r['Measure'], r['Period'], None, r['Count'], None, None]
+        for r in computer_inventory
     ])
     with open(ERRORS_CSV, mode='r', newline='', encoding='utf-8') as f:
         errors_records = list(csv.DictReader(f))

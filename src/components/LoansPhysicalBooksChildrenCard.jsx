@@ -24,7 +24,7 @@ const LoansPhysicalBooksChildrenCard = () => {
       colour='chartOrange'
       filterLoan={filterLoan}
       populationFn={getServicesChildPopulation}
-      perCapitaLabel='child resident'
+      perCapitaLabel='child residents'
     />
   )
 }

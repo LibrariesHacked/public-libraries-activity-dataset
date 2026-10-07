@@ -24,13 +24,14 @@ const initialApplicationState = {
   monthRange: null,
   attendance: null,
   computers: null,
+  computerInventory: null,
+  clickAndCollect: null,
   events: null,
   loans: null,
   users: null,
   visits: null,
   wifi: null,
   useEstimates: true,
-  nationalGrossing: false,
   mapZoom: 7,
   mapPosition: [-1.155414, 52.691432]
 }
@@ -115,6 +116,7 @@ const buildPeriodState = (
  */
 const ACTIVITY_KEYS = [
   'computers',
+  'clickAndCollect',
   'wifi',
   'loans',
   'visits',
@@ -232,12 +234,6 @@ const applicationReducer = (state, action) => {
         state.monthRange
       )
     }
-    case 'SetNationalGrossing': {
-      return {
-        ...state,
-        nationalGrossing: Boolean(action.nationalGrossing)
-      }
-    }
     case 'SetComparisonMode': {
       const comparisonMode = action.comparisonMode
       const filteredServices = resolveFilteredServices(
@@ -307,6 +303,16 @@ const applicationReducer = (state, action) => {
       return {
         ...state,
         computers: updateRecordCounts(action.computers, state.useEstimates, 'countHours')
+      }
+    case 'SetClickAndCollect':
+      return {
+        ...state,
+        clickAndCollect: updateRecordCounts(action.clickAndCollect, state.useEstimates, 'countInteractions')
+      }
+    case 'SetComputerInventory':
+      return {
+        ...state,
+        computerInventory: action.computerInventory
       }
     case 'SetEvents':
       return {

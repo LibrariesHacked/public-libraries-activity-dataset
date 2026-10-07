@@ -5,8 +5,8 @@ import { formatCompactNumber } from '../helpers/numbers'
 import MetricTotalCard from './MetricTotalCard'
 
 /**
- * Summary KPI card component displaying total in-person library visits across active library services,
- * along with average visits per resident per year.
+ * Summary KPI card component displaying library visits and outreach interactions across active services,
+ * along with average annual visits per 1,000 reporting residents.
  *
  * @returns {JSX.Element} MetricTotalCard configured for library visits.
  */
@@ -15,9 +15,9 @@ const VisitsTotalCard = () => {
     ({ total, totalPopulation, yearCount }) => {
       const perCapita =
         totalPopulation > 0
-          ? Math.round(total / totalPopulation / yearCount)
+          ? (total / totalPopulation / yearCount) * 1000
           : 0
-      return `${formatCompactNumber(perCapita)} per resident per year`
+      return `${formatCompactNumber(perCapita, 1)} visits per 1,000 residents / yr`
     },
     []
   )

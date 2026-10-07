@@ -6,7 +6,7 @@ import MetricTotalCard from './MetricTotalCard'
 
 /**
  * Summary KPI card component displaying total public computer access hours across active library services,
- * along with average computer hours logged per day.
+ * along with average computer hours per 1,000 reporting residents per year.
  *
  * @returns {JSX.Element} MetricTotalCard configured for public computer hours.
  */

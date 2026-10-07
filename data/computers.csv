@@ -389,8 +389,8 @@ E10000014,2023-12-01/P1M,7404,,,
 E10000014,2024-01-01/P1M,8814,,,
 E10000014,2024-02-01/P1M,8806,,,
 E10000014,2024-03-01/P1M,8764,,,
-E09000014,2023-04-01/P1Y,2236995718,,excluded,"March computer hours entered as 2,236,995,718 due to hardware counter corruption"
-E09000015,2023-04-01/P1M,256515,2565,replaced,April computer hours entered as 256515 (100x typo for 2565; other months range 2.4k-2.7k)
+E09000014,2023-04-01/P1Y,2236995718,,excluded,"Monthly return (March): Computer hours recorded as 2,236,995,718 (2.2 billion hours). This is clearly impossible for a single library service and appears to be an automated counter value. Excluded from monthly figures."
+E09000015,2023-04-01/P1M,256515,2565,replaced,"Monthly return (April): April computer hours entered as 256,515, where other months average around 2,500. Corrected to 2,565 (removing two accidental extra digits)."
 E09000015,2023-05-01/P1M,2464,,,
 E09000015,2023-06-01/P1M,2329,,,
 E09000015,2023-07-01/P1M,2413,,,
@@ -614,7 +614,7 @@ E09000007,2024-02-01/P1M,12805,,,
 E09000007,2024-03-01/P1M,13378,,,
 E09000018,2023-04-01/P3M,16111,,,
 E09000018,2023-07-01/P3M,15861,,,
-E09000018,2023-10-01/P3M,155393,15539,replaced,December Q3 computer hours entered as 155393 (10x typo for 15539; other quarters range 16k-18k)
+E09000018,2023-10-01/P3M,155393,15539,replaced,"Monthly return (December): December computer hours entered as 155,393, where other quarters average around 17,000. Corrected to 15,539 (removing an accidental extra zero)."
 E09000018,2024-01-01/P3M,18581,,,
 E09000027,2023-04-01/P1M,3889,,,
 E09000027,2023-05-01/P1M,3769,,,
@@ -653,18 +653,18 @@ E08000003,2024-01-01/P1M,27749,,,
 E08000003,2024-02-01/P1M,28582,,,
 E08000003,2024-03-01/P1M,27672,,,
 E09000024,2023-04-01/P1Y,93303,,,
-E08000021,2023-04-01/P1M,707158,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-05-01/P1M,708846,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-06-01/P1M,450745,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-07-01/P1M,72661,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-08-01/P1M,824838,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-09-01/P1M,822833,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-10-01/P1M,895235,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-11-01/P1M,994746,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2023-12-01/P1M,818248,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2024-01-01/P1M,4025436,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2024-02-01/P1M,1083951,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
-E08000021,2024-03-01/P1M,889713,,excluded,Corrupted logging (~800k hrs/month); recording millisecond timestamp counters rather than hours
+E08000021,2023-04-01/P1M,707158,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-05-01/P1M,708846,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-06-01/P1M,450745,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-07-01/P1M,72661,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-08-01/P1M,824838,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-09-01/P1M,822833,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-10-01/P1M,895235,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-11-01/P1M,994746,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2023-12-01/P1M,818248,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2024-01-01/P1M,4025436,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2024-02-01/P1M,1083951,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
+E08000021,2024-03-01/P1M,889713,,excluded,"All monthly returns: Recorded ~800,000 computer hours per month across all individual months. Excluded from monthly figures."
 E09000025,2023-04-01/P1M,11392,,,
 E09000025,2023-05-01/P1M,11651,,,
 E09000025,2023-06-01/P1M,10913,,,
@@ -1144,18 +1144,18 @@ E09000032,2024-01-01/P1M,8745,,,
 E09000032,2024-02-01/P1M,9571,,,
 E09000032,2024-03-01/P1M,9942,,,
 E06000007,2023-04-01/P1Y,9973,,,
-E10000031,2023-04-01/P1M,248100,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-05-01/P1M,259471,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-06-01/P1M,268571,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-07-01/P1M,293032,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-08-01/P1M,289753,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-09-01/P1M,287655,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-10-01/P1M,303583,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-11-01/P1M,303354,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2023-12-01/P1M,239898,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2024-01-01/P1M,324576,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2024-02-01/P1M,290343,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
-E10000031,2024-03-01/P1M,297659,,excluded,Corrupted logging (~300k hrs/month); recording millisecond timestamp counters rather than hours
+E10000031,2023-04-01/P1M,248100,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-05-01/P1M,259471,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-06-01/P1M,268571,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-07-01/P1M,293032,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-08-01/P1M,289753,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-09-01/P1M,287655,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-10-01/P1M,303583,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-11-01/P1M,303354,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2023-12-01/P1M,239898,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2024-01-01/P1M,324576,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2024-02-01/P1M,290343,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
+E10000031,2024-03-01/P1M,297659,,excluded,"All monthly returns: Recorded ~300,000 computer hours per month across all individual months. Excluded from monthly figures."
 E06000037,2023-04-01/P1M,1123,,,
 E06000037,2023-05-01/P1M,1097,,,
 E06000037,2023-06-01/P1M,1153,,,
@@ -1664,7 +1664,7 @@ E06000001,2025-03-01/P1M,1198,,,
 E09000016,2024-04-01/P1Y,0,,,
 E06000019,2024-04-01/P1M,1236,,,
 E06000019,2024-05-01/P1M,1123,,,
-E06000019,2024-06-01/P1M,21510,1250,replaced,"June computer hours entered as 21510 (typo with extra digit for ~1250; other months range 1,123-1,416)"
+E06000019,2024-06-01/P1M,21510,1250,replaced,"Monthly return (June): June computer hours entered as 21,510, where other months range from 1,100 to 1,400. Corrected to 1,250 based on typical monthly use."
 E06000019,2024-07-01/P1M,1313,,,
 E06000019,2024-08-01/P1M,1264,,,
 E06000019,2024-09-01/P1M,1249,,,
@@ -2026,7 +2026,7 @@ E08000018,2024-08-01/P1M,3293,,,
 E08000018,2024-09-01/P1M,3352,,,
 E08000018,2024-10-01/P1M,3701,,,
 E08000018,2024-11-01/P1M,4015,,,
-E08000018,2024-12-01/P1M,24310,2431,replaced,December computer hours entered as 24310 (10x typo for 2431; other months range 2.8k-4.0k)
+E08000018,2024-12-01/P1M,24310,2431,replaced,"Monthly return (December): December computer hours entered as 24,310, about ten times higher than other months (~3,000). Corrected to 2,431."
 E08000018,2025-01-01/P1M,3444,,,
 E08000018,2025-02-01/P1M,3267,,,
 E08000018,2025-03-01/P1M,2798,,,
@@ -2529,18 +2529,18 @@ E06000023,2025-12-01/P1M,7413,,,
 E06000023,2026-01-01/P1M,8674,,,
 E06000023,2026-02-01/P1M,7958,,,
 E06000023,2026-03-01/P1M,8276,,,
-E06000060,2025-04-01/P1M,349249,5820,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-05-01/P1M,349234,5820,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-06-01/P1M,349179,5819,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-07-01/P1M,349173,5819,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-08-01/P1M,349158,5819,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-09-01/P1M,349086,5818,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-10-01/P1M,353004,5883,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-11-01/P1M,348717,5811,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2025-12-01/P1M,342498,5708,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2026-01-01/P1M,339462,5657,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2026-02-01/P1M,339093,5651,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
-E06000060,2026-03-01/P1M,338985,5649,replaced,Computer usage recorded in minutes instead of hours; converted to hours by dividing by 60
+E06000060,2025-04-01/P1M,349249,5820,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-05-01/P1M,349234,5820,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-06-01/P1M,349179,5819,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-07-01/P1M,349173,5819,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-08-01/P1M,349158,5819,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-09-01/P1M,349086,5818,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-10-01/P1M,353004,5883,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-11-01/P1M,348717,5811,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2025-12-01/P1M,342498,5708,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2026-01-01/P1M,339462,5657,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2026-02-01/P1M,339093,5651,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
+E06000060,2026-03-01/P1M,338985,5649,replaced,All monthly returns: Computer time was recorded in minutes instead of hours. Converted to hours by dividing by 60.
 E08000033,2025-04-01/P1Y,32018,,,
 E09000007,2025-04-01/P1M,13277,,,
 E09000007,2025-05-01/P1M,13650,,,
@@ -2751,7 +2751,7 @@ E08000037,2025-12-01/P1M,1969,,,
 E08000037,2026-01-01/P1M,2373,,,
 E08000037,2026-02-01/P1M,2293,,,
 E08000037,2026-03-01/P1M,2209,,,
-E10000013,2025-04-01/P1M,55702,5702,replaced,April computer hours entered as 55702 (double-5 typo for 5702; other months range 5.2k-6.9k)
+E10000013,2025-04-01/P1M,55702,5702,replaced,"Monthly return (April): April computer hours entered as 55,702, with an accidental duplicate '5'. Other months range around 5,500. Corrected to 5,702."
 E10000013,2025-05-01/P1M,5728,,,
 E10000013,2025-06-01/P1M,5746,,,
 E10000013,2025-07-01/P1M,6535,,,

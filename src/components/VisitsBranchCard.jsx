@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded'
 
@@ -7,6 +7,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportingCoverageByGroup, perThousandReportingPersonYears } from '../helpers/reportingRates'
 import * as visitsModel from '../models/visits'
 
 import NumberCard from './NumberCard'
@@ -30,7 +31,10 @@ const VisitsBranchCard = () => {
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
 
-  const comparison = resolvePeriodComparison(selectedPeriods, periods)
+  const comparison = useMemo(
+    () => resolvePeriodComparison(selectedPeriods, periods),
+    [selectedPeriods, periods]
+  )
 
   useEffect(() => {
     if (!visits) {
@@ -70,10 +74,17 @@ const VisitsBranchCard = () => {
       0
     )
 
-    setCount(totalBranch)
+    const coverage = getReportingCoverageByGroup(
+      branchRecords,
+      activeServices,
+      'countVisits',
+      () => 'branch'
+    ).get('branch')
+    const annualRate = perThousandReportingPersonYears(totalBranch, coverage) || 0
+    setCount(annualRate)
 
     const pct = totalAllVisits > 0 ? (totalBranch / totalAllVisits) * 100 : 0
-    setDescription(`${Math.round(pct)}% of total visits`)
+    setDescription(`${Math.round(pct)}% of visits; per 1,000 reporting residents / yr`)
     setWarning(getRecordsQualityWarning(branchRecords))
 
     if (comparison && visits) {

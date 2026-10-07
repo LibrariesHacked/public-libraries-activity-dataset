@@ -444,36 +444,36 @@ E06000056,Home delivery,2023-12-01/P1M,169,,,
 E06000056,Home delivery,2024-01-01/P1M,170,,,
 E06000056,Home delivery,2024-02-01/P1M,149,,,
 E06000056,Home delivery,2024-03-01/P1M,160,,,
-E06000050,Library,2023-03-01/P3M,680900,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Library,2023-06-01/P3M,851150,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Library,2023-09-01/P3M,697400,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Library,2023-12-01/P3M,813500,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Shared building,2023-05-01/P1M,716850,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Shared building,2023-08-01/P1M,624900,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-04-01/P1M,227,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-05-01/P1M,355,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-06-01/P1M,304,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-07-01/P1M,268,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-08-01/P1M,266,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-09-01/P1M,431,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-10-01/P1M,502,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-11-01/P1M,449,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2023-12-01/P1M,71,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2024-01-01/P1M,409,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2024-02-01/P1M,409,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Mobile library,2024-03-01/P1M,365,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-04-01/P1M,69,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-05-01/P1M,70,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-06-01/P1M,71,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-07-01/P1M,75,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-08-01/P1M,76,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-09-01/P1M,69,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-10-01/P1M,71,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-11-01/P1M,74,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2023-12-01/P1M,62,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2024-01-01/P1M,58,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2024-02-01/P1M,58,,suspicious,Reflects whole civic centre footfall rather than library visits
-E06000050,Home delivery,2024-03-01/P1M,57,,suspicious,Reflects whole civic centre footfall rather than library visits
+E06000050,Library,2023-03-01/P3M,680900,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2023-06-01/P3M,851150,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2023-09-01/P3M,697400,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2023-12-01/P3M,813500,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Shared building,2023-05-01/P1M,716850,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Shared building,2023-08-01/P1M,624900,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-04-01/P1M,227,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-05-01/P1M,355,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-06-01/P1M,304,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-07-01/P1M,268,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-08-01/P1M,266,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-09-01/P1M,431,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-10-01/P1M,502,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-11-01/P1M,449,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2023-12-01/P1M,71,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2024-01-01/P1M,409,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2024-02-01/P1M,409,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Mobile library,2024-03-01/P1M,365,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-04-01/P1M,69,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-05-01/P1M,70,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-06-01/P1M,71,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-07-01/P1M,75,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-08-01/P1M,76,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-09-01/P1M,69,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-10-01/P1M,71,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-11-01/P1M,74,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2023-12-01/P1M,62,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2024-01-01/P1M,58,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2024-02-01/P1M,58,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Home delivery,2024-03-01/P1M,57,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
 E06000052,Library,2023-04-01/P1M,69900,,,
 E06000052,Library,2023-05-01/P1M,53450,,,
 E06000052,Library,2023-06-01/P1M,76580,,,
@@ -1024,7 +1024,7 @@ E06000001,Shared building,2023-10-01/P1M,23116,,,
 E06000001,Shared building,2023-11-01/P1M,23995,,,
 E06000001,Shared building,2023-12-01/P1M,16269,,,
 E06000001,Shared building,2024-01-01/P1M,20713,,,
-E06000001,Shared building,2024-02-01/P1M,211261,21126,replaced,February physical visits entered as 211261 (10x typo for 21126; other months range 20k-23k)
+E06000001,Shared building,2024-02-01/P1M,211261,21126,replaced,"Monthly return (February): February visits entered as 211,261, about ten times higher than other months (~21,000). Corrected to 21,126."
 E06000001,Shared building,2024-03-01/P1M,20409,,,
 E06000001,Home delivery,2023-04-01/P1M,365,,,
 E06000001,Home delivery,2023-05-01/P1M,367,,,
@@ -1687,30 +1687,30 @@ E09000027,Home delivery,2023-12-01/P1M,84,,,
 E09000027,Home delivery,2024-01-01/P1M,84,,,
 E09000027,Home delivery,2024-02-01/P1M,84,,,
 E09000027,Home delivery,2024-03-01/P1M,84,,,
-E09000029,Library,2023-04-01/P1M,514910,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-05-01/P1M,564110,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-06-01/P1M,531670,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-07-01/P1M,476200,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-08-01/P1M,484700,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-09-01/P1M,507540,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-10-01/P1M,533590,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-11-01/P1M,53236,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2023-12-01/P1M,40210,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2024-01-01/P1M,56544,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2024-02-01/P1M,55103,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Library,2024-03-01/P1M,55802,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-04-01/P1M,185940,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-05-01/P1M,206540,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-06-01/P1M,195830,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-07-01/P1M,20675,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-08-01/P1M,184780,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-09-01/P1M,197220,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-10-01/P1M,215360,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-11-01/P1M,20430,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2023-12-01/P1M,16620,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2024-01-01/P1M,22372,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2024-02-01/P1M,23199,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
-E09000029,Shared building,2024-03-01/P1M,21545,,suspicious,Reported visits appear inflated by an extra trailing zero in April-October
+E09000029,Library,2023-04-01/P1M,514910,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-05-01/P1M,564110,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-06-01/P1M,531670,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-07-01/P1M,476200,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-08-01/P1M,484700,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-09-01/P1M,507540,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-10-01/P1M,533590,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-11-01/P1M,53236,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2023-12-01/P1M,40210,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2024-01-01/P1M,56544,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2024-02-01/P1M,55103,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Library,2024-03-01/P1M,55802,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-04-01/P1M,185940,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-05-01/P1M,206540,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-06-01/P1M,195830,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-07-01/P1M,20675,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-08-01/P1M,184780,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-09-01/P1M,197220,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-10-01/P1M,215360,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-11-01/P1M,20430,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2023-12-01/P1M,16620,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2024-01-01/P1M,22372,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2024-02-01/P1M,23199,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
+E09000029,Shared building,2024-03-01/P1M,21545,,suspicious,"Monthly returns (Apr-Oct): Visits from April to October appear roughly ten times higher than normal, likely due to an accidental extra zero."
 E06000032,Library,2023-04-01/P1M,7138,,,
 E06000032,Library,2023-05-01/P1M,7294,,,
 E06000032,Library,2023-06-01/P1M,7192,,,
@@ -2853,7 +2853,7 @@ E08000008,Library,2023-07-01/P1M,4831,,,
 E08000008,Library,2023-08-01/P1M,5367,,,
 E08000008,Library,2023-09-01/P1M,4799,,,
 E08000008,Library,2023-10-01/P1M,5421,,,
-E08000008,Library,2023-11-01/P1M,49433,4943,replaced,November physical visits entered as 49433 (10x typo for 4943; other months range 3.2k-5.4k)
+E08000008,Library,2023-11-01/P1M,49433,4943,replaced,"Monthly return (November): November visits entered as 49,433, about ten times higher than other months (~4,500). Corrected to 4,943."
 E08000008,Library,2023-12-01/P1M,3217,,,
 E08000008,Library,2024-01-01/P1M,4869,,,
 E08000008,Library,2024-02-01/P1M,4761,,,
@@ -5826,7 +5826,7 @@ E08000006,Shared building,2024-11-01/P1M,60673,,,
 E08000006,Shared building,2024-12-01/P1M,48452,,,
 E08000006,Shared building,2025-01-01/P1M,59449,,,
 E08000006,Shared building,2025-02-01/P1M,63599,,,
-E08000006,Shared building,2025-03-01/P1M,715224,66045,replaced,"March shared visits entered as cumulative annual total 715,224 instead of monthly increment; estimated as 66,045 (715,224 less Apr-Feb sum 649,179)"
+E08000006,Shared building,2025-03-01/P1M,715224,66045,replaced,"Monthly return (March): March visits entered as 715,224, which is the total for the whole year rather than just March. Estimated March visits as 66,045 by deducting the other eleven months."
 E08000006,Mobile library,2024-04-01/P1Y,0,,,
 E08000006,Home delivery,2024-04-01/P1M,230,,,
 E08000006,Home delivery,2024-05-01/P1M,133,,,
@@ -5866,7 +5866,7 @@ E08000028,Shared building,2025-02-01/P1M,10668,,,
 E08000028,Shared building,2025-03-01/P1M,10375,,,
 E08000028,Mobile library,2024-04-01/P1Y,0,,,
 E08000028,Home delivery,2024-04-01/P1Y,0,,,
-E08000014,Library,2024-04-01/P3M,508530,50853,replaced,"Q1 visits entered as 508530 (10x typo for 50853; subsequent quarters are 58k, 53k, 48k)"
+E08000014,Library,2024-04-01/P3M,508530,50853,replaced,"Quarterly return (Q1): First quarter visits entered as 508,530, about ten times higher than other quarters (~50,000). Corrected to 50,853."
 E08000014,Library,2024-07-01/P3M,58854,,,
 E08000014,Library,2024-10-01/P3M,53081,,,
 E08000014,Library,2025-01-01/P3M,48253,,,

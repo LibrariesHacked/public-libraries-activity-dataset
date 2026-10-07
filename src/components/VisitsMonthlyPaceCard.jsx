@@ -1,15 +1,8 @@
-import React, { useEffect, useState } from 'react'
-
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded'
 
-import { useApplicationState } from '../hooks/useApplicationState'
-import { formatCompactNumber } from '../helpers/numbers'
-import { getActiveServices } from '../models/service'
-import { filterByMonthRange, getActivityRecordsPeriodChange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
-import { getRecordsQualityWarning } from '../helpers/dataQuality'
 import * as visitsModel from '../models/visits'
 
-import NumberCard from './NumberCard'
+import MonthlyPaceCard from './MonthlyPaceCard'
 
 /**
  * Summary KPI card component displaying average monthly library visits,
@@ -18,87 +11,16 @@ import NumberCard from './NumberCard'
  * @returns {JSX.Element} NumberCard configured for monthly library visit pace.
  */
 const VisitsMonthlyPaceCard = () => {
-  const [
-    { filteredServices, services, visits, periods, selectedPeriods, monthRange, useEstimates },
-    dispatchApplication
-  ] = useApplicationState()
-
-  const [monthlyAverage, setMonthlyAverage] = useState(0)
-  const [description, setDescription] = useState('')
-  const [change, setChange] = useState(null)
-  const [noData, setNoData] = useState(false)
-  const [warning, setWarning] = useState(null)
-
-  const comparison = resolvePeriodComparison(selectedPeriods, periods)
-
-  useEffect(() => {
-    if (!visits) {
-      visitsModel.getVisits().then(data => {
-        dispatchApplication({ type: 'SetVisits', visits: data })
-      })
-    }
-  }, [visits, dispatchApplication])
-
-  useEffect(() => {
-    if (!visits || !services) return
-
-    const activeServices = getActiveServices(services, filteredServices)
-    const activeCodes = new Set((activeServices || []).map(s => s.code))
-
-    const months = getMonthsInRange(monthRange)
-    const monthCount = months.length || 12
-    const yearCount = monthCount / 12
-
-    const rangeVisits = filterByMonthRange(visits, monthRange)
-    const matched = rangeVisits.filter(
-      v =>
-        (!filteredServices.length || filteredServices.includes(v.serviceCode)) &&
-        activeCodes.has(v.serviceCode)
-    )
-
-    if (!matched.length) {
-      setNoData(true)
-      setMonthlyAverage(0)
-      setDescription('')
-      return
-    }
-
-    setNoData(false)
-    const totalAllVisits = matched.reduce((acc, v) => acc + (v.countVisits || 0), 0)
-    const avgMonthly = Math.round(totalAllVisits / monthCount)
-    const avgDaily = Math.round(totalAllVisits / (365 * yearCount))
-
-    setMonthlyAverage(avgMonthly)
-    setDescription(`${formatCompactNumber(avgDaily)} visits per day`)
-    setWarning(getRecordsQualityWarning(matched))
-
-    if (comparison && visits) {
-      const chg = getActivityRecordsPeriodChange({
-        records: visits,
-        countProp: 'countVisits',
-        baselinePeriod: comparison.baselinePeriod,
-        targetPeriod: comparison.targetPeriod,
-        serviceCodes: activeCodes,
-        useEstimates
-      })
-      setChange(chg)
-    } else {
-      setChange(null)
-    }
-  }, [visits, services, filteredServices, monthRange, comparison, useEstimates])
-
   return (
-    <NumberCard
+    <MonthlyPaceCard
+      recordsKey='visits'
+      countProp='countVisits'
+      actionType='SetVisits'
+      fetcher={visitsModel.getVisits}
       title='Monthly visits'
-      number={formatCompactNumber(monthlyAverage)}
-      description={description}
+      unit='visits'
       icon={CalendarMonthRoundedIcon}
-      change={change}
-      changeDescription={comparison?.changeDescription || ''}
       colour='chartGreen'
-      noData={noData}
-      warning={warning}
-      isShowingEstimated={useEstimates !== false}
     />
   )
 }

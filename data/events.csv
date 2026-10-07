@@ -5104,18 +5104,18 @@ E08000003,Physical,Unknown,2025-03-01/P1M,1324,,,
 E08000003,Physical,Adult,2024-04-01/P1Y,0,,,
 E08000003,Physical,Under 12,2024-04-01/P1Y,0,,,
 E08000003,Physical,12-17,2024-04-01/P1Y,0,,,
-E08000003,Physical,All ages,2024-04-01/P1M,17376,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-05-01/P1M,21697,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-06-01/P1M,17974,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-07-01/P1M,18174,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-08-01/P1M,15926,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-09-01/P1M,18943,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-10-01/P1M,28103,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-11-01/P1M,25274,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2024-12-01/P1M,21396,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2025-01-01/P1M,21135,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2025-02-01/P1M,23945,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
-E08000003,Physical,All ages,2025-03-01/P1M,25103,,excluded,"Monthly physical event attendance (255,046) mistakenly entered into all-age event breakdown rows"
+E08000003,Physical,All ages,2024-04-01/P1M,17376,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-05-01/P1M,21697,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-06-01/P1M,17974,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-07-01/P1M,18174,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-08-01/P1M,15926,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-09-01/P1M,18943,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-10-01/P1M,28103,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-11-01/P1M,25274,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2024-12-01/P1M,21396,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2025-01-01/P1M,21135,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2025-02-01/P1M,23945,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
+E08000003,Physical,All ages,2025-03-01/P1M,25103,,excluded,"Event attendance (255,046 attendees) was entered into the count of events column. Excluded from event counts to avoid counting attendees as events."
 E08000003,Digital,Unknown,2024-04-01/P1M,0,,,
 E08000003,Digital,Unknown,2024-05-01/P1M,0,,,
 E08000003,Digital,Unknown,2024-06-01/P1M,0,,,
@@ -5131,18 +5131,18 @@ E08000003,Digital,Unknown,2025-03-01/P1M,11,,,
 E08000003,Digital,Adult,2024-04-01/P1Y,0,,,
 E08000003,Digital,Under 12,2024-04-01/P1Y,0,,,
 E08000003,Digital,12-17,2024-04-01/P1Y,0,,,
-E08000003,Digital,All ages,2024-04-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-05-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-06-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-07-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-08-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-09-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-10-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-11-01/P1M,0,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2024-12-01/P1M,86,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2025-01-01/P1M,145,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2025-02-01/P1M,124,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
-E08000003,Digital,All ages,2025-03-01/P1M,105,,excluded,Monthly digital event attendance (460) mistakenly entered into all-age event breakdown rows
+E08000003,Digital,All ages,2024-04-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-05-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-06-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-07-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-08-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-09-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-10-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-11-01/P1M,0,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2024-12-01/P1M,86,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2025-01-01/P1M,145,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2025-02-01/P1M,124,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
+E08000003,Digital,All ages,2025-03-01/P1M,105,,excluded,Digital event breakdown: Digital event attendance (460 attendees) was entered into the count of events column. Excluded from event counts.
 E09000024,Physical,Adult,2024-04-01/P1M,382,,,
 E09000024,Physical,Adult,2024-05-01/P1M,401,,,
 E09000024,Physical,Adult,2024-06-01/P1M,420,,,

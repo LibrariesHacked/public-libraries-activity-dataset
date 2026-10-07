@@ -2110,7 +2110,7 @@ E06000021,Physical,Unknown,2024-03-01/P1M,3130,,,
 E10000029,Physical,Adult,2023-04-01/P3M,27893,,,
 E10000029,Physical,Adult,2023-07-01/P3M,26880,,,
 E10000029,Physical,Adult,2023-10-01/P3M,26714,,,
-E10000029,Physical,Adult,2024-01-01/P3M,319000,31900,replaced,"March adult event attendance entered as 319000 (10x typo for 31900; total March attendance was 79,280)"
+E10000029,Physical,Adult,2024-01-01/P3M,319000,31900,replaced,"Monthly return (March): March adult event attendance entered as 319,000, which exceeds the reported monthly total (79,280). Likely an accidental extra zero on 31,900."
 E08000024,Physical,Adult,2023-04-01/P1M,400,,,
 E08000024,Physical,Adult,2023-05-01/P1M,226,,,
 E08000024,Physical,Adult,2023-06-01/P1M,190,,,
