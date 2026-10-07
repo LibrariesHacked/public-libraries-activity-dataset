@@ -1091,8 +1091,13 @@ def convert_values_to_monthly(data):
 
 def reconcile_loan_unknown_rows(detail_records, total_records, start_year):
     """Create non-overlapping age rows, using format totals only for the Unknown remainder."""
-    standardized_details = standardize_loan_periods(detail_records, start_year)
+    standardized_details = standardize_loan_periods(
+        [{**record, '_source_index': index} for index, record in enumerate(detail_records)],
+        start_year
+    )
     standardized_totals = standardize_loan_periods(total_records, start_year)
+    for record in standardized_details + standardized_totals:
+        record['_source_period'] = record['Period']
     monthly_details = convert_values_to_monthly(standardized_details)
     monthly_totals = convert_values_to_monthly(standardized_totals)
     details_by_key = {}
@@ -1102,6 +1107,8 @@ def reconcile_loan_unknown_rows(detail_records, total_records, start_year):
         details_by_key.setdefault(key, []).append(record)
 
     unknown_records = []
+    review_issues_by_key = {}
+    source_rows_to_flag = set()
     for total in monthly_totals:
         key = (total['Authority'], total['Format'], total['Period'])
         detail_rows = [
@@ -1110,6 +1117,7 @@ def reconcile_loan_unknown_rows(detail_records, total_records, start_year):
         ]
         total_original = number_value(total.get('Count'))
         detail_original = sum(number_value(record.get('Count')) for record in detail_rows)
+        reported_difference = total_original - detail_original
         detail_overage = max(0, detail_original - total_original)
         unknown_original = max(0, total_original - detail_original)
 
@@ -1121,8 +1129,11 @@ def reconcile_loan_unknown_rows(detail_records, total_records, start_year):
             detail_effective = sum(
                 number_value(record.get('Effective count')) for record in detail_rows
             )
+            corrected_difference = total_effective - detail_effective
             effective_overage = max(0, detail_effective - total_effective)
             unknown_effective = max(0, total_effective - detail_effective)
+        if total_effective is None:
+            corrected_difference = None
 
         total_status = total.get('Status') or ''
         if total_status == 'excluded':
@@ -1134,36 +1145,135 @@ def reconcile_loan_unknown_rows(detail_records, total_records, start_year):
         else:
             status = ''
 
-        if (unknown_original == 0 and unknown_effective in (None, 0)
-                and not status and not detail_overage and not effective_overage):
+        detail_anomalies = [
+            record for record in detail_rows
+            if record.get('Status') in ('replaced', 'suspicious', 'excluded')
+            and record.get('Notes')
+        ]
+        should_flag_details = (
+            total_status == 'suspicious'
+            or effective_overage > 0
+            or (detail_overage > 0 and total_status != 'replaced')
+        )
+        has_issue = (
+            should_flag_details
+            or total_status in ('replaced', 'suspicious', 'excluded')
+            or bool(detail_anomalies)
+        )
+        issue_key = None
+        if has_issue:
+            source_period = total.get('_source_period', total['Period'])
+            issue_key = (total['Authority'], total['Format'], source_period)
+            issue = review_issues_by_key.setdefault(issue_key, {
+                'authority': total['Authority'],
+                'format': total['Format'],
+                'sourcePeriod': source_period,
+                'reportedTotal': 0,
+                'ageBandSum': 0,
+                'correctedTotal': 0,
+                'correctedAgeBandSum': 0,
+                'months': set(),
+                'notes': [],
+                'status': '',
+            })
+            issue['reportedTotal'] += total_original
+            issue['ageBandSum'] += detail_original
+            issue['months'].add(total['Period'])
+            if total_effective is not None:
+                issue['correctedTotal'] += total_effective
+                issue['correctedAgeBandSum'] += sum(
+                    number_value(record.get('Effective count')) for record in detail_rows
+                )
+            for note in [total.get('Notes'), *(record.get('Notes') for record in detail_anomalies)]:
+                if note and note not in issue['notes']:
+                    issue['notes'].append(note)
+            statuses = [total_status, *(record.get('Status') for record in detail_anomalies)]
+            if 'suspicious' in statuses or detail_overage or effective_overage:
+                issue['status'] = 'suspicious'
+            elif 'excluded' in statuses and issue['status'] != 'suspicious':
+                issue['status'] = 'excluded'
+            elif 'replaced' in statuses and issue['status'] not in ('suspicious', 'excluded'):
+                issue['status'] = 'replaced'
+
+            if should_flag_details or total_status in ('replaced', 'suspicious', 'excluded'):
+                for record in detail_rows:
+                    record['_review_issue_key'] = issue_key
+            else:
+                for record in detail_anomalies:
+                    record['_review_issue_key'] = issue_key
+            for record in detail_rows:
+                if should_flag_details and record.get('Status') not in ('replaced', 'excluded'):
+                    record['Status'] = 'suspicious'
+                    if record.get('_source_index') is not None:
+                        source_rows_to_flag.add(record['_source_index'])
+
+        if unknown_original == 0 and unknown_effective in (None, 0):
             continue
-
-        notes = total.get('Notes') or ''
-        if not notes:
-            notes = 'Difference between the reported format total and age-group detail.'
-        if detail_overage:
-            notes += f' Reported age-group detail exceeds the reported format total by {detail_overage} loans.'
-        if effective_overage:
-            notes += f' Corrected age-group detail exceeds the corrected format total by {effective_overage} loans.'
-
-        audit_only_zero = status == 'suspicious' and unknown_original == 0 and unknown_effective == 0
 
         unknown_records.append({
             **total,
             'Content age group': 'Unknown',
             'Period': total['Period'],
-            'Count': None if audit_only_zero else unknown_original,
+            'Count': unknown_original,
             'Estimated count': unknown_effective if status == 'replaced' else '',
             'Status': status,
-            'Notes': notes,
-            'Effective count': None if audit_only_zero else unknown_effective,
+            'Notes': '',
+            'Effective count': unknown_effective,
+            '_review_issue_key': issue_key,
+        })
+
+    for record in standardized_details:
+        source_index = record.get('_source_index')
+        if source_index in source_rows_to_flag and record.get('Status') not in ('replaced', 'excluded'):
+            record['Status'] = 'suspicious'
+
+    review_issues = []
+    for issue_key, issue in review_issues_by_key.items():
+        source_period = issue['sourcePeriod']
+        period_label = source_period.replace('/P1M', ' (month)').replace('/P3M', ' (quarter)').replace('/P1Y', ' (year)')
+        difference = issue['reportedTotal'] - issue['ageBandSum']
+        description = (
+            f"{issue['format']} source period {period_label}: reported total "
+            f"{issue['reportedTotal']:,}; age-band sum {issue['ageBandSum']:,}; "
+            f"difference {difference:+,} loans."
+        )
+        corrected_difference = issue['correctedTotal'] - issue['correctedAgeBandSum']
+        if issue['correctedTotal'] and corrected_difference != difference:
+            description += (
+                f" Corrected total {issue['correctedTotal']:,}; corrected age-band sum "
+                f"{issue['correctedAgeBandSum']:,}; difference {corrected_difference:+,}."
+            )
+        if issue['notes']:
+            description = '; '.join([*issue['notes'], description])
+        review_issues.append({
+            '_key': issue_key,
+            'authority': issue['authority'],
+            'format': issue['format'],
+            'sourcePeriod': source_period,
+            'status': issue['status'],
+            'months': sorted(issue['months']),
+            'note': description,
         })
 
     unknown_export_records = [
-        {key: value for key, value in record.items() if key != 'Effective count'}
+        {key: value for key, value in record.items()
+         if key not in ('Effective count', '_source_period', '_review_issue_key')}
         for record in unknown_records
     ]
-    return standardized_details + unknown_export_records, monthly_details + unknown_records
+    clean_standardized_details = [
+        {key: value for key, value in record.items()
+         if key not in ('_source_index', '_source_period')}
+        for record in standardized_details
+    ]
+    clean_monthly_details = [
+        {key: value for key, value in record.items() if key != '_source_index'}
+        for record in monthly_details
+    ]
+    return (
+        clean_standardized_details + unknown_export_records,
+        clean_monthly_details + unknown_records,
+        review_issues,
+    )
 
 
 def convert_values_to_yearly(data):
@@ -1228,6 +1338,8 @@ def rotate_activity_data():
     events = []
     attendance = []
     loans = []
+    loans_monthly = []
+    loan_review_issues = []
     click_collect = []
     computer_inventory = []
     visits = []
@@ -1600,7 +1712,7 @@ def rotate_activity_data():
                         'Notes': notes or '',
                     })
 
-        authority_loans, authority_loans_for_totals = reconcile_loan_unknown_rows(
+        authority_loans, authority_loans_for_totals, authority_loan_issues = reconcile_loan_unknown_rows(
             authority_loans,
             authority_loan_totals,
             start_year
@@ -1685,6 +1797,8 @@ def rotate_activity_data():
         ))
 
         loans.extend(authority_loans)
+        loans_monthly.extend(authority_loans_for_totals)
+        loan_review_issues.extend(authority_loan_issues)
 
         visits.extend(standardize_grouped_periods(
             authority_visits,
@@ -1770,21 +1884,24 @@ def rotate_activity_data():
         [u['Authority'], u['Period'], u['Age group'], u['Effective count'], u['Count'], u.get('Status') or None, u.get('Notes') or None]
         for u in convert_values_to_yearly(users)
     ])
-    write_json(LOANS_JSON, [
-        [
-            l['Authority'], l['Format'], l['Content age group'], l['Period'],
-            None if (l.get('Content age group') == 'Unknown'
-                    and l.get('Status') == 'suspicious'
-                    and l.get('Count') in (None, 0)
-                    and l.get('Effective count') == 0) else l['Effective count'],
-            None if (l.get('Content age group') == 'Unknown'
-                    and l.get('Status') == 'suspicious'
-                    and l.get('Count') in (None, 0)
-                    and l.get('Effective count') == 0) else l['Count'],
-            l.get('Status') or None, l.get('Notes') or None
-        ]
-        for l in convert_values_to_monthly(loans)
-    ])
+    loan_issue_ids = {}
+    loan_issue_rows = []
+    for issue in loan_review_issues:
+        issue_id = len(loan_issue_rows)
+        loan_issue_ids[issue['_key']] = issue_id
+        loan_issue_rows.append({
+            key: value for key, value in issue.items() if key != '_key'
+        } | {'id': issue_id})
+
+    loan_rows = []
+    for record in loans_monthly:
+        issue_id = loan_issue_ids.get(record.get('_review_issue_key'))
+        loan_rows.append([
+            record['Authority'], record['Format'], record['Content age group'],
+            record['Period'], record['Effective count'], record['Count'],
+            record.get('Status') or None, issue_id
+        ])
+    write_json(LOANS_JSON, {'issues': loan_issue_rows, 'records': loan_rows})
     write_json(VISITS_JSON, [
         [v['Authority'], v['Location'], v['Period'], v['Effective count'], v['Count'], v.get('Status') or None, v.get('Notes') or None]
         for v in convert_values_to_monthly(visits)

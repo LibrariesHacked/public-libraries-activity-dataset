@@ -231,7 +231,7 @@ function downloadCsv (rows, config, filename) {
   const headerLine = headerKeys.map(h => `"${h.label.replace(/"/g, '""')}"`).join(',')
   const bodyLines = rows.map(row =>
     headerKeys.map(h => {
-      const val = row[h.key]
+      const val = h.key === 'notes' ? (row.issueDetails || row[h.key]) : row[h.key]
       if (val == null) return '""'
       return `"${String(val).replace(/"/g, '""')}"`
     }).join(',')
@@ -344,7 +344,11 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
         originalCount: record.originalCount,
         estimatedCount: record.estimatedCount,
         status: record.status || null,
-        notes: record.notes || null
+        notes: record.reviewIssueId == null
+          ? record.notes || null
+          : `Review issue #${record.reviewIssueId + 1}`,
+        issueDetails: record.issueDetails || null,
+        reviewIssueId: record.reviewIssueId
       }
 
       // Copy dimension fields
@@ -361,7 +365,9 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
     let excludedCount = 0
     let replacedCount = 0
     let suspiciousCount = 0
+    let suspiciousRowCount = 0
     let standardisedCount = 0
+    const suspiciousIssueKeys = new Set()
     const uniqueServices = new Set()
     const uniqueMonths = new Set()
 
@@ -372,24 +378,35 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
       if (r.status === 'excluded') excludedCount += 1
       else if (r.status === 'replaced') replacedCount += 1
-      else if (r.status === 'suspicious') suspiciousCount += 1
+      else if (r.status === 'suspicious') {
+        suspiciousRowCount += 1
+        if (config.id === 'loans') {
+          suspiciousIssueKeys.add(r.reviewIssueId == null
+            ? JSON.stringify([r.serviceCode, r.format, r.period, r.notes || ''])
+            : r.reviewIssueId)
+        } else {
+          suspiciousCount += 1
+        }
+      }
       else if (r.status === 'standardised') standardisedCount += 1
     })
 
-    const anomaliesCount = excludedCount + replacedCount + suspiciousCount + standardisedCount
+    const anomaliesCount = excludedCount + replacedCount + suspiciousRowCount + standardisedCount
+    const reviewIssueCount = config.id === 'loans' ? suspiciousIssueKeys.size : suspiciousCount
 
     return {
       totalRows: rawRows.length,
       excludedCount,
       replacedCount,
-      suspiciousCount,
+      suspiciousCount: reviewIssueCount,
+      suspiciousRowCount,
       standardisedCount,
       anomaliesCount,
       cleanCount: rawRows.length - anomaliesCount,
       servicesCount: uniqueServices.size,
       uniqueMonths: [...uniqueMonths].sort()
     }
-  }, [rawRows])
+  }, [rawRows, config])
 
   // Available service options for filter dropdown
   const serviceOptions = useMemo(() => {
@@ -753,7 +770,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
         renderCell: params => {
           if (!params.value) return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
           return (
-            <Tooltip title={params.value} arrow placement='top-start'>
+            <Tooltip title={params.row.issueDetails || params.value} arrow placement='top-start'>
               <Typography
                 variant='body2'
                 component='span'
@@ -877,7 +894,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
             {stats.suspiciousCount > 0 && (
               <Chip
-                label={`${stats.suspiciousCount} Review flags`}
+                label={`${stats.suspiciousCount} Review patterns`}
                 size='small'
                 color='warning'
                 variant={statusFilter === 'suspicious' ? 'filled' : 'outlined'}
@@ -975,7 +992,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               {stats.replacedCount > 0 && <MenuItem value='replaced'>Corrected figures ({stats.replacedCount})</MenuItem>}
               {stats.standardisedCount > 0 && <MenuItem value='standardised'>Standardised ({stats.standardisedCount})</MenuItem>}
               {stats.suspiciousCount > 0 && (
-                <MenuItem value='suspicious'>Review flags only ({stats.suspiciousCount})</MenuItem>
+                <MenuItem value='suspicious'>Review rows ({stats.suspiciousRowCount})</MenuItem>
               )}
               {stats.cleanCount > 0 && config.id !== 'errors' && <MenuItem value='clean'>Clean data only</MenuItem>}
             </Select>
