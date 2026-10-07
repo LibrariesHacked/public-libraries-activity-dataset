@@ -18,7 +18,8 @@ import {
   formatMonth,
   formatPeriod,
   getMonthsInRange,
-  getPeriodForMonth
+  getPeriodForMonth,
+  getPeriodMonths
 } from '../helpers/periods'
 
 /**
@@ -66,6 +67,35 @@ const PeriodSelection = () => {
       }
     })
   }, [availableMonths])
+
+  const periodWidths = useMemo(() => {
+    if (!periods || periods.length === 0 || !availableMonths || availableMonths.length === 0) {
+      return {}
+    }
+    const maxIndex = availableMonths.length - 1
+    if (maxIndex <= 0) {
+      return { [periods[0]]: 100 }
+    }
+
+    const widths = {}
+    periods.forEach((period, idx) => {
+      const pMonths = getPeriodMonths(period)
+      const thisStartIndex = availableMonths.indexOf(pMonths[0])
+      let thisEndIndex
+      if (idx < periods.length - 1) {
+        const nextPeriod = periods[idx + 1]
+        const nextMonths = getPeriodMonths(nextPeriod)
+        thisEndIndex = availableMonths.indexOf(nextMonths[0])
+      } else {
+        thisEndIndex = maxIndex
+      }
+      const start = Math.max(0, thisStartIndex)
+      const end = Math.min(maxIndex, thisEndIndex)
+      const span = end - start
+      widths[period] = (span / maxIndex) * 100
+    })
+    return widths
+  }, [periods, availableMonths])
 
   if (!periods || periods.length === 0 || availableMonths.length === 0) {
     return null
@@ -185,28 +215,34 @@ const PeriodSelection = () => {
         )}
       </Stack>
 
-      {/* Year Toggle Buttons */}
-      <ToggleButtonGroup
-        value={selectedPeriods || []}
-        onChange={handlePeriodsChange}
-        fullWidth
-        aria-label='Years'
-        sx={{ mb: 0.75 }}
-      >
-        {periods.map(period => (
-          <ToggleButton
-            key={period}
-            value={period}
-            aria-label={formatPeriod(period)}
-            title={period}
-          >
-            {formatPeriod(period)}
-          </ToggleButton>
-        ))}
-      </ToggleButtonGroup>
+      {/* Unified Range Slider & Year Buttons Container */}
+      <Box sx={{ px: 0, pt: 0 }}>
+        {/* Year Toggle Buttons */}
+        <ToggleButtonGroup
+          value={selectedPeriods || []}
+          onChange={handlePeriodsChange}
+          fullWidth
+          aria-label='Years'
+          sx={{ mb: 1, width: '100%' }}
+        >
+          {periods.map(period => (
+            <ToggleButton
+              key={period}
+              value={period}
+              aria-label={formatPeriod(period)}
+              title={period}
+              sx={{
+                flex: `0 0 ${periodWidths[period] ?? (100 / periods.length)}%`,
+                width: `${periodWidths[period] ?? (100 / periods.length)}%`,
+                maxWidth: `${periodWidths[period] ?? (100 / periods.length)}%`,
+                px: { xs: 0.5, sm: 1.5 }
+              }}
+            >
+              {formatPeriod(period)}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
 
-      {/* Unified Range Slider */}
-      <Box sx={{ px: { xs: 1.5, sm: 2 }, pt: 0 }}>
         <Slider
           value={[startIndex, endIndex]}
           onChange={handleSliderChange}
@@ -233,7 +269,10 @@ const PeriodSelection = () => {
             color: 'primary.main',
             height: 4,
             py: 1,
-            mb: 1,
+            mb: 2.5,
+            width: 'calc(100% - 16px)',
+            mx: 'auto',
+            display: 'block',
             '& .MuiSlider-thumb': {
               width: 16,
               height: 16,
@@ -266,28 +305,25 @@ const PeriodSelection = () => {
               fontSize: '0.725rem',
               fontWeight: 500,
               color: 'text.secondary',
-              top: 26,
-              whiteSpace: 'nowrap',
-              '@media (pointer: coarse)': {
-                top: 32
-              }
+              top: 20,
+              whiteSpace: 'nowrap'
             },
             '& .MuiSlider-markLabel[data-index="0"]': {
-              transform: 'translateX(0)'
+              transform: 'translateX(-8px)'
             },
             [`& .MuiSlider-markLabel[data-index="${availableMonths.length - 1}"]`]: {
-              transform: 'translateX(-100%)'
+              transform: 'translateX(calc(-100% + 8px))'
             }
           }}
         />
         <Typography
           variant='caption'
-          color='textSecondary'
+          color='text.secondary'
           sx={{
             display: 'block',
             textAlign: 'center',
             fontSize: '0.725rem',
-            mt: 0
+            mt: 1
           }}
         >
           Drag handles to adjust months, or click a year to select.
