@@ -36,6 +36,20 @@ import * as usersModel from '../models/users'
 import * as visitsModel from '../models/visits'
 import * as wifiModel from '../models/wifi'
 
+import { formatPeriod, formatMonth } from '../helpers/periods'
+
+const DATASET_DISPLAY_NAMES = {
+  attendance: 'Attendance',
+  computers: 'Computers',
+  computer_usage: 'Computers',
+  events: 'Events',
+  loans: 'Loans',
+  users: 'Users',
+  visits: 'Visits',
+  wifi: 'Wi-Fi',
+  wifi_sessions: 'Wi-Fi'
+}
+
 /**
  * Metadata configuration for each activity dataset corresponding to the original CSVs.
  */
@@ -134,19 +148,17 @@ const DATASET_CONFIGS = {
   },
   errors: {
     id: 'errors',
-    name: 'Errors & corrections',
+    name: 'Errors and corrections',
     filename: 'errors.csv',
     endpoint: './errors.json',
     fetcher: errorsModel.getErrors,
-    description: 'Master audit register of all known reporting anomalies, counter overflows, typos, and corrected figures across library returns.',
+    description: 'Audit register of known reporting anomalies, typos, and corrected figures across library returns.',
     isErrorRegister: true,
     dimensions: [
       { field: 'period', headerName: 'Period', width: 110 },
-      { field: 'dataset', headerName: 'Dataset', width: 140 },
-      { field: 'scope', headerName: 'Scope', width: 100 },
-      { field: 'match', headerName: 'Match value', width: 130 }
+      { field: 'dataset', headerName: 'Dataset', width: 140 }
     ],
-    metricName: 'Corrections'
+    metricName: 'Count'
   }
 }
 
@@ -416,53 +428,33 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
         {
           field: 'period',
           headerName: 'Period',
-          width: 110
+          width: 100,
+          renderCell: params => (
+            <Typography variant='body2' component='span' sx={{ fontVariantNumeric: 'tabular-nums' }}>
+              {formatPeriod(params.value) || params.value}
+            </Typography>
+          )
         },
         {
           field: 'dataset',
           headerName: 'Dataset',
-          width: 140,
+          width: 130,
           renderCell: params => (
             <Chip
-              label={params.value}
+              label={DATASET_DISPLAY_NAMES[params.value] || params.value}
               size='small'
               variant='outlined'
-              sx={{ fontWeight: 600, fontSize: '0.75rem' }}
+              sx={{ fontWeight: 600, fontSize: '0.75rem', height: 24 }}
             />
           )
         },
         {
-          field: 'serviceCode',
-          headerName: 'Authority code',
-          width: 130,
-          renderCell: params => (
-            <Typography variant='body2' sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
-              {params.value}
-            </Typography>
-          )
-        },
-        {
           field: 'serviceName',
-          headerName: 'Authority name',
+          headerName: 'Library service',
           minWidth: 180,
           flex: 1,
           renderCell: params => (
-            <Typography variant='body2' sx={{ fontWeight: 500 }}>
-              {params.value}
-            </Typography>
-          )
-        },
-        {
-          field: 'scope',
-          headerName: 'Scope',
-          width: 90
-        },
-        {
-          field: 'match',
-          headerName: 'Match value',
-          width: 120,
-          renderCell: params => (
-            <Typography variant='body2' sx={{ fontFamily: 'monospace' }}>
+            <Typography variant='body2' component='span' sx={{ fontWeight: 500 }}>
               {params.value}
             </Typography>
           )
@@ -470,7 +462,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
         {
           field: 'status',
           headerName: 'Status',
-          width: 120,
+          width: 130,
           headerAlign: 'center',
           align: 'center',
           renderCell: params => {
@@ -498,27 +490,31 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           align: 'right',
           renderCell: params => {
             const val = params.value
-            if (!val || val === '—') return <Typography variant='body2' color='text.disabled'>—</Typography>
+            if (!val || val === '—') return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
+            const num = Number(val)
             return (
-              <Typography variant='body2' sx={{ fontWeight: 700, color: 'warning.dark', fontVariantNumeric: 'tabular-nums' }}>
-                {val}
+              <Typography variant='body2' component='span' sx={{ fontWeight: 600, color: 'text.primary', fontVariantNumeric: 'tabular-nums' }}>
+                {!isNaN(num) && String(num) === String(val) ? num.toLocaleString('en-GB') : val}
               </Typography>
             )
           }
         },
         {
           field: 'notes',
-          headerName: 'Error & correction notes',
+          headerName: 'Notes',
           minWidth: 320,
           flex: 2,
           renderCell: params => (
             <Tooltip title={params.value || ''} arrow placement='top-start'>
               <Typography
                 variant='body2'
+                component='span'
                 sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  display: 'inline-block',
+                  width: '100%'
                 }}
               >
                 {params.value}
@@ -535,18 +531,18 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
         headerName: 'Service code',
         width: 120,
         renderCell: params => (
-          <Typography variant='body2' sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
+          <Typography variant='body2' component='span' sx={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
             {params.value}
           </Typography>
         )
       },
       {
         field: 'serviceName',
-        headerName: 'Service name',
+        headerName: 'Library service',
         minWidth: 180,
         flex: 1,
         renderCell: params => (
-          <Typography variant='body2' sx={{ fontWeight: 500 }}>
+          <Typography variant='body2' component='span' sx={{ fontWeight: 500 }}>
             {params.value || params.row.serviceCode}
           </Typography>
         )
@@ -556,7 +552,20 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
     const dimCols = config.dimensions.map(d => ({
       field: d.field,
       headerName: d.headerName,
-      width: d.width || 130
+      width: d.width || 130,
+      renderCell: params => {
+        let displayVal = params.value
+        if (d.field === 'month' && displayVal && /^\d{4}-\d{2}$/.test(displayVal)) {
+          displayVal = formatMonth(displayVal)
+        } else if (d.field === 'period' && displayVal && /^\d{4}\/\d{4}$/.test(displayVal)) {
+          displayVal = formatPeriod(displayVal)
+        }
+        return (
+          <Typography variant='body2' component='span' sx={{ fontVariantNumeric: 'tabular-nums' }}>
+            {displayVal}
+          </Typography>
+        )
+      }
     }))
 
     const countCols = [
@@ -571,15 +580,16 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           const val = params.value
           const isExcluded = params.row.status === 'excluded'
           const isReplaced = params.row.status === 'replaced'
-          if (val == null) return <Typography variant='body2' color='text.disabled'>—</Typography>
+          if (val == null) return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
           return (
             <Typography
               variant='body2'
+              component='span'
               sx={{
                 fontVariantNumeric: 'tabular-nums',
                 textDecoration: isExcluded || isReplaced ? 'line-through' : 'none',
                 color: isExcluded ? 'error.main' : isReplaced ? 'text.secondary' : 'text.primary',
-                fontWeight: isExcluded ? 700 : 400
+                fontWeight: isExcluded ? 600 : 400
               }}
             >
               {Number(val).toLocaleString('en-GB')}
@@ -605,18 +615,19 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                 size='small'
                 color='error'
                 variant='filled'
-                sx={{ height: 22, fontSize: '0.75rem', fontWeight: 700 }}
+                sx={{ height: 22, fontSize: '0.75rem', fontWeight: 600 }}
               />
             )
           }
-          if (val == null) return <Typography variant='body2' color='text.disabled'>—</Typography>
+          if (val == null) return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
           return (
             <Typography
               variant='body2'
+              component='span'
               sx={{
                 fontVariantNumeric: 'tabular-nums',
-                fontWeight: isReplaced ? 700 : 400,
-                color: isReplaced ? 'warning.dark' : 'text.primary'
+                fontWeight: isReplaced ? 600 : 400,
+                color: 'text.primary'
               }}
             >
               {Number(val).toLocaleString('en-GB')}
@@ -688,20 +699,23 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
       },
       {
         field: 'notes',
-        headerName: 'Data quality notes',
+        headerName: 'Notes',
         minWidth: 280,
         flex: 2,
         renderCell: params => {
-          if (!params.value) return <Typography variant='body2' color='text.disabled'>—</Typography>
+          if (!params.value) return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
           return (
             <Tooltip title={params.value} arrow placement='top-start'>
               <Typography
                 variant='body2'
+                component='span'
                 sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  color: params.row.status === 'excluded' ? 'error.dark' : 'text.primary'
+                  display: 'inline-block',
+                  width: '100%',
+                  color: 'text.primary'
                 }}
               >
                 {params.value}
@@ -721,15 +735,15 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
       <Card elevation={0} variant='outlined' sx={{ mb: 1.5, boxShadow: 'none' }}>
         <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
           <Stack
-            direction={{ xs: 'column', md: 'row' }}
+            direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
             sx={{
               justifyContent: 'space-between',
-              alignItems: { xs: 'flex-start', md: 'center' }
+              alignItems: { xs: 'flex-start', sm: 'center' }
             }}
           >
-            <Box>
-              <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 0.5, flexWrap: 'wrap' }}>
                 <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
                   {config.filename}
                 </Typography>
@@ -765,6 +779,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                 )
               }
               disabled={filteredRows.length === 0}
+              sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               Download CSV ({filteredRows.length.toLocaleString()})
             </Button>
@@ -778,9 +793,6 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
             flexWrap='wrap'
             sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid', borderColor: 'divider', alignItems: 'center' }}
           >
-            <Typography variant='caption' sx={{ fontWeight: 600, color: 'text.secondary' }}>
-              Data quality:
-            </Typography>
 
             {stats.excludedCount > 0 && (
               <Chip
@@ -862,7 +874,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           {/* Global search */}
           <TextField
             size='small'
-            placeholder='Search service name, code, dimensions, notes...'
+            placeholder='Search...'
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             sx={{ flex: 1.5, minWidth: 240 }}
@@ -894,7 +906,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               <MenuItem value='all'>All library services ({serviceOptions.length})</MenuItem>
               {serviceOptions.map(s => (
                 <MenuItem key={s.code} value={s.code}>
-                  {s.name} ({s.code})
+                  {s.name}
                 </MenuItem>
               ))}
             </Select>
@@ -934,11 +946,19 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                 onChange={e => setSelectedMonth(e.target.value)}
               >
                 <MenuItem value='all'>All {config.id === 'users' || config.id === 'errors' ? 'periods' : 'months'}</MenuItem>
-                {stats.uniqueMonths.map(m => (
-                  <MenuItem key={m} value={m}>
-                    {m}
-                  </MenuItem>
-                ))}
+                {stats.uniqueMonths.map(m => {
+                  let label = m
+                  if (/^\d{4}-\d{2}$/.test(m)) {
+                    label = formatMonth(m)
+                  } else if (/^\d{4}\/\d{4}$/.test(m)) {
+                    label = formatPeriod(m)
+                  }
+                  return (
+                    <MenuItem key={m} value={m}>
+                      {label}
+                    </MenuItem>
+                  )
+                })}
               </Select>
             </FormControl>
           )}
@@ -1027,14 +1047,16 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                 boxShadow: 'none !important'
               },
               '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: 'rgb(248, 249, 250)',
+                backgroundColor: '#f8f9fa',
                 borderBottom: '1px solid',
                 borderColor: 'divider',
-                fontWeight: 700,
+                fontWeight: 600,
+                fontSize: '0.875rem',
                 boxShadow: 'none !important'
               },
               '& .MuiDataGrid-columnHeaderTitle': {
-                fontWeight: 700
+                fontWeight: 600,
+                fontSize: '0.875rem'
               },
               '& .MuiDataGrid-cell': {
                 borderBottom: '1px solid',

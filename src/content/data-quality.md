@@ -1,16 +1,16 @@
-# Data Quality & Anomaly Register
+# Data quality and audit register
 
 The **Public Libraries Activity Dataset** visualises official survey returns collected and published by [Arts Council England (ACE)](https://www.artscouncil.org.uk/supporting-arts-museums-and-libraries/supporting-libraries).
 
-Because the data is self-reported by individual local library authorities, submissions can occasionally contain reporting anomalies. Rather than silently discarding or modifying records, this project maintains an open audit register cataloguing every known reporting anomaly and correction.
+Because figures are submitted by individual library services, returns can occasionally contain reporting errors or unusual values. Rather than quietly changing or removing figures, this project keeps an open audit register of every known issue and adjustment.
 
-## Types of Anomalies
+## Types of anomaly
 
-* **Excluded (`excluded`):** Corrupted figures where the original recorded value cannot be salvaged or reliably estimated (for example, hardware timer counter resets recording millisecond values or 2.2 billion computer hours in a single month). These entries are excluded from headline aggregates to prevent heavy distortion.
-* **Corrected (`replaced`):** Identifiable typographical or unit errors where a plausible correction can be established (for example, entering computer usage in minutes instead of hours, typing an extra trailing zero, or transposition typos). In the dashboard, users can toggle between **Original data** and **Corrected data**.
-* **Standardised (`standardised`):** Reporting frequency or structure errors where quarterly totals were submitted under monthly questions with zero-placeholders for intermediate months. These are converted to ISO 8601 quarterly durations (`P3M`) and distributed evenly across quarter months to avoid false dips and spikes in time-series trends.
-* **Notes (`suspicious`):** Irregular or atypical returns highlighted for transparency (such as reporting cumulative historical library cardholders rather than active borrowers within the last 12 months).
+* **Excluded:** Values that appear clearly impossible (for example, millions or billions of computer hours recorded in a single month). These are removed from national totals so they do not distort the overall picture.
+* **Corrected:** Clear typing mistakes or unit mix-ups where we can work out the intended figure (such as recording computer use in minutes instead of hours, or an accidental extra zero). You can switch between **Original data** and **Corrected data** in the data views.
+* **Standardised:** Returns submitted as quarterly totals with zeros in between, rather than monthly figures. We spread the quarterly total evenly across the three months so trends do not show artificial dips and spikes.
+* **Notes:** Unusual numbers kept in the dataset for transparency, but flagged with an explanation (such as a library service counting total registered cards rather than active borrowers over the last 12 months).
 
-## Audit Register
+## Audit register
 
-The table below lists all catalogued anomaly rules across reporting periods and datasets. You can search, filter by authority or status, inspect original versus corrected values, and download the full register as a CSV file.
+The table below lists all known issues and adjustments. You can search, filter by library service or status, and download the full list as a CSV file.

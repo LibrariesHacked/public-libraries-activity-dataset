@@ -43,13 +43,6 @@ function AppContent () {
   const location = useLocation()
   const isNavPage = NAV_PATHS.includes(location.pathname)
 
-  const handleBack = e => {
-    if (window.history.state && window.history.state.idx > 0) {
-      e.preventDefault()
-      window.history.back()
-    }
-  }
-
   return (
     <Container maxWidth='lg'>
       <main>
@@ -95,7 +88,6 @@ function AppContent () {
             <Button
               component={Link}
               to='/'
-              onClick={handleBack}
               startIcon={<ArrowBackRoundedIcon />}
               variant='text'
               color='primary'

@@ -6,8 +6,6 @@ import ButtonGroup from '@mui/material/ButtonGroup'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
-import Container from '@mui/material/Container'
-import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
@@ -173,7 +171,7 @@ const NationalEstimates = () => {
   const attendanceEst = nationalEstimates.find(e => e.key === 'attendance')
 
   return (
-    <Container maxWidth='lg' sx={{ py: 3 }}>
+    <Box sx={{ my: 3 }}>
       {/* Print-specific style overrides */}
       <style>
         {`
@@ -186,34 +184,33 @@ const NationalEstimates = () => {
         `}
       </style>
 
-      {/* Header Banner */}
-      <Paper
-        variant='outlined'
-        sx={{
-          p: { xs: 2.5, md: 3 },
-          mb: 4,
-          backgroundColor: '#fafbfc',
-          borderRadius: 2
-        }}
-      >
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           spacing={2}
-          sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' } }}
+          sx={{ justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 2 }}
         >
           <Box>
             <Typography
               component='h1'
-              variant='h4'
-              sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}
+              variant='h1'
+              sx={{
+                fontSize: '1.85rem',
+                fontWeight: 800,
+                color: 'text.primary',
+                letterSpacing: '-0.02em',
+                mt: 0,
+                mb: 0.5
+              }}
             >
               National estimates
             </Typography>
-            <Typography variant='body1' color='text.secondary' sx={{ mt: 0.5 }}>
+            <Typography variant='body1' color='text.secondary'>
               Estimated annual activity totals for England based on reporting library services.
             </Typography>
           </Box>
-          <Stack direction='row' spacing={1} className='no-print'>
+          <Stack direction='row' spacing={1} className='no-print' sx={{ flexShrink: 0 }}>
             <Button
               variant='outlined'
               size='small'
@@ -233,8 +230,6 @@ const NationalEstimates = () => {
           </Stack>
         </Stack>
 
-        <Divider sx={{ my: 2 }} />
-
         {/* Period Selector */}
         <ButtonGroup size='small' variant='outlined'>
           {availablePeriods.map(p => (
@@ -247,10 +242,14 @@ const NationalEstimates = () => {
             </Button>
           ))}
         </ButtonGroup>
-      </Paper>
+      </Box>
 
       {/* Headline Cards */}
-      <Typography variant='h6' sx={{ fontWeight: 700, mb: 1.5 }}>
+      <Typography
+        component='h2'
+        variant='h6'
+        sx={{ fontWeight: 700, fontSize: '1.35rem', mb: 1.5 }}
+      >
         National totals ({selectedPeriod})
       </Typography>
 
@@ -398,7 +397,11 @@ const NationalEstimates = () => {
 
       {/* Section 1: National Estimates Table */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant='h6' sx={{ fontWeight: 700, mb: 0.5 }}>
+        <Typography
+          component='h2'
+          variant='h6'
+          sx={{ fontWeight: 700, fontSize: '1.35rem', mt: 3, mb: 0.5 }}
+        >
           Activity estimates
         </Typography>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
@@ -409,23 +412,23 @@ const NationalEstimates = () => {
           <Table size='small' aria-label='National estimates table' sx={{ boxShadow: 'none' }}>
             <TableHead sx={{ backgroundColor: '#f5f7fa' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Measure</TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell sx={{ fontWeight: 600 }}>Measure</TableCell>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Authorities
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Pop. coverage
                 </TableCell>
-                <TableCell align='center' sx={{ fontWeight: 700 }}>
+                <TableCell align='center' sx={{ fontWeight: 600 }}>
                   Coverage
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Reported
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Estimated total
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Rate
                 </TableCell>
               </TableRow>
@@ -442,7 +445,7 @@ const NationalEstimates = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align='right'>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                    <Typography variant='body2' sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                       {`${row.reportingAuthorities} / ${row.totalAuthorities}`}
                     </Typography>
                     <Typography variant='caption' color='text.secondary'>
@@ -450,7 +453,7 @@ const NationalEstimates = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align='right'>
-                    <Typography variant='body2'>
+                    <Typography variant='body2' sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                       {`${(row.reportingPopulation / 1e6).toFixed(1)}M`}
                     </Typography>
                     <Typography variant='caption' color='text.secondary'>
@@ -482,15 +485,19 @@ const NationalEstimates = () => {
                     )}
                   </TableCell>
                   <TableCell align='right'>
-                    <Typography variant='body2'>
+                    <Typography variant='body2' sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                       {formatNumber(row.sampleTotal)}
+                    </Typography>
+                    <Typography variant='caption' color='text.secondary'>
+                      sample total
                     </Typography>
                   </TableCell>
                   <TableCell align='right'>
                     <Typography
                       variant='body2'
                       sx={{
-                        fontWeight: 700,
+                        fontWeight: 600,
+                        fontVariantNumeric: 'tabular-nums',
                         color: row.meetsThreshold ? 'text.primary' : 'warning.dark'
                       }}
                     >
@@ -501,7 +508,7 @@ const NationalEstimates = () => {
                     </Typography>
                   </TableCell>
                   <TableCell align='right'>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                    <Typography variant='body2' sx={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                       {row.rateType === 'percent'
                         ? `${row.grossedRate.toFixed(1)}%`
                         : `${formatNumber(row.grossedRate, 1)}`}
@@ -519,7 +526,11 @@ const NationalEstimates = () => {
 
       {/* Section 2: Multi-Year Comparison */}
       <Box className='page-break' sx={{ mb: 4 }}>
-        <Typography variant='h6' sx={{ fontWeight: 700, mb: 0.5 }}>
+        <Typography
+          component='h2'
+          variant='h6'
+          sx={{ fontWeight: 700, fontSize: '1.35rem', mt: 3, mb: 0.5 }}
+        >
           Multi-year comparison
         </Typography>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
@@ -530,12 +541,12 @@ const NationalEstimates = () => {
           <Table size='small' aria-label='Multi-year comparison table' sx={{ boxShadow: 'none' }}>
             <TableHead sx={{ backgroundColor: '#f5f7fa' }}>
               <TableRow>
-                <TableCell rowSpan={2} sx={{ fontWeight: 700, verticalAlign: 'bottom' }}>
+                <TableCell rowSpan={2} sx={{ fontWeight: 600 }}>
                   Measure
                 </TableCell>
                 <TableCell
                   align='right'
-                  sx={{ fontWeight: 700 }}
+                  sx={{ fontWeight: 600 }}
                 >
                   {`${formatPeriod(DCMS_BASELINE_PERIOD)} (baseline)`}
                 </TableCell>
@@ -547,7 +558,7 @@ const NationalEstimates = () => {
                       colSpan={2}
                       align='center'
                       sx={{
-                        fontWeight: 700,
+                        fontWeight: 600,
                         borderLeft: '1px solid rgba(224, 224, 224, 1)'
                       }}
                     >
@@ -586,7 +597,7 @@ const NationalEstimates = () => {
                     {row.metric.label}
                   </TableCell>
                   <TableCell align='right'>
-                    <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                    <Typography variant='body2' sx={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
                       {formatNumber(row.baselineGrossed)}
                     </Typography>
                   </TableCell>
@@ -598,7 +609,7 @@ const NationalEstimates = () => {
                           align='right'
                           sx={{ borderLeft: '1px solid rgba(224, 224, 224, 0.6)' }}
                         >
-                          <Typography variant='body2'>
+                          <Typography variant='body2' sx={{ fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
                             {formatNumber(row.periodData[p]?.grossedTotal)}
                           </Typography>
                         </TableCell>
@@ -616,7 +627,11 @@ const NationalEstimates = () => {
 
       {/* Section 3: Regional Distribution Table */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant='h6' sx={{ fontWeight: 700, mb: 0.5 }}>
+        <Typography
+          component='h2'
+          variant='h6'
+          sx={{ fontWeight: 700, fontSize: '1.35rem', mt: 3, mb: 0.5 }}
+        >
           Regional estimates
         </Typography>
         <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
@@ -627,29 +642,29 @@ const NationalEstimates = () => {
           <Table size='small' aria-label='Regional estimates table' sx={{ boxShadow: 'none' }}>
             <TableHead sx={{ backgroundColor: '#f5f7fa' }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Region</TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell sx={{ fontWeight: 600 }}>Region</TableCell>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Authorities
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Population
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Visits
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Visits / 1k
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Loans
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Loans / 1k
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Users
                 </TableCell>
-                <TableCell align='right' sx={{ fontWeight: 700 }}>
+                <TableCell align='right' sx={{ fontWeight: 600 }}>
                   Users (% pop)
                 </TableCell>
               </TableRow>
@@ -662,26 +677,28 @@ const NationalEstimates = () => {
                 return (
                   <TableRow key={reg.region} hover>
                     <TableCell sx={{ fontWeight: 600 }}>{reg.region}</TableCell>
-                    <TableCell align='right'>{reg.totalAuthorities}</TableCell>
-                    <TableCell align='right'>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
+                      {reg.totalAuthorities}
+                    </TableCell>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {`${(reg.totalPopulation / 1e6).toFixed(2)}M`}
                     </TableCell>
-                    <TableCell align='right'>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {formatNumber(v?.grossedTotal)}
                     </TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600 }}>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {v?.rate ? formatNumber(v.rate, 0) : '—'}
                     </TableCell>
-                    <TableCell align='right'>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {formatNumber(l?.grossedTotal)}
                     </TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600 }}>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {l?.rate ? formatNumber(l.rate, 0) : '—'}
                     </TableCell>
-                    <TableCell align='right'>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {formatNumber(u?.grossedTotal)}
                     </TableCell>
-                    <TableCell align='right' sx={{ fontWeight: 600 }}>
+                    <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {u?.rate ? `${u.rate.toFixed(1)}%` : '—'}
                     </TableCell>
                   </TableRow>
@@ -694,32 +711,34 @@ const NationalEstimates = () => {
 
       {/* Section 4: Notes */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant='h6' sx={{ fontWeight: 700, mb: 1.5 }}>
+        <Typography
+          component='h2'
+          variant='h6'
+          sx={{ fontWeight: 700, fontSize: '1.35rem', mt: 3, mb: 1.5 }}
+        >
           Notes
         </Typography>
 
-        <Paper variant='outlined' sx={{ p: 2.5 }}>
-          <Stack spacing={1.5}>
-            <Typography variant='body2' color='text.secondary'>
-              <strong>Population grossing:</strong> Because not all 153 English library services report every metric, national totals are scaled proportionally to England’s population (58.6M) based on the resident population of reporting authorities: <code>(Sample total ÷ Reporting population) × 58,620,101</code>.
-            </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              <strong>70% coverage threshold:</strong> A 70% participation threshold (107 of 153 authorities or 70% of population) is used as a benchmark for reliable national estimation. Metrics below this threshold are flagged with a caution note.
-            </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              <strong>Source:</strong> Method follows the DCMS{' '}
-              <a
-                href={DCMS_PUBLICATION_URL}
-                target='_blank'
-                rel='noreferrer'
-              >
-                Secondary Data Analysis of Arts Council England’s English Public Libraries Activity Dataset 23/24
-              </a>.
-            </Typography>
-          </Stack>
-        </Paper>
+        <Stack spacing={1.5}>
+          <Typography variant='body2' color='text.secondary'>
+            <strong>Population grossing:</strong> Because not all 153 English library services report every metric, national totals are scaled proportionally to England’s population (58.6M) based on the resident population of reporting authorities: <code>(Sample total ÷ Reporting population) × 58,620,101</code>.
+          </Typography>
+          <Typography variant='body2' color='text.secondary'>
+            <strong>70% coverage threshold:</strong> A 70% participation threshold (107 of 153 authorities or 70% of population) is used as a benchmark for reliable national estimation. Metrics below this threshold are flagged with a caution note.
+          </Typography>
+          <Typography variant='body2' color='text.secondary'>
+            <strong>Source:</strong> Method follows the DCMS{' '}
+            <a
+              href={DCMS_PUBLICATION_URL}
+              target='_blank'
+              rel='noreferrer'
+            >
+              Secondary Data Analysis of Arts Council England’s English Public Libraries Activity Dataset 23/24
+            </a>.
+          </Typography>
+        </Stack>
       </Box>
-    </Container>
+    </Box>
   )
 }
 

@@ -1,4 +1,4 @@
-# Privacy Policy
+# Privacy policy
 
 This privacy policy explains how the Public Libraries Activity Dataset website handles your privacy and data.
 
@@ -9,7 +9,7 @@ This privacy policy explains how the Public Libraries Activity Dataset website h
 * We use privacy-friendly, self-hosted website analytics with no persistent tracking.
 * All data visualised on this website is aggregated public sector data; no individual library users are identifiable.
 
-## Cookies & Storage
+## Cookies and storage
 
 This website does not store tracking cookies, third-party cookies, or advertising cookies on your device.
 
@@ -23,7 +23,7 @@ We use a self-hosted instance of [Plausible Analytics](https://plausible.io), an
 * **No personal data:** IP addresses are not stored or logged. A daily rotating cryptographic hash is used to calculate unique visitor counts without identifying individual devices or people.
 * **Open metrics:** The aggregated traffic metrics for this website are publicly viewable on our [public analytics dashboard](https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk).
 
-## External Links
+## External links
 
 This site includes links to external third-party websites, including Arts Council England, the Office for National Statistics, and GitHub. We are not responsible for the privacy practices or content of external websites.
 

@@ -3,7 +3,6 @@ import React from 'react'
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
-import Paper from '@mui/material/Paper'
 
 import privacyMd from './content/privacy.md?raw'
 
@@ -14,10 +13,8 @@ import privacyMd from './content/privacy.md?raw'
  */
 const Privacy = () => {
   return (
-    <Box sx={{ maxWidth: 860, mx: 'auto', my: 3 }}>
-      <Paper variant='outlined' sx={{ p: { xs: 2.5, sm: 4 } }}>
-        <Markdown>{privacyMd}</Markdown>
-      </Paper>
+    <Box sx={{ my: 3 }}>
+      <Markdown>{privacyMd}</Markdown>
     </Box>
   )
 }

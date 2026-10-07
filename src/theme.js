@@ -68,6 +68,11 @@ const theme = createTheme({
           marginTop: 0,
           marginBottom: '1rem'
         },
+        '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+          margin: '0 !important',
+          marginBottom: '0 !important',
+          lineHeight: 'inherit !important'
+        },
         'ul, ol': {
           paddingLeft: '1.5rem',
           marginTop: 0,
@@ -112,8 +117,19 @@ const theme = createTheme({
     },
     MuiTableCell: {
       styleOverrides: {
-        root: {
-          boxShadow: 'none !important'
+        root: ({ theme }) => ({
+          boxShadow: 'none !important',
+          fontSize: '0.875rem',
+          verticalAlign: 'middle',
+          color: theme.palette.text.primary,
+          borderColor: 'rgba(224, 224, 224, 0.6)'
+        }),
+        head: {
+          fontWeight: 600,
+          fontSize: '0.875rem',
+          color: 'text.primary',
+          backgroundColor: '#f8f9fa',
+          verticalAlign: 'middle'
         }
       }
     },
@@ -122,20 +138,97 @@ const theme = createTheme({
         elevation: 0
       },
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           boxShadow: 'none !important',
+          fontFamily: theme.typography.fontFamily,
+          fontSize: '0.875rem',
+          color: theme.palette.text.primary,
           '& .MuiDataGrid-main': {
             boxShadow: 'none !important'
           },
           '& .MuiDataGrid-columnHeaders': {
-            boxShadow: 'none !important'
+            boxShadow: 'none !important',
+            backgroundColor: '#f8f9fa',
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            fontSize: '0.875rem',
+            fontWeight: 600
+          },
+          '& .MuiDataGrid-columnHeaderTitle': {
+            fontWeight: 600,
+            fontSize: '0.875rem'
+          },
+          '& .MuiDataGrid-cell': {
+            fontSize: '0.875rem',
+            fontFamily: theme.typography.fontFamily,
+            display: 'flex',
+            alignItems: 'center',
+            borderColor: 'rgba(224, 224, 224, 0.6)'
           },
           '& .MuiDataGrid-virtualScroller': {
             boxShadow: 'none !important'
           },
           '& .MuiDataGrid-footerContainer': {
-            boxShadow: 'none !important'
+            boxShadow: 'none !important',
+            minHeight: '52px'
+          },
+          '& .MuiTablePagination-root': {
+            color: theme.palette.text.primary,
+            fontSize: '0.875rem'
+          },
+          '& .MuiTablePagination-toolbar': {
+            minHeight: '52px !important',
+            display: 'flex',
+            alignItems: 'center'
+          },
+          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+            margin: '0 !important',
+            marginBottom: '0 !important',
+            lineHeight: 'inherit !important',
+            fontSize: '0.875rem'
+          },
+          '& .MuiTablePagination-select': {
+            display: 'inline-flex',
+            alignItems: 'center',
+            fontSize: '0.875rem'
+          },
+          '& .MuiTablePagination-actions': {
+            display: 'inline-flex',
+            alignItems: 'center'
           }
+        })
+      }
+    },
+    MuiTablePagination: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          color: theme.palette.text.primary,
+          fontSize: '0.875rem'
+        }),
+        toolbar: {
+          minHeight: 52,
+          display: 'flex',
+          alignItems: 'center'
+        },
+        selectLabel: {
+          margin: '0 !important',
+          marginBottom: '0 !important',
+          lineHeight: 'inherit !important',
+          fontSize: '0.875rem'
+        },
+        displayedRows: {
+          margin: '0 !important',
+          marginBottom: '0 !important',
+          lineHeight: 'inherit !important',
+          fontSize: '0.875rem'
+        },
+        select: {
+          display: 'inline-flex',
+          alignItems: 'center',
+          fontSize: '0.875rem'
+        },
+        actions: {
+          display: 'inline-flex',
+          alignItems: 'center'
         }
       }
     },
