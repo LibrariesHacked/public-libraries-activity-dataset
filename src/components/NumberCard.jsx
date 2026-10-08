@@ -249,9 +249,14 @@ const NumberCard = props => {
                                     : 'text.secondary'
                               const sign = roundedChange > 0 ? '+' : ''
                               const unitStr =
-                                changeUnit === '%' ? '%' : ` ${changeUnit}`
+                                changeUnit === 'percentage points'
+                                  ? ' pp'
+                                  : changeUnit === '%'
+                                    ? '%'
+                                    : ` ${changeUnit}`
+                              const trendLabel = `${sign}${roundedChange.toFixed(1)}${unitStr}${changeDescription ? ` ${changeDescription}` : ''}`
                               const tooltipTitle = changeDescription
-                                ? `Change ${changeDescription}`
+                                ? `Change of ${sign}${roundedChange.toFixed(1)}${unitStr} ${changeDescription}`
                                 : null
                               const trendContent = (
                                 <Stack
@@ -261,10 +266,7 @@ const NumberCard = props => {
                                     alignItems: 'center',
                                     color
                                   }}
-                                  aria-label={
-                                    tooltipTitle ||
-                                    `Change: ${sign}${roundedChange.toFixed(1)}${unitStr}`
-                                  }
+                                  aria-label={tooltipTitle || `Change: ${trendLabel}`}
                                 >
                                   {React.cloneElement(
                                     getChangeIcon(roundedChange),
@@ -280,9 +282,7 @@ const NumberCard = props => {
                                       whiteSpace: 'nowrap'
                                     }}
                                   >
-                                    {`${sign}${roundedChange.toFixed(
-                                      1
-                                    )}${unitStr}`}
+                                    {trendLabel}
                                   </Typography>
                                 </Stack>
                               )

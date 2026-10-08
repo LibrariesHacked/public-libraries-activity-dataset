@@ -214,7 +214,8 @@ export const getActivityRecordsPeriodChange = ({
   baselinePeriod,
   targetPeriod,
   serviceCodes,
-  useEstimates = true
+  useEstimates = true,
+  services
 }) => {
   if (!records || !baselinePeriod || !targetPeriod) return null
   if (baselinePeriod === targetPeriod) return null
@@ -223,8 +224,14 @@ export const getActivityRecordsPeriodChange = ({
     ? serviceCodes
     : (serviceCodes ? new Set(serviceCodes) : null)
 
-  const sumForPeriod = period => {
-    const serviceTotals = new Map()
+  const servicePopMap = services
+    ? new Map(services.map(s => [s.code, s.totalPopulation || 0]))
+    : null
+
+  const rateForPeriod = period => {
+    let totalActivity = 0
+    const reportingServices = new Set()
+
     for (let i = 0; i < records.length; i++) {
       const r = records[i]
       if (getPeriodForMonth(r.month) !== period) continue
@@ -234,34 +241,34 @@ export const getActivityRecordsPeriodChange = ({
         ? r.resolveCount(useEstimates)
         : (r[countProp] ?? r.count ?? 0)
       if (!Number.isFinite(count)) continue
-      serviceTotals.set(
-        r.serviceCode,
-        (serviceTotals.get(r.serviceCode) || 0) + count
-      )
+
+      totalActivity += count
+      reportingServices.add(r.serviceCode)
     }
-    return serviceTotals
+
+    if (totalActivity === 0) return 0
+    if (servicePopMap) {
+      let reportingPopulation = 0
+      reportingServices.forEach(code => {
+        reportingPopulation += (servicePopMap.get(code) || 0)
+      })
+      return reportingPopulation > 0 ? (totalActivity / reportingPopulation) * 1000 : null
+    }
+
+    return totalActivity
   }
 
-  const baselineTotals = sumForPeriod(baselinePeriod)
-  const targetTotals = sumForPeriod(targetPeriod)
+  const baselineRate = rateForPeriod(baselinePeriod)
+  const targetRate = rateForPeriod(targetPeriod)
 
-  let baselineSum = 0
-  let targetSum = 0
-  baselineTotals.forEach((val, code) => {
-    if (!targetTotals.has(code)) return
-    baselineSum += val
-    targetSum += targetTotals.get(code)
-  })
-
-  if (baselineSum === 0) return null
-  return ((targetSum - baselineSum) / baselineSum) * 100
+  if (baselineRate == null || targetRate == null || baselineRate === 0) return null
+  return ((targetRate - baselineRate) / baselineRate) * 100
 }
 
 /**
  * Calculates the percentage point change in share for a subset of activity records
  * (e.g. branch visits share of total visits, digital loans share of total loans)
- * between two financial year periods.
- * Only services reporting in both periods are compared (like-for-like).
+ * between two financial year periods, comparing normalized shares in each period.
  *
  * @param {Object} options - Calculation options.
  * @param {Array<Object>} options.records - Array of activity records with month and count properties.
@@ -292,8 +299,8 @@ export const getActivityRecordsSharePeriodChange = ({
     : (serviceCodes ? new Set(serviceCodes) : null)
 
   const sumForPeriod = period => {
-    const serviceCategoryTotals = new Map()
-    const serviceAllTotals = new Map()
+    let categorySum = 0
+    let totalSum = 0
 
     for (let i = 0; i < records.length; i++) {
       const r = records[i]
@@ -306,44 +313,20 @@ export const getActivityRecordsSharePeriodChange = ({
       if (!Number.isFinite(count)) continue
 
       if (!totalFilterFn || totalFilterFn(r)) {
-        serviceAllTotals.set(
-          r.serviceCode,
-          (serviceAllTotals.get(r.serviceCode) || 0) + count
-        )
+        totalSum += count
       }
 
       if (filterFn(r)) {
-        serviceCategoryTotals.set(
-          r.serviceCode,
-          (serviceCategoryTotals.get(r.serviceCode) || 0) + count
-        )
+        categorySum += count
       }
     }
-    return { serviceCategoryTotals, serviceAllTotals }
+    return totalSum > 0 ? (categorySum / totalSum) * 100 : null
   }
 
-  const baseline = sumForPeriod(baselinePeriod)
-  const target = sumForPeriod(targetPeriod)
+  const baselineShare = sumForPeriod(baselinePeriod)
+  const targetShare = sumForPeriod(targetPeriod)
 
-  let baselineCatSum = 0
-  let baselineTotalSum = 0
-  let targetCatSum = 0
-  let targetTotalSum = 0
-
-  baseline.serviceAllTotals.forEach((total, code) => {
-    if (!target.serviceAllTotals.has(code)) return
-    baselineTotalSum += total
-    baselineCatSum += baseline.serviceCategoryTotals.get(code) || 0
-
-    targetTotalSum += target.serviceAllTotals.get(code)
-    targetCatSum += target.serviceCategoryTotals.get(code) || 0
-  })
-
-  if (baselineTotalSum === 0 || targetTotalSum === 0) return null
-
-  const baselineShare = (baselineCatSum / baselineTotalSum) * 100
-  const targetShare = (targetCatSum / targetTotalSum) * 100
-
+  if (baselineShare == null || targetShare == null) return null
   return targetShare - baselineShare
 }
 

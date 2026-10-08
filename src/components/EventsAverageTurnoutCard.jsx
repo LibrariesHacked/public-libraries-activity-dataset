@@ -94,44 +94,26 @@ const EventsAverageTurnoutCard = () => {
     setWarning(getRecordsQualityWarning([...matchedEvents, ...matchedAttendance]))
 
     if (comparison && serviceRecords) {
-      const baselineByCode = new Map()
-      const targetByCode = new Map()
-
-      serviceRecords.forEach(record => {
-        if (activeCodes.size && !activeCodes.has(record.code)) return
-        const att = record.resolveMetric ? record.resolveMetric('attendance', useEstimates) : record.attendance
-        const ev = record.resolveMetric ? record.resolveMetric('events', useEstimates) : record.events
-        if (Number.isFinite(att) && Number.isFinite(ev) && ev > 0) {
-          if (record.period === comparison.baselinePeriod) {
-            baselineByCode.set(record.code, { att, ev })
-          } else if (record.period === comparison.targetPeriod) {
-            targetByCode.set(record.code, { att, ev })
+      const getTurnoutForPeriod = period => {
+        let totalAtt = 0
+        let totalEv = 0
+        serviceRecords.forEach(record => {
+          if (record.period !== period) return
+          if (activeCodes.size && !activeCodes.has(record.code)) return
+          const att = record.resolveMetric ? record.resolveMetric('attendance', useEstimates) : record.attendance
+          const ev = record.resolveMetric ? record.resolveMetric('events', useEstimates) : record.events
+          if (Number.isFinite(att) && Number.isFinite(ev) && ev > 0) {
+            totalAtt += att
+            totalEv += ev
           }
-        }
-      })
+        })
+        return totalEv > 0 ? totalAtt / totalEv : null
+      }
 
-      let baselineAtt = 0
-      let baselineEv = 0
-      let targetAtt = 0
-      let targetEv = 0
-
-      baselineByCode.forEach(({ att, ev }, code) => {
-        if (!targetByCode.has(code)) return
-        const targetData = targetByCode.get(code)
-        baselineAtt += att
-        baselineEv += ev
-        targetAtt += targetData.att
-        targetEv += targetData.ev
-      })
-
-      if (baselineEv > 0 && targetEv > 0) {
-        const baselineAvg = baselineAtt / baselineEv
-        const targetAvg = targetAtt / targetEv
-        if (baselineAvg > 0) {
-          setChange(((targetAvg - baselineAvg) / baselineAvg) * 100)
-        } else {
-          setChange(null)
-        }
+      const baseline = getTurnoutForPeriod(comparison.baselinePeriod)
+      const target = getTurnoutForPeriod(comparison.targetPeriod)
+      if (baseline != null && target != null && baseline > 0) {
+        setChange(((target - baseline) / baseline) * 100)
       } else {
         setChange(null)
       }

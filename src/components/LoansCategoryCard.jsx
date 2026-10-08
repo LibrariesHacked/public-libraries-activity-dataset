@@ -91,7 +91,8 @@ const LoansCategoryCard = ({
         baselinePeriod: comparison.baselinePeriod,
         targetPeriod: comparison.targetPeriod,
         serviceCodes: activeCodes,
-        useEstimates
+        useEstimates,
+        services: activeServices
       })
       setChange(chg)
     } else {

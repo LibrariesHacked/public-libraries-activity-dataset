@@ -244,17 +244,17 @@ export const getActiveServices = (services, filteredServices) => {
 }
 
 /**
- * Calculates the percentage change in a specific metric between two financial year periods.
- * To ensure fairness and prevent distortion caused by services joining or dropping out,
- * only services that reported valid data in both the baseline and comparison periods are included.
+ * Calculates the percentage change in a specific metric between two financial year periods,
+ * comparing the normalized rates (activity per 1,000 reporting residents) across all services
+ * reporting in each period.
  *
  * @param {Service[]} serviceRecords - Collection of annual service records.
- * @param {string} property - Metric property name to compare (e.g. 'loans', 'visits', 'events').
- * @param {string} earliestPeriod - Baseline financial year period (e.g. '2022/23').
- * @param {string} latestPeriod - Target comparison financial year period (e.g. '2023/24').
+ * @param {string} property - Metric property name to compare (e.g. 'loans', 'visits', 'events', 'computerHours').
+ * @param {string} earliestPeriod - Baseline financial year period (e.g. '2023/2024').
+ * @param {string} latestPeriod - Target comparison financial year period (e.g. '2025/2026').
  * @param {string[]} [serviceCodes] - Optional list of service codes to restrict the comparison to.
  * @param {boolean} [useEstimates=true] - Whether to apply corrections when available.
- * @returns {number|null} Percentage change between periods (e.g. 10.5 for +10.5%), or null if insufficient data.
+ * @returns {number|null} Percentage change between normalized rates (e.g. 10.5 for +10.5%), or null if insufficient data.
  */
 export const getServicePeriodChange = (
   serviceRecords,
@@ -267,33 +267,31 @@ export const getServicePeriodChange = (
   if (!serviceRecords || !earliestPeriod || !latestPeriod) return null
   if (earliestPeriod === latestPeriod) return null
 
-  const valueFor = period => {
-    const values = new Map()
+  const calculateNormalizedRate = period => {
+    let activityTotal = 0
+    let populationTotal = 0
+
     serviceRecords.forEach(record => {
       if (record.period !== period) return
       if (serviceCodes && !serviceCodes.includes(record.code)) return
       const val = record.resolveMetric
         ? record.resolveMetric(property, useEstimates)
         : record[property]
-      if (!Number.isFinite(val)) return
-      values.set(record.code, val)
+      if (Number.isFinite(val) && record.totalPopulation > 0) {
+        activityTotal += val
+        populationTotal += record.totalPopulation
+      }
     })
-    return values
+
+    if (populationTotal === 0) return null
+    return (activityTotal / populationTotal) * 1000
   }
 
-  const earliestValues = valueFor(earliestPeriod)
-  const latestValues = valueFor(latestPeriod)
+  const earliestRate = calculateNormalizedRate(earliestPeriod)
+  const latestRate = calculateNormalizedRate(latestPeriod)
 
-  let earliestTotal = 0
-  let latestTotal = 0
-  earliestValues.forEach((value, code) => {
-    if (!latestValues.has(code)) return
-    earliestTotal += value
-    latestTotal += latestValues.get(code)
-  })
-
-  if (earliestTotal === 0) return null
-  return ((latestTotal - earliestTotal) / earliestTotal) * 100
+  if (earliestRate == null || latestRate == null || earliestRate === 0) return null
+  return ((latestRate - earliestRate) / earliestRate) * 100
 }
 
 /**

@@ -86,7 +86,8 @@ const MonthlyPaceCard = ({
           baselinePeriod: comparison.baselinePeriod,
           targetPeriod: comparison.targetPeriod,
           serviceCodes: [...activeServiceCodes],
-          useEstimates
+          useEstimates,
+          services: activeServices
         })
       )
     } else {

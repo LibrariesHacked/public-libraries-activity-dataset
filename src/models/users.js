@@ -119,47 +119,37 @@ export function getUsersPenetrationPeriodChange (
     : services
   const serviceMap = new Map(activeServices.map(s => [s.code, s]))
 
-  const earliestTotals = getUserTotalsForPeriod(
-    users,
-    earliestPeriod,
-    ageGroup,
-    serviceCodes
-  )
-  const latestTotals = getUserTotalsForPeriod(
-    users,
-    latestPeriod,
-    ageGroup,
-    serviceCodes
-  )
+  const calculateNormalizedPercentage = period => {
+    const totals = getUserTotalsForPeriod(
+      users,
+      period,
+      ageGroup,
+      serviceCodes
+    )
+    let userTotal = 0
+    let popTotal = 0
+    totals.forEach((userCount, code) => {
+      const svc = serviceMap.get(code)
+      if (!svc) return
+      const pop = ageGroup === 'Under 12'
+        ? svc.populationUnder12
+        : ageGroup === '12-17'
+          ? svc.population12To17
+          : ageGroup === 'Adult'
+            ? svc.populationAdult
+            : svc.totalPopulation
+      if (!pop || pop <= 0) return
+      userTotal += userCount
+      popTotal += pop
+    })
+    if (popTotal === 0) return null
+    return (userTotal / popTotal) * 100
+  }
 
-  let earliestUserTotal = 0
-  let earliestPopTotal = 0
-  let latestUserTotal = 0
-  let latestPopTotal = 0
+  const earliestPct = calculateNormalizedPercentage(earliestPeriod)
+  const latestPct = calculateNormalizedPercentage(latestPeriod)
 
-  earliestTotals.forEach((userCount, code) => {
-    if (!latestTotals.has(code)) return
-    const svc = serviceMap.get(code)
-    if (!svc) return
-    const pop = ageGroup === 'Under 12'
-      ? svc.populationUnder12
-      : ageGroup === '12-17'
-        ? svc.population12To17
-        : ageGroup === 'Adult'
-          ? svc.populationAdult
-          : svc.totalPopulation
-    if (!pop || pop <= 0) return
-
-    earliestUserTotal += userCount
-    earliestPopTotal += pop
-    latestUserTotal += latestTotals.get(code)
-    latestPopTotal += pop
-  })
-
-  if (earliestPopTotal === 0 || latestPopTotal === 0) return null
-  const earliestPct = (earliestUserTotal / earliestPopTotal) * 100
-  const latestPct = (latestUserTotal / latestPopTotal) * 100
-
+  if (earliestPct == null || latestPct == null) return null
   return latestPct - earliestPct
 }
 
