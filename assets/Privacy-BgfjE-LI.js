@@ -1,4 +1,4 @@
-import"./rolldown-runtime-hePW80VL.js";import{A as e,H as t,t as n}from"./Box-CkxmMsFY.js";import{u as r}from"./index-e39nuUq7.js";t();var i=`# Privacy policy
+import"./rolldown-runtime-hePW80VL.js";import{A as e,H as t,t as n}from"./Box-CkxmMsFY.js";import{u as r}from"./index-Ci6Z2gBv.js";t();var i=`# Privacy policy
 
 This policy outlines how the Public Libraries Activity Dataset website handles visitor information.
 
