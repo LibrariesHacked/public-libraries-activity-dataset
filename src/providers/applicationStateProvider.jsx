@@ -119,7 +119,8 @@ const ACTIVITY_KEYS = [
   'visits',
   'events',
   'attendance',
-  'users'
+  'users',
+  'computerInventory'
 ]
 
 /**
@@ -165,10 +166,13 @@ const applicationReducer = (state, action) => {
         periodMonthRange: allPeriodsMonthRange,
         monthRange: state.monthRange || allPeriodsMonthRange
       }
+      const selectedPeriods = state.selectedPeriods?.length > 0
+        ? state.selectedPeriods
+        : periods
       return buildPeriodState(
         nextState,
         action.serviceRecords,
-        periods,
+        selectedPeriods,
         state.useEstimates
       )
     }
@@ -287,7 +291,7 @@ const applicationReducer = (state, action) => {
     case 'SetComputerInventory':
       return {
         ...state,
-        computerInventory: action.computerInventory
+        computerInventory: updateRecordCounts(action.computerInventory, state.useEstimates, 'countInventory')
       }
     case 'SetEvents':
       return {

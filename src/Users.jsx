@@ -242,7 +242,7 @@ const Users = () => {
       if (!entity) return 0
       const totalUsers = entity.users || 0
       const totalPopulation = entity.totalPopulation || 0
-      return totalPopulation > 0 ? Math.round((totalUsers / totalPopulation) * 100) : 0
+      return totalPopulation > 0 ? Number(((totalUsers / totalPopulation) * 100).toFixed(1)) : 0
     })
 
     const labels = formatServiceLabelsWithNoData(

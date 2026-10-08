@@ -482,7 +482,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           width: 100,
           renderCell: params => (
             <Typography variant='body2' component='span' sx={{ fontVariantNumeric: 'tabular-nums' }}>
-              {formatPeriod(params.value) || params.value}
+              {formatPeriod(params.value) || params.value || '—'}
             </Typography>
           )
         },
@@ -1033,7 +1033,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           {selectedNote && (
             <Stack spacing={2}>
               <Typography variant='body2' color='text.secondary'>
-                {selectedNote.period ? formatPeriod(selectedNote.period) : formatMonth(selectedNote.month)}
+                {(selectedNote.period ? formatPeriod(selectedNote.period) : formatMonth(selectedNote.month)) || '—'}
                 {' · '}{DATASET_DISPLAY_NAMES[selectedNote.dataset] || config.name}
               </Typography>
               <Stack direction='row' spacing={1} useFlexGap flexWrap='wrap'>

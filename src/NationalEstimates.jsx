@@ -603,19 +603,19 @@ const NationalEstimates = () => {
                       {formatNumber(v?.grossedTotal)}
                     </TableCell>
                     <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
-                      {v?.rate ? formatNumber(v.rate, 0) : '—'}
+                      {v?.rate != null ? formatNumber(v.rate, 0) : '—'}
                     </TableCell>
                     <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {formatNumber(l?.grossedTotal)}
                     </TableCell>
                     <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
-                      {l?.rate ? formatNumber(l.rate, 0) : '—'}
+                      {l?.rate != null ? formatNumber(l.rate, 0) : '—'}
                     </TableCell>
                     <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
                       {formatNumber(u?.grossedTotal)}
                     </TableCell>
                     <TableCell align='right' sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: 500 }}>
-                      {u?.rate ? `${u.rate.toFixed(1)}%` : '—'}
+                      {u?.rate != null ? `${u.rate.toFixed(1)}%` : '—'}
                     </TableCell>
                   </TableRow>
                 )

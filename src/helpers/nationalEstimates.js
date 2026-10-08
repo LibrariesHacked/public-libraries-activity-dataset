@@ -365,9 +365,9 @@ export const calculateRegionalEstimates = (serviceRecords, period) => {
       const grossedTotal =
         reportingPopulation > 0
           ? Math.round((sampleTotal / reportingPopulation) * totalPopulation)
-          : 0
+          : null
 
-      let rate = 0
+      let rate = null
       if (reportingPopulation > 0) {
         rate =
           metric.rateType === 'percent'

@@ -133,7 +133,11 @@ export const getPeriodsInMonthRange = (periods, monthRange) =>
  * @returns {string} Shortened financial year string (e.g. '2023/24').
  */
 export const formatPeriod = period => {
+  if (!period || typeof period !== 'string') return ''
+  if (!period.includes('/')) return period
   const [start, end] = period.split('/')
+  if (!end) return period
+  if (end.length <= 2) return `${start}/${end}`
   return `${start}/${end.slice(2)}`
 }
 
@@ -143,11 +147,15 @@ export const formatPeriod = period => {
  * @param {string} month - Calendar month string in 'YYYY-MM' format.
  * @returns {string} Localised formatted month string (e.g. 'Apr 23').
  */
-export const formatMonth = month =>
-  new Date(`${month}-01`).toLocaleDateString('en-GB', {
+export const formatMonth = month => {
+  if (!month || typeof month !== 'string') return ''
+  const date = new Date(`${month}-01`)
+  if (isNaN(date.getTime())) return month
+  return date.toLocaleDateString('en-GB', {
     month: 'short',
     year: '2-digit'
   })
+}
 
 /**
  * Resolves the baseline and comparison financial year periods to evaluate for period-over-period trend analysis.

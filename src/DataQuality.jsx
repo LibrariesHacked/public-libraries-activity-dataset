@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import Markdown from 'react-markdown'
 
@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography'
 import dataQualityMd from './content/data-quality.md?raw'
 
 import DatasetDataGrid from './components/DatasetDataGrid'
+import { useApplicationState } from './hooks/useApplicationState'
+import { getServices } from './models/service'
 
 /**
  * Data Quality page view rendering explanatory notes from content/data-quality.md
@@ -16,6 +18,15 @@ import DatasetDataGrid from './components/DatasetDataGrid'
  * @returns {JSX.Element} The rendered Data Quality page view.
  */
 const DataQuality = () => {
+  const [{ serviceRecords }, dispatchApplication] = useApplicationState()
+
+  useEffect(() => {
+    if (!serviceRecords || serviceRecords.length === 0) {
+      getServices().then(records => {
+        dispatchApplication({ type: 'AddServices', serviceRecords: records })
+      })
+    }
+  }, [serviceRecords, dispatchApplication])
   return (
     <Box sx={{ my: 3 }}>
       <Typography component='h2' variant='h5' sx={{ mb: 1 }}>Data quality</Typography>

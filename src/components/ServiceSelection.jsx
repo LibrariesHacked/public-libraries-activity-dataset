@@ -33,6 +33,7 @@ const ServiceSelection = () => {
   const [
     {
       services,
+      serviceRecords,
       serviceLookup,
       comparisonMode,
       selectedServices,
@@ -46,14 +47,15 @@ const ServiceSelection = () => {
      * Loads the initial list of library services and registers them in state.
      */
     async function getServices () {
-      const serviceRecords = await serviceModel.getServices()
+      if (serviceRecords && serviceRecords.length > 0) return
+      const records = await serviceModel.getServices()
       dispatchApplication({
         type: 'AddServices',
-        serviceRecords
+        serviceRecords: records
       })
     }
     getServices()
-  }, [dispatchApplication])
+  }, [dispatchApplication, serviceRecords])
 
   const [serviceMenuAnchor, setServiceMenuAnchor] = useState(null)
   const [regionMenuAnchor, setRegionMenuAnchor] = useState(null)
