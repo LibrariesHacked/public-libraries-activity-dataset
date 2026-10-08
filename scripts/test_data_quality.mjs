@@ -4,6 +4,22 @@ import test from 'node:test'
 
 import { getQualitySummary, groupQualityIssues, resolveEffectiveValue } from '../src/helpers/dataQuality.js'
 import { ErrorRecord } from '../src/models/errors.js'
+import { getMonthRangeForPeriods, getPeriodMonths, getPeriodsInMonthRange } from '../src/helpers/periods.js'
+
+test('year shortcuts and slider ranges select continuous financial years', () => {
+  const periods = ['2023/2024', '2024/2025', '2025/2026']
+  for (const period of periods) {
+    const months = getPeriodMonths(period)
+    assert.equal(months.length, 12)
+    assert.equal(months[0], `${period.slice(0, 4)}-04`)
+    assert.equal(months[11], `${period.slice(5)}-03`)
+    assert.deepEqual(getPeriodsInMonthRange(periods, [months[0], months[11]]), [period])
+  }
+  const spanningRange = getMonthRangeForPeriods([periods[0], periods[2]])
+  assert.deepEqual(getPeriodsInMonthRange(periods, spanningRange), periods)
+  assert.deepEqual(getPeriodsInMonthRange(periods, ['2024-03', '2024-04']), periods.slice(0, 2))
+  assert.deepEqual(getPeriodsInMonthRange(periods, ['2025-04', '2025-04']), [periods[2]])
+})
 
 test('published register has documented rules and grouping preserves each one', () => {
   const published = JSON.parse(readFileSync(new URL('../public/errors.json', import.meta.url), 'utf8'))

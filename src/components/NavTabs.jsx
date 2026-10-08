@@ -10,6 +10,7 @@ import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded'
 import Paper from '@mui/material/Paper'
 import Tab from '@mui/material/Tab'
 import Tabs from '@mui/material/Tabs'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 import { Link, useLocation, matchPath } from 'react-router-dom'
 
@@ -35,11 +36,12 @@ const useRouteMatch = patterns => {
 
 /**
  * Top navigation tabs component allowing users to switch between datasets and application views.
- * Uses default Material-UI Paper (outlined variant) and Tabs (fullWidth variant) component options.
+ * Uses full-width tabs on desktop and built-in scrollable tabs with arrows on mobile.
  *
  * @returns {JSX.Element} Navigation bar containing routed tabs.
  */
 const NavTabs = () => {
+  const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'))
   const routeMatch = useRouteMatch([
     '/',
     '/loans',
@@ -54,7 +56,9 @@ const NavTabs = () => {
     <Paper variant='outlined' sx={{ width: '100%', mt: 1.5, mb: 3, overflow: 'hidden' }}>
       <Tabs
         value={currentTab}
-        variant='fullWidth'
+        variant={isMobile ? 'scrollable' : 'fullWidth'}
+        scrollButtons='auto'
+        allowScrollButtonsMobile
         textColor='primary'
         indicatorColor='primary'
         aria-label='Navigation tabs'

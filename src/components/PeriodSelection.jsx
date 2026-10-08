@@ -27,7 +27,7 @@ import {
  *
  * Displays financial year spans directly above a continuous dual-handle monthly slider.
  * Moving the slider handles selects or deselects financial years based on which years
- * fall within the chosen range, and clicking any financial year block toggles that year on or off.
+ * fall within the chosen range. Clicking a year selects its full April-to-March range.
  *
  * @returns {JSX.Element|null} The date range slider component, or null if no periods are loaded.
  */
@@ -133,35 +133,13 @@ const PeriodSelection = () => {
   }
 
   /**
-   * Handles toggling financial years on or off.
-   * If all periods are deselected, resets to selecting all financial years.
-   *
-   * @param {React.MouseEvent<HTMLElement>} event - The click event.
-   * @param {string[]} newPeriods - Array of currently selected financial year strings.
-   */
-  const handlePeriodsChange = (event, newPeriods) => {
-    if (!newPeriods || newPeriods.length === 0) {
-      dispatchApplication({
-        type: 'SetSelectedPeriods',
-        selectedPeriods: periods
-      })
-      return
-    }
-    const next = periods.filter(p => newPeriods.includes(p))
-    dispatchApplication({
-      type: 'SetSelectedPeriods',
-      selectedPeriods: next
-    })
-  }
-
-  /**
    * Resets the selection to cover all available financial years and months in the dataset.
    */
   const handleSelectAll = () => {
     if (!availableMonths.length) return
     dispatchApplication({
-      type: 'SetSelectedPeriods',
-      selectedPeriods: periods
+      type: 'SetDateRange',
+      monthRange: periodMonthRange
     })
   }
 
@@ -220,7 +198,6 @@ const PeriodSelection = () => {
         {/* Year Toggle Buttons */}
         <ToggleButtonGroup
           value={selectedPeriods || []}
-          onChange={handlePeriodsChange}
           fullWidth
           aria-label='Years'
           sx={{ mb: 1, width: '100%' }}
@@ -229,6 +206,13 @@ const PeriodSelection = () => {
             <ToggleButton
               key={period}
               value={period}
+              onClick={() => {
+                const months = getPeriodMonths(period)
+                dispatchApplication({
+                  type: 'SetDateRange',
+                  monthRange: [months[0], months[months.length - 1]]
+                })
+              }}
               aria-label={formatPeriod(period)}
               title={period}
               sx={{

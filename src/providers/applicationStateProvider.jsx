@@ -180,23 +180,6 @@ const applicationReducer = (state, action) => {
         monthRange: state.monthRange || allPeriodsMonthRange
       }
     }
-    case 'SetSelectedPeriods': {
-      const selectedPeriods = state.periods.filter(period =>
-        action.selectedPeriods.includes(period)
-      )
-      if (selectedPeriods.length === 0) return state
-      const monthRange = getMonthRangeForPeriods(selectedPeriods)
-      return {
-        ...buildPeriodState(
-          state,
-          state.serviceRecords,
-          selectedPeriods,
-          state.useEstimates,
-          monthRange
-        ),
-        monthRange
-      }
-    }
     case 'SetDateRange':
     case 'SetMonthRange': {
       const monthRange = action.monthRange
