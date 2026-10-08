@@ -72,7 +72,15 @@ These are the only three whitespace-padded numeric count cells across the mapped
 
 Calderdale's two conflicting annual totals and Wigan's conflicting annual digital-attendance total are directly entered values. Their discrepancies remain unresolved; the register distinguishes them from the two text-number omissions.
 
-The follow-up also corrected an explanatory-note error in 33 detailed audit findings: unrelated outreach comments had incorrectly inherited the sentence saying a service change explains the fall. That conclusion is now restricted to Rutland's documented 2024/25 home-delivery change. The erroneous sentence was not present in the published register. Nine regression tests cover the importer, source columns/formulas, correction precedence and respondent-context handling.
+The follow-up also corrected an explanatory-note error in 33 detailed audit findings: unrelated outreach comments had incorrectly inherited the sentence saying a service change explains the fall. That conclusion is now restricted to Rutland's documented 2024/25 home-delivery change. The erroneous sentence was not present in the published register.
+
+### Export checks and public notes
+
+Thirteen Python regression tests now cover source mappings/formulas, correction precedence, respondent context, unique records, non-negative counts, CSV/JSON totals and register consistency. Four native Node tests cover plain summaries, lossless grouping of every published register rule, and original/corrected data modes. They ensure zero remains a valid count, missing values stay missing, excluded figures stay excluded, and review-only figures remain unchanged. Pull requests and deployment run both suites; pull requests also build but never deploy the dashboard. The two workbook-dependent tests skip explicitly if the original spreadsheets are unavailable.
+
+The financial-year reconciliation check identified another importer issue: any four dated values were previously treated as quarterly totals, even when they represented four ordinary months. Quarterly inference now requires June, September, December and March. This prevents sparse monthly figures from being shifted into the previous financial year. Reported category counts are preserved. Three derived Unknown-age loan counts caused by the previous quarter-spreading/reconciliation are no longer generated; total exported original loans therefore fall by three, without editing any reported source count.
+
+The public register now groups rules by library service, year and measure. Mixed statuses remain searchable and visible in the details, unique evidence is retained, and downloads include all original rules. Readers see a short plain-English summary first, with the full evidence available by mouse, touch or keyboard. A collapsed glossary explains the main measures without lengthening the default view.
 
 ## Respondent explanations
 

@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -17,9 +19,26 @@ jobs:
           node-version: "latest"
       - run: npm install
 
+      - name: Check public data notes
+        run: npm test
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check data exports
+        run: |
+          python -m pip install openpyxl
+          python -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Deploy with gh-pages
+        if: github.event_name != 'pull_request'
         run: |
           git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
           npm run deploy -- -u "github-actions-bot <support+actions@github.com>"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build pull request
+        if: github.event_name == 'pull_request'
+        run: npm run build

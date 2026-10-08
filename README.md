@@ -118,6 +118,15 @@ python3 -m unittest discover -s scripts -p 'test_*.py'
 
 This writes the detailed findings, return coverage, source-column manifest and respondent-explanation CSVs to `data/`. Add `--update-register` to explicitly promote material findings and relevant respondent context into `data/errors.csv`, then rerun the transformation to refresh the dashboard. New audit rules use exact `series` matching so a physical-book warning cannot accidentally match physical audiobooks. Existing cell-specific corrections and exclusions take precedence. Numeric source strings with surrounding whitespace are preserved; the audit distinguishes annual totals that omit text-formatted numeric cells from directly entered total conflicts.
 
+The public register groups notes by library service, financial year and measure. Short summaries explain whether figures were changed; the full evidence is available in a details dialog, and CSV downloads retain every underlying rule. Definitions are available on demand on the Data quality page.
+
+```bash
+npm test
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```
+
+These checks run on pull requests and before deployment. They cover note grouping against the published register, duplicate data records, non-negative counts, CSV/JSON totals, register consistency and source mappings. Pull requests also build the dashboard but never deploy it. Source-workbook tests skip explicitly when the original spreadsheets are unavailable; checks on the committed exports still run. Four sparse monthly values are only interpreted as quarterly totals when they occur at the four financial-quarter ends.
+
 ## Running the Tests
 
 Explain how to run the automated tests and code quality checks for this system.

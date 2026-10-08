@@ -916,7 +916,7 @@ def calculate_record_frequency(records):
 
     if not unique_periods or len(unique_periods) == 1:
         return 'Yearly'
-    if len(unique_periods) == 4:
+    if len(unique_periods) == 4 and {period[5:7] for period in unique_periods} == {'03', '06', '09', '12'}:
         return 'Quarterly'
     return 'Monthly'
 

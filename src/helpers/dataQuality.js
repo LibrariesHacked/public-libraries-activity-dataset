@@ -11,6 +11,45 @@ export const DataQualityStatus = Object.freeze({
   SUSPICIOUS: 'suspicious'
 })
 
+export const getQualitySummary = ({ status, notes = '' }) => {
+  if (status === 'excluded') return 'Some figures were left out because of reporting problems.'
+  if (status === 'replaced') return 'An estimated correction is available for some figures.'
+  if (status === 'standardised') return 'Figures were spread evenly across months.'
+
+  const text = notes.toLowerCase()
+  if (text.includes('ignores numeric text')) return 'The annual total missed some monthly figures. The reported total is unchanged.'
+  if (text.includes('identical')) return 'Different parts of the return contain identical figures. They remain unchanged.'
+  if (text.includes('category sum') || text.includes('age-band sum')) return 'Category figures do not match the reported total. They remain unchanged.'
+  if (text.includes('supplied month sum')) return 'The annual total does not match the monthly figures. Both are kept as reported.'
+  if (text.includes('median nonzero month')) return 'Some months look unusually high or low. The figures remain unchanged.'
+  if (text.includes('active') && text.includes('registered')) return 'Check whether this counts active borrowers or all registered members. The figures remain unchanged.'
+  return 'This return has unusual figures to check. They remain unchanged.'
+}
+
+export const groupQualityIssues = rows => {
+  const groups = new Map()
+  const priority = ['excluded', 'replaced', 'suspicious', 'standardised']
+  for (const row of rows) {
+    const key = JSON.stringify([row.serviceCode, row.period, row.dataset])
+    if (!groups.has(key)) groups.set(key, { ...row, id: key, records: [] })
+    groups.get(key).records.push(row)
+  }
+  return [...groups.values()].map(group => {
+    const statuses = [...new Set(group.records.map(row => row.status).filter(Boolean))]
+    const status = priority.find(value => statuses.includes(value)) || null
+    const notes = [...new Set(group.records.map(row => row.notes).filter(Boolean))].join('\n\n')
+    return {
+      ...group,
+      status,
+      statuses,
+      notes,
+      summary: getQualitySummary({ status, notes }),
+      scope: [...new Set(group.records.map(row => row.scope))].join(' '),
+      match: [...new Set(group.records.map(row => row.match))].join(' ')
+    }
+  })
+}
+
 /**
  * Resolves the effective numeric value to display or aggregate based on user preferences and data quality status.
  *

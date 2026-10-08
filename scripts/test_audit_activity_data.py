@@ -1,7 +1,9 @@
 """Focused regression checks for the source audit and its anomaly rules."""
 
 import csv
+from collections import defaultdict
 from datetime import timedelta
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -34,6 +36,16 @@ class AuditTests(unittest.TestCase):
         self.assertEqual(audit.numeric(0), 0)
         self.assertEqual(audit.numeric(timedelta(days=150)), 150)
 
+    def test_four_sparse_months_are_not_assumed_to_be_quarters(self):
+        records = [{'Period': f'2023-{month:02d}-01', 'Count': '1'} for month in (4, 5, 6, 7)]
+        self.assertEqual(rotation.calculate_record_frequency(records), 'Monthly')
+        standardized = rotation.standardize_period_records(records, 2023)
+        self.assertEqual([record['Period'] for record in standardized], [
+            '2023-04-01/P1M', '2023-05-01/P1M', '2023-06-01/P1M', '2023-07-01/P1M'])
+        quarters = [{'Period': date, 'Count': '1'} for date in (
+            '2023-06-01', '2023-09-01', '2023-12-01', '2024-03-01')]
+        self.assertEqual(rotation.calculate_record_frequency(quarters), 'Quarterly')
+
     def test_only_documented_service_change_explains_fall(self):
         row = {'name': 'Rutland', 'year': '2024/2025',
                'outreach_explanation': 'Village deliveries ended in October.'}
@@ -49,6 +61,8 @@ class AuditTests(unittest.TestCase):
         severity, notes = audit.respondent_context(row, 'hours_public_computers', 'monthly_outlier', 'suspicious', 'Unusual spike.')
         self.assertNotIn('Respondent explanation', notes)
 
+    @unittest.skipUnless(all(Path(config['workbook']).exists() for config in rotation.YEAR_SOURCES.values()),
+                         'Original workbooks are not available')
     def test_complete_column_inventory(self):
         annual_label_mismatches = 0
         for year, config in rotation.YEAR_SOURCES.items():
@@ -78,6 +92,8 @@ class AuditTests(unittest.TestCase):
             workbook.close()
         self.assertEqual(annual_label_mismatches, 24)
 
+    @unittest.skipUnless(all(Path(config['workbook']).exists() for config in rotation.YEAR_SOURCES.values()),
+                         'Original workbooks are not available')
     def test_annual_total_formulas_follow_monthly_groups(self):
         for year, config in rotation.YEAR_SOURCES.items():
             if config['mapper'] != 'question_codes':
@@ -103,6 +119,64 @@ class AuditTests(unittest.TestCase):
                                           (year, row[0], prefix, group))
             self.assertGreater(formula_count, 0)
             workbook.close()
+
+    def test_exported_records_are_unique_and_counts_are_nonnegative(self):
+        for filename in ('services', 'users', 'loans', 'events', 'event_attendance', 'visits',
+                         'computers', 'wifi', 'click_and_collect', 'computer_inventory'):
+            with open(f'data/{filename}.csv', newline='', encoding='utf-8') as source:
+                rows = list(csv.DictReader(source))
+            keys = ('Authority code', 'Period') if filename == 'services' else tuple(
+                field for field in rows[0] if field not in ('Count', 'Estimated count', 'Status', 'Notes'))
+            identifiers = [tuple(row[field] for field in keys) for row in rows]
+            self.assertEqual(len(identifiers), len(set(identifiers)), filename)
+            for row in rows:
+                for field in ('Count', 'Estimated count'):
+                    if row.get(field) not in (None, ''):
+                        self.assertTrue(row[field].isdigit(), (filename, field, row[field]))
+
+    def test_csv_and_json_totals_agree(self):
+        datasets = {
+            'users': ('users', 1, 4, 3, [('Age group', 2)]),
+            'loans': ('loans', 3, 5, 4, [('Format', 1), ('Content age group', 2)]),
+            'events': ('events', 3, 5, 4, [('Event type', 1), ('Age group', 2)]),
+            'event_attendance': ('attendance', 3, 5, 4, [('Event type', 1), ('Age group', 2)]),
+            'visits': ('visits', 2, 4, 3, [('Location', 1)]),
+            'computers': ('computers', 1, 3, 2, []),
+            'wifi': ('wifi', 1, 3, 2, []),
+            'click_and_collect': ('click_and_collect', 1, 3, 2, []),
+        }
+
+        def year_start(period):
+            year = int(period[:4])
+            return year - (period[4] == '-' and int(period[5:7]) < 4)
+
+        for filename, (json_name, period_index, original_index, effective_index, dimensions) in datasets.items():
+            csv_totals, json_totals = defaultdict(lambda: [0, 0]), defaultdict(lambda: [0, 0])
+            with open(f'data/{filename}.csv', newline='', encoding='utf-8') as source:
+                for row in csv.DictReader(source):
+                    key = (row['Authority'], year_start(row['Period']), *(row[field] for field, _ in dimensions))
+                    original = int(row['Count'])
+                    effective = 0 if row['Status'] == 'excluded' else (
+                        int(row['Estimated count']) if row['Status'] == 'replaced' and row['Estimated count'] else original)
+                    csv_totals[key][0] += original
+                    csv_totals[key][1] += effective
+            with open(f'public/{json_name}.json', encoding='utf-8') as source:
+                records = json.load(source)
+            if filename == 'loans':
+                records = records['records']
+            for row in records:
+                key = (row[0], year_start(row[period_index]), *(row[index] for _, index in dimensions))
+                json_totals[key][0] += int(row[original_index] or 0)
+                json_totals[key][1] += int(row[effective_index] or 0)
+            self.assertEqual(dict(csv_totals), dict(json_totals), filename)
+
+    def test_public_register_matches_csv_without_duplicate_rules(self):
+        with open(rotation.ERRORS_CSV, newline='', encoding='utf-8') as source:
+            rows = list(csv.DictReader(source))
+        keys = [(row['Period'], row['Dataset'], row['Authority code'], row['Scope'], row['Match']) for row in rows]
+        self.assertEqual(len(keys), len(set(keys)))
+        with open(rotation.ERRORS_JSON, encoding='utf-8') as source:
+            self.assertEqual(rows, json.load(source))
 
     def test_series_scope_does_not_bleed_between_formats(self):
         key = ('2023/2024', 'loans', 'TEST')

@@ -7,6 +7,10 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
 import FormControl from '@mui/material/FormControl'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
@@ -21,6 +25,7 @@ import Typography from '@mui/material/Typography'
 
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
 
 import { DataGrid } from '@mui/x-data-grid'
@@ -39,6 +44,32 @@ import * as visitsModel from '../models/visits'
 import * as wifiModel from '../models/wifi'
 
 import { formatPeriod, formatMonth } from '../helpers/periods'
+import { getQualitySummary, groupQualityIssues } from '../helpers/dataQuality'
+
+const QUALITY_LABELS = {
+  excluded: 'Excluded',
+  replaced: 'Corrected',
+  suspicious: 'Worth checking',
+  standardised: 'Spread across months'
+}
+
+const NoteCell = ({ row, onOpen, tabIndex }) => {
+  const notes = row.issueDetails || row.notes
+  if (!notes) return <Typography color='text.disabled'>—</Typography>
+  const summary = row.summary || getQualitySummary({ status: row.status, notes })
+  return (
+    <Stack direction='row' spacing={0.5} sx={{ alignItems: 'center', width: '100%', height: '100%', minWidth: 0 }}>
+      <Typography variant='body2' sx={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {summary}
+      </Typography>
+      <Tooltip title='View data note'>
+        <IconButton size='small' aria-label={`View note for ${row.serviceName}`} tabIndex={tabIndex} onClick={() => onOpen(row)}>
+          <InfoOutlinedIcon fontSize='small' />
+        </IconButton>
+      </Tooltip>
+    </Stack>
+  )
+}
 
 const DATASET_DISPLAY_NAMES = {
   attendance: 'Attendance',
@@ -178,11 +209,11 @@ const DATASET_CONFIGS = {
   },
   errors: {
     id: 'errors',
-    name: 'Errors and corrections',
+    name: 'Notes and changes',
     filename: 'errors.csv',
     endpoint: './errors.json',
     fetcher: errorsModel.getErrors,
-    description: 'Audit register of known reporting anomalies, typos, and corrected figures across library returns.',
+    description: 'Notes on unusual figures, corrections and exclusions in library returns.',
     isErrorRegister: true,
     dimensions: [
       { field: 'period', headerName: 'Period', width: 110 },
@@ -267,6 +298,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
   const [localRecords, setLocalRecords] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [selectedNote, setSelectedNote] = useState(null)
 
   // Filtering state
   const [searchQuery, setSearchQuery] = useState('')
@@ -313,7 +345,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
   const rawRows = useMemo(() => {
     const records = localRecords || []
     if (config.id === 'errors') {
-      return records.map((record, index) => {
+      return groupQualityIssues(records.map((record, index) => {
         const code = record['Authority code'] || record.serviceCode
         const sLookup = serviceLookup?.[code]
         const serviceName = record['Authority name'] || sLookup?.niceName || sLookup?.name || code
@@ -330,7 +362,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           estimatedCount: record['Estimated count'] || record.estimatedCount || '—',
           notes: record.Notes || record.notes
         }
-      })
+      }))
     }
 
     return records.map((record, index) => {
@@ -376,9 +408,11 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
       if (r.month && r.month !== '—') uniqueMonths.add(r.month)
       if (r.period && r.period !== '—') uniqueMonths.add(r.period)
 
-      if (r.status === 'excluded') excludedCount += 1
-      else if (r.status === 'replaced') replacedCount += 1
-      else if (r.status === 'suspicious') {
+      const statuses = r.statuses || [r.status]
+      if (statuses.includes('excluded')) excludedCount += 1
+      if (statuses.includes('replaced')) replacedCount += 1
+      if (statuses.includes('standardised')) standardisedCount += 1
+      if (statuses.includes('suspicious')) {
         suspiciousRowCount += 1
         if (config.id === 'loans') {
           suspiciousIssueKeys.add(r.reviewIssueId == null
@@ -388,10 +422,9 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           suspiciousCount += 1
         }
       }
-      else if (r.status === 'standardised') standardisedCount += 1
     })
 
-    const anomaliesCount = excludedCount + replacedCount + suspiciousRowCount + standardisedCount
+    const anomaliesCount = rawRows.filter(row => row.status).length
     const reviewIssueCount = config.id === 'loans' ? suspiciousIssueKeys.size : suspiciousCount
 
     return {
@@ -427,12 +460,10 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
     const query = searchQuery.trim().toLowerCase()
 
     return rawRows.filter(row => {
+      const statuses = row.statuses || [row.status]
       // 1. Status filter
       if (statusFilter === 'anomalies' && !row.status) return false
-      if (statusFilter === 'excluded' && row.status !== 'excluded') return false
-      if (statusFilter === 'replaced' && row.status !== 'replaced') return false
-      if (statusFilter === 'suspicious' && row.status !== 'suspicious') return false
-      if (statusFilter === 'standardised' && row.status !== 'standardised') return false
+      if (['excluded', 'replaced', 'suspicious', 'standardised'].includes(statusFilter) && !statuses.includes(statusFilter)) return false
       if (statusFilter === 'clean' && row.status) return false
 
       // 2. Service filter
@@ -450,7 +481,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
       if (query) {
         const matchesCode = row.serviceCode.toLowerCase().includes(query)
         const matchesName = row.serviceName.toLowerCase().includes(query)
-        const matchesNotes = row.notes ? row.notes.toLowerCase().includes(query) : false
+        const matchesNotes = [row.notes, row.issueDetails, row.summary].some(value => value && value.toLowerCase().includes(query))
         const matchesDimensions = config.dimensions.some(d => {
           const val = row[d.field]
           return val ? String(val).toLowerCase().includes(query) : false
@@ -477,6 +508,17 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
     if (config.id === 'errors') {
       return [
         {
+          field: 'serviceName',
+          headerName: 'Library service',
+          minWidth: 180,
+          flex: 1,
+          renderCell: params => (
+            <Typography variant='body2' component='span' sx={{ fontWeight: 500 }}>
+              {params.value}
+            </Typography>
+          )
+        },
+        {
           field: 'period',
           headerName: 'Period',
           width: 100,
@@ -500,20 +542,9 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           )
         },
         {
-          field: 'serviceName',
-          headerName: 'Library service',
-          minWidth: 180,
-          flex: 1,
-          renderCell: params => (
-            <Typography variant='body2' component='span' sx={{ fontWeight: 500 }}>
-              {params.value}
-            </Typography>
-          )
-        },
-        {
           field: 'status',
           headerName: 'Status',
-          width: 130,
+          width: 200,
           headerAlign: 'center',
           align: 'center',
           renderCell: params => {
@@ -525,29 +556,12 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               return <Chip label='Corrected' color='warning' size='small' variant='filled' sx={{ fontWeight: 600, height: 24 }} />
             }
             if (status === 'suspicious') {
-              return <Chip label='Review' color='warning' size='small' variant='outlined' sx={{ fontWeight: 600, height: 24 }} />
+              return <Chip label='Worth checking' color='warning' size='small' variant='outlined' sx={{ fontWeight: 600, height: 24 }} />
             }
             if (status === 'standardised') {
-              return <Chip label='Standardised' color='info' size='small' variant='filled' sx={{ fontWeight: 600, height: 24 }} />
+              return <Chip label={QUALITY_LABELS.standardised} color='info' size='small' variant='filled' sx={{ fontWeight: 600, height: 24 }} />
             }
             return <Chip label='Valid' size='small' variant='outlined' sx={{ opacity: 0.6, height: 24 }} />
-          }
-        },
-        {
-          field: 'estimatedCount',
-          headerName: 'Corrected figure',
-          width: 140,
-          headerAlign: 'right',
-          align: 'right',
-          renderCell: params => {
-            const val = params.value
-            if (!val || val === '—') return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
-            const num = Number(val)
-            return (
-              <Typography variant='body2' component='span' sx={{ fontWeight: 600, color: 'text.primary', fontVariantNumeric: 'tabular-nums' }}>
-                {!isNaN(num) && String(num) === String(val) ? num.toLocaleString('en-GB') : val}
-              </Typography>
-            )
           }
         },
         {
@@ -555,23 +569,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           headerName: 'Notes',
           minWidth: 320,
           flex: 2,
-          renderCell: params => (
-            <Tooltip title={params.value || ''} arrow placement='top-start'>
-              <Typography
-                variant='body2'
-                component='span'
-                sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-block',
-                  width: '100%'
-                }}
-              >
-                {params.value}
-              </Typography>
-            </Tooltip>
-          )
+          renderCell: params => <NoteCell row={params.row} onOpen={setSelectedNote} tabIndex={params.hasFocus ? 0 : -1} />
         }
       ]
     }
@@ -703,7 +701,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
       {
         field: 'status',
         headerName: 'Status',
-        width: 130,
+        width: 200,
         headerAlign: 'center',
         align: 'center',
         renderCell: params => {
@@ -733,7 +731,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           if (status === 'suspicious') {
             return (
               <Chip
-                label='Review'
+                label={QUALITY_LABELS.suspicious}
                 color='warning'
                 size='small'
                 variant='outlined'
@@ -744,7 +742,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           if (status === 'standardised') {
             return (
               <Chip
-                label='Standardised'
+                label={QUALITY_LABELS.standardised}
                 color='info'
                 size='small'
                 variant='filled'
@@ -754,7 +752,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           }
           return (
             <Chip
-              label='Valid'
+              label='No known issues'
               size='small'
               variant='outlined'
               sx={{ opacity: 0.6, height: 24 }}
@@ -767,27 +765,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
         headerName: 'Notes',
         minWidth: 280,
         flex: 2,
-        renderCell: params => {
-          if (!params.value) return <Typography variant='body2' component='span' color='text.disabled'>—</Typography>
-          return (
-            <Tooltip title={params.row.issueDetails || params.value} arrow placement='top-start'>
-              <Typography
-                variant='body2'
-                component='span'
-                sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  display: 'inline-block',
-                  width: '100%',
-                  color: 'text.primary'
-                }}
-              >
-                {params.value}
-              </Typography>
-            </Tooltip>
-          )
-        }
+        renderCell: params => <NoteCell row={params.row} onOpen={setSelectedNote} tabIndex={params.hasFocus ? 0 : -1} />
       }
     ]
 
@@ -810,10 +788,10 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 0.5, flexWrap: 'wrap' }}>
                 <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
-                  {config.filename}
+                  {config.isErrorRegister ? 'Notes and changes' : config.filename}
                 </Typography>
                 <Chip
-                  label={`${stats.totalRows.toLocaleString()} rows`}
+                  label={`${stats.totalRows.toLocaleString()} ${config.isErrorRegister ? 'grouped notes' : 'rows'}`}
                   size='small'
                   variant='outlined'
                 />
@@ -836,7 +814,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               startIcon={<DownloadRoundedIcon />}
               onClick={() =>
                 downloadCsv(
-                  filteredRows,
+                  filteredRows.flatMap(row => row.records || [row]),
                   config,
                   filteredRows.length !== rawRows.length
                     ? `${config.id}_filtered.csv`
@@ -846,7 +824,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               disabled={filteredRows.length === 0}
               sx={{ whiteSpace: 'nowrap', flexShrink: 0 }}
             >
-              Download CSV ({filteredRows.length.toLocaleString()})
+              Download CSV
             </Button>
           </Stack>
 
@@ -883,7 +861,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
             {stats.standardisedCount > 0 && (
               <Chip
-                label={`${stats.standardisedCount} Standardised`}
+                label={`${stats.standardisedCount} ${QUALITY_LABELS.standardised}`}
                 size='small'
                 color='info'
                 variant={statusFilter === 'standardised' ? 'filled' : 'outlined'}
@@ -894,7 +872,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
             {stats.suspiciousCount > 0 && (
               <Chip
-                label={`${stats.suspiciousCount} Review patterns`}
+                label={`${stats.suspiciousCount} Worth checking`}
                 size='small'
                 color='warning'
                 variant={statusFilter === 'suspicious' ? 'filled' : 'outlined'}
@@ -905,7 +883,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
             {stats.cleanCount > 0 && config.id !== 'errors' && (
               <Chip
-                label={`${stats.cleanCount.toLocaleString()} Valid (clean)`}
+                label={`${stats.cleanCount.toLocaleString()} No known issues`}
                 size='small'
                 variant={statusFilter === 'clean' ? 'filled' : 'outlined'}
                 onClick={() => setStatusFilter(statusFilter === 'clean' ? 'all' : 'clean')}
@@ -987,14 +965,14 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               onChange={e => setStatusFilter(e.target.value)}
             >
               <MenuItem value='all'>All records</MenuItem>
-              {stats.anomaliesCount > 0 && <MenuItem value='anomalies'>All anomalies ({stats.anomaliesCount})</MenuItem>}
-              {stats.excludedCount > 0 && <MenuItem value='excluded'>Excluded errors ({stats.excludedCount})</MenuItem>}
+              {stats.anomaliesCount > 0 && <MenuItem value='anomalies'>Records with notes ({stats.anomaliesCount})</MenuItem>}
+              {stats.excludedCount > 0 && <MenuItem value='excluded'>Excluded figures ({stats.excludedCount})</MenuItem>}
               {stats.replacedCount > 0 && <MenuItem value='replaced'>Corrected figures ({stats.replacedCount})</MenuItem>}
-              {stats.standardisedCount > 0 && <MenuItem value='standardised'>Standardised ({stats.standardisedCount})</MenuItem>}
+              {stats.standardisedCount > 0 && <MenuItem value='standardised'>{QUALITY_LABELS.standardised} ({stats.standardisedCount})</MenuItem>}
               {stats.suspiciousCount > 0 && (
-                <MenuItem value='suspicious'>Review rows ({stats.suspiciousRowCount})</MenuItem>
+                <MenuItem value='suspicious'>Worth checking ({stats.suspiciousRowCount})</MenuItem>
               )}
-              {stats.cleanCount > 0 && config.id !== 'errors' && <MenuItem value='clean'>Clean data only</MenuItem>}
+              {stats.cleanCount > 0 && config.id !== 'errors' && <MenuItem value='clean'>No known issues</MenuItem>}
             </Select>
           </FormControl>
 
@@ -1097,6 +1075,15 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
             pageSizeOptions={[25, 50, 100, 250, 500]}
             pagination
             disableRowSelectionOnClick
+            onRowClick={params => {
+              if (config.isErrorRegister) setSelectedNote(params.row)
+            }}
+            onCellKeyDown={(params, event) => {
+              if (config.isErrorRegister && event.key === 'Enter') {
+                event.preventDefault()
+                setSelectedNote(params.row)
+              }
+            }}
             rowHeight={44}
             headerHeight={48}
             getRowClassName={params => {
@@ -1127,6 +1114,9 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                 borderBottom: '1px solid',
                 borderColor: 'rgba(224, 224, 224, 0.6)'
               },
+              '& .MuiDataGrid-row': {
+                cursor: config.isErrorRegister ? 'pointer' : 'default'
+              },
               '& .row-quality-excluded': {
                 backgroundColor: 'rgba(211, 47, 47, 0.08) !important',
                 '&:hover': {
@@ -1149,6 +1139,37 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           />
         )}
       </Paper>
+      <Dialog open={Boolean(selectedNote)} onClose={() => setSelectedNote(null)} fullWidth maxWidth='sm' aria-labelledby={`data-note-title-${config.id}`}>
+        <DialogTitle id={`data-note-title-${config.id}`}>{selectedNote?.serviceName}</DialogTitle>
+        <DialogContent dividers>
+          {selectedNote && (
+            <Stack spacing={2}>
+              <Typography variant='body2' color='text.secondary'>
+                {formatPeriod(selectedNote.period) || selectedNote.period || formatMonth(selectedNote.month)}
+                {' · '}{DATASET_DISPLAY_NAMES[selectedNote.dataset] || config.name}
+              </Typography>
+              <Stack direction='row' spacing={1} useFlexGap flexWrap='wrap'>
+                {(selectedNote.statuses || [selectedNote.status]).filter(Boolean).map(status => (
+                  <Chip key={status} label={QUALITY_LABELS[status] || status} size='small' variant='outlined' />
+                ))}
+              </Stack>
+              <Typography>{selectedNote.summary || getQualitySummary({ status: selectedNote.status, notes: selectedNote.issueDetails || selectedNote.notes })}</Typography>
+              <Box component='details'>
+                <Box component='summary' sx={{ cursor: 'pointer', fontWeight: 600 }}>Audit evidence</Box>
+                <Typography variant='body2' component='div' sx={{ mt: 1, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                  {selectedNote.issueDetails || selectedNote.notes}
+                </Typography>
+                {selectedNote.records?.filter(record => record.estimatedCount !== '—').map(record => (
+                  <Typography key={record.id} variant='body2' sx={{ mt: 1, overflowWrap: 'anywhere' }}>
+                    {record.scope === 'total' ? 'Annual total' : record.match}: estimated correction {record.estimatedCount}
+                  </Typography>
+                ))}
+              </Box>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions><Button onClick={() => setSelectedNote(null)}>Close</Button></DialogActions>
+      </Dialog>
     </Box>
   )
 }

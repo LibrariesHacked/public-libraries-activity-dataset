@@ -444,10 +444,10 @@ E06000056,Home delivery,2023-12-01/P1M,169,,,
 E06000056,Home delivery,2024-01-01/P1M,170,,,
 E06000056,Home delivery,2024-02-01/P1M,149,,,
 E06000056,Home delivery,2024-03-01/P1M,160,,,
-E06000050,Library,2023-03-01/P3M,680900,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
-E06000050,Library,2023-06-01/P3M,851150,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
-E06000050,Library,2023-09-01/P3M,697400,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
-E06000050,Library,2023-12-01/P3M,813500,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2023-05-01/P1M,680900,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2023-08-01/P1M,851150,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2023-11-01/P1M,697400,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
+E06000050,Library,2024-02-01/P1M,813500,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
 E06000050,Shared building,2023-05-01/P1M,716850,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
 E06000050,Shared building,2023-08-01/P1M,624900,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
 E06000050,Mobile library,2023-04-01/P1M,227,,suspicious,All monthly returns: Appears to count footfall for the entire civic centre building rather than just the library.
