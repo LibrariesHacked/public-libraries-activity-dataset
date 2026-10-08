@@ -107,6 +107,17 @@ Outputs will be written to:
 * `data/*.csv`: Detailed open datasets for analysis and download.
 * `public/*.json`: Compact positional JSON datasets consumed directly by the React dashboard.
 
+### 5. Auditing All Source Returns
+
+The [three-year audit report](data/activity_audit_report.md) records source-column checks, suspicious values, total conflicts and respondent explanations. The audit retains original values and distinguishes missing cells from reported zeroes; its findings are screening flags, not confirmed errors.
+
+```bash
+python3 scripts/audit_activity_data.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```
+
+This writes the detailed findings, return coverage, source-column manifest and respondent-explanation CSVs to `data/`. Add `--update-register` to explicitly promote material findings and relevant respondent context into `data/errors.csv`, then rerun the transformation to refresh the dashboard. New audit rules use exact `series` matching so a physical-book warning cannot accidentally match physical audiobooks. Existing cell-specific corrections and exclusions take precedence. Numeric source strings with surrounding whitespace are preserved; the audit distinguishes annual totals that omit text-formatted numeric cells from directly entered total conflicts.
+
 ## Running the Tests
 
 Explain how to run the automated tests and code quality checks for this system.

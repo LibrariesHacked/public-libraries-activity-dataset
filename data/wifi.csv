@@ -1,16 +1,16 @@
 Authority,Period,Count,Estimated count,Status,Notes
-E08000001,2023-04-01/P1M,18282,,,
-E08000001,2023-05-01/P1M,22335,,,
-E08000001,2023-06-01/P1M,20484,,,
-E08000001,2023-07-01/P1M,12757,,,
-E08000001,2023-08-01/P1M,13537,,,
-E08000001,2023-09-01/P1M,12534,,,
-E08000001,2023-10-01/P1M,17536,,,
-E08000001,2023-11-01/P1M,9941,,,
-E08000001,2023-12-01/P1M,17504,,,
-E08000001,2024-01-01/P1M,8286,,,
-E08000001,2024-02-01/P1M,3062,,,
-E08000001,2024-03-01/P1M,1140,,,
+E08000001,2023-04-01/P1M,18282,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-05-01/P1M,22335,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-06-01/P1M,20484,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-07-01/P1M,12757,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-08-01/P1M,13537,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-09-01/P1M,12534,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-10-01/P1M,17536,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-11-01/P1M,9941,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2023-12-01/P1M,17504,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2024-01-01/P1M,8286,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2024-02-01/P1M,3062,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000001,2024-03-01/P1M,1140,,suspicious,"Source audit: wifi_sessions: March 1,140 versus median nonzero month 13,147 (0.09 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
 E06000023,2023-04-01/P1M,12558,,,
 E06000023,2023-05-01/P1M,14090,,,
 E06000023,2023-06-01/P1M,10525,,,
@@ -945,18 +945,18 @@ E06000027,2025-02-01/P1M,2156,,,
 E06000027,2025-03-01/P1M,2317,,,
 E09000030,2024-04-01/P1Y,0,,,
 E08000009,2024-04-01/P1Y,0,,,
-E08000036,2024-04-01/P1M,5352,,,
-E08000036,2024-05-01/P1M,6493,,,
-E08000036,2024-06-01/P1M,1941,,,
-E08000036,2024-07-01/P1M,3672,,,
-E08000036,2024-08-01/P1M,4179,,,
-E08000036,2024-09-01/P1M,1647,,,
-E08000036,2024-10-01/P1M,3328,,,
-E08000036,2024-11-01/P1M,5490,,,
-E08000036,2024-12-01/P1M,0,,,
-E08000036,2025-01-01/P1M,0,,,
-E08000036,2025-02-01/P1M,187,,,
-E08000036,2025-03-01/P1M,433,,,
+E08000036,2024-04-01/P1M,5352,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-05-01/P1M,6493,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-06-01/P1M,1941,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-07-01/P1M,3672,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-08-01/P1M,4179,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-09-01/P1M,1647,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-10-01/P1M,3328,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-11-01/P1M,5490,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2024-12-01/P1M,0,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2025-01-01/P1M,0,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2025-02-01/P1M,187,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E08000036,2025-03-01/P1M,433,,suspicious,"Source audit: wifi_sessions: February 187 versus median nonzero month 3,500 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
 E08000030,2024-04-01/P1Y,0,,,
 E09000031,2024-04-01/P1Y,0,,,
 E09000032,2024-04-01/P1M,11274,,,
@@ -1241,18 +1241,18 @@ E09000025,2026-02-01/P1M,7586,,,
 E09000025,2026-03-01/P1M,8554,,,
 E06000012,2025-04-01/P1Y,0,,,
 E06000013,2025-04-01/P1Y,0,,,
-E06000061,2025-04-01/P1M,0,,,
-E06000061,2025-05-01/P1M,0,,,
-E06000061,2025-06-01/P1M,0,,,
-E06000061,2025-07-01/P1M,0,,,
-E06000061,2025-08-01/P1M,0,,,
-E06000061,2025-09-01/P1M,473,,,
-E06000061,2025-10-01/P1M,11133,,,
-E06000061,2025-11-01/P1M,9369,,,
-E06000061,2025-12-01/P1M,7694,,,
-E06000061,2026-01-01/P1M,10048,,,
-E06000061,2026-02-01/P1M,11025,,,
-E06000061,2026-03-01/P1M,14603,,,
+E06000061,2025-04-01/P1M,0,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-05-01/P1M,0,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-06-01/P1M,0,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-07-01/P1M,0,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-08-01/P1M,0,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-09-01/P1M,473,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-10-01/P1M,11133,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-11-01/P1M,9369,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-12-01/P1M,7694,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2026-01-01/P1M,10048,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2026-02-01/P1M,11025,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2026-03-01/P1M,14603,,suspicious,"Source audit: wifi_sessions: September 473 versus median nonzero month 10,048 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
 E06000024,2025-04-01/P1Y,0,,,
 E08000022,2025-04-01/P1M,4349,,,
 E08000022,2025-05-01/P1M,4687,,,

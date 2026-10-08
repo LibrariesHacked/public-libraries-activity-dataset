@@ -1,0 +1,289 @@
+Period,Authority code,Authority name,Source column,Source row,Explanation
+2023/2024,E09000001,City of London,Ebook & Eaudio Data Collection,2,Yes
+2023/2024,E08000016,Barnsley,Ebook & Eaudio Data Collection,3,Yes
+2023/2024,E06000022,Bath and North East Somerset,Ebook & Eaudio Data Collection,4,No
+2023/2024,E06000008,Blackburn with Darwen,Ebook & Eaudio Data Collection,5,Yes
+2023/2024,E06000009,Blackpool,Ebook & Eaudio Data Collection,6,Yes
+2023/2024,E08000001,Bolton,Ebook & Eaudio Data Collection,7,Yes
+2023/2024,E06000058,"Bournemouth, Christchurch and Poole",Ebook & Eaudio Data Collection,8,Yes
+2023/2024,E06000036,Bracknell Forest,Ebook & Eaudio Data Collection,9,No
+2023/2024,E08000032,Bradford,Ebook & Eaudio Data Collection,10,Yes
+2023/2024,E06000023,City of Bristol,Ebook & Eaudio Data Collection,12,Yes
+2023/2024,E09000006,Bromley,Ebook & Eaudio Data Collection,13,Yes
+2023/2024,E06000060,Buckinghamshire,Ebook & Eaudio Data Collection,14,Yes
+2023/2024,E08000002,Bury,Ebook & Eaudio Data Collection,15,Yes
+2023/2024,E10000003,Cambridgeshire,Ebook & Eaudio Data Collection,17,Yes
+2023/2024,E06000056,Central Bedfordshire,Ebook & Eaudio Data Collection,18,Yes
+2023/2024,E06000050,Cheshire West and Chester,Ebook & Eaudio Data Collection,19,Yes
+2023/2024,E06000052,Cornwall,Ebook & Eaudio Data Collection,20,No
+2023/2024,E08000026,Coventry,Ebook & Eaudio Data Collection,21,Yes
+2023/2024,E06000005,Darlington,Ebook & Eaudio Data Collection,23,Yes
+2023/2024,E06000015,Derby,Ebook & Eaudio Data Collection,24,Yes
+2023/2024,E10000007,Derbyshire,Ebook & Eaudio Data Collection,25,Yes
+2023/2024,E10000008,Devon,Ebook & Eaudio Data Collection,26,Yes
+2023/2024,E06000059,Dorset Council,Ebook & Eaudio Data Collection,28,Yes
+2023/2024,E08000027,Dudley,Ebook & Eaudio Data Collection,29,Yes
+2023/2024,E06000011,East Riding of Yorkshire,Ebook & Eaudio Data Collection,30,Yes
+2023/2024,E10000011,East Sussex,Ebook & Eaudio Data Collection,31,Yes
+2023/2024,E06000014,York,Ebook & Eaudio Data Collection,32,Yes
+2023/2024,E08000037,Gateshead,Ebook & Eaudio Data Collection,33,Yes
+2023/2024,E06000006,Halton,Ebook & Eaudio Data Collection,36,Yes
+2023/2024,E09000013,Hammersmith and Fulham,Ebook & Eaudio Data Collection,37,Yes
+2023/2024,E10000014,Hampshire,Ebook & Eaudio Data Collection,38,Yes
+2023/2024,E09000014,Haringey,Ebook & Eaudio Data Collection,39,Yes
+2023/2024,E09000015,Harrow,Ebook & Eaudio Data Collection,40,Yes
+2023/2024,E06000001,Hartlepool,Ebook & Eaudio Data Collection,41,Yes
+2023/2024,E06000019,Herefordshire,Ebook & Eaudio Data Collection,42,Yes
+2023/2024,E10000015,Hertfordshire,Ebook & Eaudio Data Collection,43,Yes
+2023/2024,E06000010,Kingston upon Hull,Ebook & Eaudio Data Collection,44,Yes
+2023/2024,E06000046,Isle of Wight,Ebook & Eaudio Data Collection,45,Yes
+2023/2024,E09000019,Islington,Ebook & Eaudio Data Collection,46,Yes
+2023/2024,E09000020,Kensington and Chelsea,Ebook & Eaudio Data Collection,47,Yes
+2023/2024,E10000016,Kent,Ebook & Eaudio Data Collection,48,Yes
+2023/2024,E09000021,Kingston upon Thames,Ebook & Eaudio Data Collection,49,Yes
+2023/2024,E08000034,Kirklees,Ebook & Eaudio Data Collection,50,Yes
+2023/2024,E06000016,Leicester,Ebook & Eaudio Data Collection,54,Yes
+2023/2024,E10000018,Leicestershire,Ebook & Eaudio Data Collection,55,Yes
+2023/2024,E09000023,Lewisham,Ebook & Eaudio Data Collection,56,Yes
+2023/2024,E10000019,Lincolnshire,Ebook & Eaudio Data Collection,57,Yes
+2023/2024,E09000003,Barnet,Ebook & Eaudio Data Collection,59,Yes
+2023/2024,E09000004,Bexley,Ebook & Eaudio Data Collection,60,Yes
+2023/2024,E09000007,Camden,Ebook & Eaudio Data Collection,61,Yes
+2023/2024,E09000009,Ealing,Ebook & Eaudio Data Collection,62,Yes
+2023/2024,E09000017,Hillingdon,Ebook & Eaudio Data Collection,63,Yes
+2023/2024,E09000018,Hounslow,Ebook & Eaudio Data Collection,64,Yes
+2023/2024,E09000027,Richmond upon Thames,Ebook & Eaudio Data Collection,65,Yes
+2023/2024,E09000029,Sutton,Ebook & Eaudio Data Collection,66,No
+2023/2024,E06000032,Luton,Ebook & Eaudio Data Collection,67,Yes
+2023/2024,E08000003,Manchester,Ebook & Eaudio Data Collection,68,Yes
+2023/2024,E09000024,Merton,Ebook & Eaudio Data Collection,69,Yes
+2023/2024,E06000002,Middlesbrough,Ebook & Eaudio Data Collection,70,Yes
+2023/2024,E08000021,Newcastle upon Tyne,Ebook & Eaudio Data Collection,71,Yes
+2023/2024,E09000025,Newham,Ebook & Eaudio Data Collection,72,Yes
+2023/2024,E06000012,North East Lincolnshire,Ebook & Eaudio Data Collection,74,Yes
+2023/2024,E06000013,North Lincolnshire,Ebook & Eaudio Data Collection,75,Yes
+2023/2024,E06000065,North Yorkshire,Ebook & Eaudio Data Collection,78,Yes
+2023/2024,E06000057,Northumberland,Ebook & Eaudio Data Collection,79,Yes
+2023/2024,E10000024,Nottinghamshire,Ebook & Eaudio Data Collection,81,Yes
+2023/2024,E08000004,Oldham,Ebook & Eaudio Data Collection,82,Yes
+2023/2024,E10000025,Oxfordshire,Ebook & Eaudio Data Collection,83,Yes
+2023/2024,E06000031,Peterborough,Ebook & Eaudio Data Collection,84,No
+2023/2024,E06000044,Portsmouth,Ebook & Eaudio Data Collection,85,Yes
+2023/2024,E06000038,Reading,Ebook & Eaudio Data Collection,86,Yes
+2023/2024,E08000018,Rotherham,Ebook & Eaudio Data Collection,88,Yes
+2023/2024,E06000040,Windsor and Maidenhead,Ebook & Eaudio Data Collection,89,Yes
+2023/2024,E06000017,Rutland,Ebook & Eaudio Data Collection,90,Yes
+2023/2024,E08000028,Sandwell,Ebook & Eaudio Data Collection,92,Yes
+2023/2024,E08000014,Sefton,Ebook & Eaudio Data Collection,93,Yes
+2023/2024,E08000019,Sheffield,Ebook & Eaudio Data Collection,94,Yes
+2023/2024,E06000051,Shropshire,Ebook & Eaudio Data Collection,95,Yes
+2023/2024,E06000025,South Gloucestershire,Ebook & Eaudio Data Collection,98,Yes
+2023/2024,E08000023,South Tyneside,Ebook & Eaudio Data Collection,99,Yes
+2023/2024,E08000013,St. Helens,Ebook & Eaudio Data Collection,102,Yes
+2023/2024,E10000028,Staffordshire,Ebook & Eaudio Data Collection,103,Yes
+2023/2024,E08000007,Stockport,Ebook & Eaudio Data Collection,104,Yes
+2023/2024,E06000004,Stockton-on-Tees,Ebook & Eaudio Data Collection,105,Yes
+2023/2024,E06000021,Stoke-on-Trent,Ebook & Eaudio Data Collection,106,Yes
+2023/2024,E10000029,Suffolk,Ebook & Eaudio Data Collection,107,Yes
+2023/2024,E08000024,Sunderland,Ebook & Eaudio Data Collection,108,Yes
+2023/2024,E10000030,Surrey,Ebook & Eaudio Data Collection,109,Yes
+2023/2024,E08000008,Tameside,Ebook & Eaudio Data Collection,111,Yes
+2023/2024,E06000020,Telford and Wrekin,Ebook & Eaudio Data Collection,112,Yes
+2023/2024,E06000034,Thurrock,Ebook & Eaudio Data Collection,113,No
+2023/2024,E06000027,Torbay,Ebook & Eaudio Data Collection,114,Yes
+2023/2024,E09000030,Tower Hamlets,Ebook & Eaudio Data Collection,115,Yes
+2023/2024,E09000026,Redbridge,Ebook & Eaudio Data Collection,116,Yes
+2023/2024,E09000032,Wandsworth,Ebook & Eaudio Data Collection,119,Yes
+2023/2024,E06000007,Warrington,Ebook & Eaudio Data Collection,120,Yes
+2023/2024,E06000037,West Berkshire,Ebook & Eaudio Data Collection,122,Yes
+2023/2024,E10000032,West Sussex,Ebook & Eaudio Data Collection,123,Yes
+2023/2024,E09000033,Westminster,Ebook & Eaudio Data Collection,124,Yes
+2023/2024,E06000064,Westmorland and Furness,Ebook & Eaudio Data Collection,125,Yes
+2023/2024,E08000010,Wigan,Ebook & Eaudio Data Collection,126,Yes
+2023/2024,E06000054,Wiltshire,Ebook & Eaudio Data Collection,127,Yes
+2023/2024,E08000015,Wirral,Ebook & Eaudio Data Collection,128,Yes
+2023/2024,E08000031,Wolverhampton,Ebook & Eaudio Data Collection,129,Yes
+2024/2025,E08000016,Barnsley,Q22,5,No Click and Collect No Mobile Service
+2024/2025,E06000022,Bath and North East Somerset,Q22,6,We don't offer a Click and Collect service.
+2024/2025,E08000025,Birmingham,Q22,7,We do not offer a click and collect service.
+2024/2025,E06000008,Blackburn with Darwen,Q22,8,We don't have a mobile library
+2024/2025,E06000009,Blackpool,Q22,9,We do not have a mobile library service or click and collect.
+2024/2025,E08000001,Bolton,Q22,10,"We only have a home library service - no mobile library and no click and collect (outside of normal reservations) With our Home Library Service, we do not record the number of visits in an easy to crunch way, so I have just multiplied our number of users by months of the year."
+2024/2025,E06000058,"Bournemouth, Christchurch and Poole",Q22,11,we do not have a mobile library service or click & collect service
+2024/2025,E08000032,Bradford,Q22,12,No click & collect No mobile library service
+2024/2025,E09000005,Brent,Q22,13,Do not have a mobile library.
+2024/2025,E06000023,City of Bristol,Q22,14,We do not have click and collect and we do not have a mobile library service
+2024/2025,E09000006,Bromley,Q22,15,We do not have a mobile library service
+2024/2025,E08000033,Calderdale,Q22,16,We do not have a mobile library service
+2024/2025,E10000003,Cambridgeshire,Q22,17,No click and collect. Mobile represents visitor count on mobile. Home library represents number of registered users each getting monthly visit.
+2024/2025,E06000049,Cheshire East,Q22,18,Our library management system doesn't track interactions.
+2024/2025,E06000050,Cheshire West and Chester,Q22,19,Our library management system doesn't track interactions.
+2024/2025,E09000001,City of London,Q22,20,We do not have a mobile library service or click and collect. We only have a home delivery service.
+2024/2025,E06000052,Cornwall,Q22,21,No click and collect
+2024/2025,E08000026,Coventry,Q22,22,No Click and Collect or Mobile Service
+2024/2025,E09000008,Croydon,Q22,23,No mobile library service or click and collect
+2024/2025,E06000063,Cumberland,Q22,24,We don't have a mobile library service or offer click and collect
+2024/2025,E06000005,Darlington,Q22,25,No mobile library and no click and collect points.
+2024/2025,E10000007,Derbyshire,Q22,26,Data is included earlier in the survey
+2024/2025,E10000008,Devon,Q22,27,We do not have a home library service or offer the other options. Our home library service is delivered by volunteers issuing books
+2024/2025,E08000017,Doncaster,Q22,28,We do not have a mobile library service
+2024/2025,E06000059,Dorset Council,Q22,29,We do not offer click and collect or have a mobile library
+2024/2025,E08000027,Dudley,Q22,30,we do not have a mobile library service
+2024/2025,E09000009,Ealing,Q22,31,Ealing Libraries doesn't have a mobile library service or a click and collect service.
+2024/2025,E06000011,East Riding of Yorkshire,Q22,32,While the East Riding has a mobile library and At Home service requested data is not recorded.
+2024/2025,E10000011,East Sussex,Q22,33,East Sussex Library and Information does not have a mobile library service.
+2024/2025,E09000010,Enfield,Q22,34,We do not have a mobile library service.
+2024/2025,E10000012,Essex,Q22,35,"We do not have a click and collect service. Reservations must be checked out by a member of staff or using a self-service kiosk in a library. Home Delivery figures are for our volunteer-run Home Library Service for members who cannot access a library building due to age, disability, or caring responsibilities. This service is not available to general library members."
+2024/2025,E08000037,Gateshead,Q22,36,"We don't have a mobile library anymore, and whilst we did offer click and collect during the pandemic, the demand for it disappeared once the buildings were fully reopened. The home delivery service I have reported is our Readers at Home service for house bound library members."
+2024/2025,E10000013,Gloucestershire,Q22,37,We have no mobile libraries
+2024/2025,E09000011,Greenwich,Q22,38,We do not have a click and collect or Mobile library service. We cannot calculate Home Delivery interactions as many loans are group loans to residential homes. We do not have counts of the number of individuals who borrow from the group loan collections.
+2024/2025,E09000012,Hackney,Q22,39,We do not have a Click and collect service. We do not have a Mobile library service.
+2024/2025,E10000014,Hampshire,Q22,40,We have no mobile library service.
+2024/2025,E09000015,Harrow,Q22,41,"We do not offer a click and collect service, or a mobile library service"
+2024/2025,E06000001,Hartlepool,Q22,42,No Click and collect or Mobile Library
+2024/2025,E09000016,Havering,Q22,43,We do not have a mobile library service
+2024/2025,E06000019,Herefordshire,Q22,44,We don't have a mobile library service.
+2024/2025,E06000046,Isle of Wight,Q22,46,We do not have click or collect or a mobile library on the road. Only a Housebound service.
+2024/2025,E10000016,Kent,Q22,47,"We no longer provide a Click and Collect service, this was discontinued after the pandemic. We do have a reservation service, but think this is something different? The figures for the mobiles represent the number of visits to our 5 mobile libraries. We are unable to provide the required Home Library Service data, we can provide number of Home Library issues, or number of customers"
+2024/2025,E06000010,Kingston upon Hull,Q22,48,"We don't offer click and collect, or a mobile library."
+2024/2025,E09000021,Kingston upon Thames,Q22,49,No click and collect service or mobile library service
+2024/2025,E08000034,Kirklees,Q22,50,We do not have a mobile library service. We do not offer click and collect.
+2024/2025,E08000011,Knowsley,Q22,51,we do not have a mobile library service
+2024/2025,E06000016,Leicester,Q22,52,N/A
+2024/2025,E09000023,Lewisham,Q22,53,No mobile service
+2024/2025,E10000019,Lincolnshire,Q22,54,No click and collect. mobile library and HLS only
+2024/2025,E08000012,Liverpool,Q22,55,No mobile library service
+2024/2025,E06000032,Luton,Q22,56,No Mobile No Click and Collect Data not collected in this way for Home Library
+2024/2025,E08000003,Manchester,Q22,57,No mobile library service or click and collect
+2024/2025,E09000024,Merton,Q22,58,We don't have a mobile library service nor do click & collect
+2024/2025,E06000042,Milton Keynes,Q22,59,No mobile library service or click and collect.
+2024/2025,E08000021,Newcastle upon Tyne,Q22,60,"We don't offer click & collect or a mobile library service. We do have a Home Delivery Service, but loans / visits are included in our overall figures. This service was delivered by the RVS in the financial year in question and data provided by them was scant."
+2024/2025,E06000012,North East Lincolnshire,Q22,61,"No mobile or click or collect service, just home library service."
+2024/2025,E06000013,North Lincolnshire,Q22,62,no click & collect service
+2024/2025,E06000061,North Northamptonshire,Q22,63,No click and collect or mobile library
+2024/2025,E06000024,North Somerset,Q22,64,"No click and collect service available. Mobile library service lower than previous years due to vehicle spending time off road due to mechanical faults, limited service options until new vehicle is available in Autumn 2025"
+2024/2025,E06000065,North Yorkshire,Q22,66,We don't operate a click and collect service. We have a home Library delivery service but don't currently keep figures on number of books delivered.
+2024/2025,E06000057,Northumberland,Q22,67,We do not record this information
+2024/2025,E06000018,Nottingham,Q22,68,Click and Collect - service offered but no longer monitored as take up very low Mobile Libraries - No mobile library service
+2024/2025,E10000024,Nottinghamshire,Q22,69,No click and collect customers currently recorded. Home delivery is counted by number of customers per year. Number of visits by a volunteer is not currently recorded.
+2024/2025,E08000004,Oldham,Q22,70,We do not have a mobile library service
+2024/2025,E10000025,Oxfordshire,Q22,71,"No mobile service Our Home Library Service delivers to around 200 customers, with a further 600-700 customers served by our team of 200-250 volunteers. Each customer is visited every 3 weeks, but we do not record actual visits due to the constant fluctuation of customers and volunteers. As such, this is an estimate, based on an average of 850 customers receiving a visit every 3 weeks."
+2024/2025,E06000031,Peterborough,Q22,72,*Click and collect - no C&C service operating in the time period **Total visitor count for each month. The service was suspended Jan 25 and Feb 25 due to the non availability of qualified drivers *** We collect the number of issues of items to housebound customers but not the number of visits
+2024/2025,E06000003,Redcar and Cleveland,Q22,75,"We only offer home delivery, we do not have a mobile library service."
+2024/2025,E09000027,Richmond upon Thames,Q22,76,We stopped click and collect once we re-opened after the pandemic. We don't have a mobile library service.
+2024/2025,E08000005,Rochdale,Q22,77,we do not have a mobile library service
+2024/2025,E08000018,Rotherham,Q22,78,"We don't offer a specific ""Click and Collect"" service and we don't have a ""mobile library"" service."
+2024/2025,E06000017,Rutland,Q22,79,We have no Mobile Library service. Our home delivery service to villages (that was a replacement to the mobile library during and post-covid) was discontinued end of October 2024 in favour of housebound deliveries only (and only to highly targeted customers) from November 2024 onwards.
+2024/2025,E08000006,Salford,Q22,80,Do not have a mobile library or do click and collect (reservations are included in main data)
+2024/2025,E08000028,Sandwell,Q22,81,We don't record this.
+2024/2025,E08000014,Sefton,Q22,82,We do not have a mobile library
+2024/2025,E08000019,Sheffield,Q22,83,No click or collect or mobile library service
+2024/2025,E06000051,Shropshire,Q22,84,No click & collect. Mobile library and Home Delivery data are based on a sample count completed once a year.
+2024/2025,E06000025,South Gloucestershire,Q22,85,We do not have a mobile library or a click and collect service
+2024/2025,E08000023,South Tyneside,Q22,86,We no longer offer click and collect or have a mobile library service
+2024/2025,E09000028,Southwark,Q22,87,We do not provide Click and Collect and Mobile deliveries
+2024/2025,E08000013,St. Helens,Q22,88,We do not have a click and collect and mobile library service - only Home Delivery
+2024/2025,E10000028,Staffordshire,Q22,89,We do not have a click and collect service
+2024/2025,E06000021,Stoke-on-Trent,Q22,91,We do not have any mobile libraries.
+2024/2025,E08000024,Sunderland,Q22,92,"We have a 'Books at Home' service, but do not have a mobile library."
+2024/2025,E10000030,Surrey,Q22,93,We have no mobile library service.
+2024/2025,E09000029,Sutton,Q22,94,We do not have a mobile library service or click and collect
+2024/2025,E08000008,Tameside,Q22,95,We don't have a click and collect or mobile library service
+2024/2025,E06000020,Telford and Wrekin,Q22,96,We do not have offer click and collect or have mobile libraries.
+2024/2025,E06000034,Thurrock,Q22,97,Do not have a mobile library service and no longer have click and collect service.
+2024/2025,E06000027,Torbay,Q22,98,We do not offer these services
+2024/2025,E09000030,Tower Hamlets,Q22,99,"Note: We don't have any data to provide for the above areas, this is because we do not provide Click and collect, Mobile libraries or Home delivery services."
+2024/2025,E08000009,Trafford,Q22,100,We do not have a mobile library service.
+2024/2025,E08000030,Walsall,Q22,102,We do not offer a click and collect service
+2024/2025,E09000031,Waltham Forest,Q22,103,No longer operate Click and Collect service. Do not have mobile libraries. Data has been provided for home delivery service.
+2024/2025,E09000032,Wandsworth,Q22,104,No mobile library service. No click and collect.
+2024/2025,E06000007,Warrington,Q22,105,"We do not have a mobile library service or click and collect, and we do not collect separate issue figures for our home library service."
+2024/2025,E10000031,Warwickshire,Q22,106,"Data's been entered for Mobile and home Delivery, but not for Click and Collect, as this is not happening now"
+2024/2025,E06000037,West Berkshire,Q22,107,We do not have click and collect service
+2024/2025,E06000062,West Northamptonshire,Q22,108,We do not deliver a mobile library service or do click and collect
+2024/2025,E10000032,West Sussex,Q22,109,"Click and collect - unclear what is meant by this, although we did offer a service during Covid lockdown. However, this is an extension of the reservation service, and so transactions are captured within loan data. Mobile libraries - we no longer have a mobile library service. Home delivery - we do record the number of people receiving this service, and the number of volunteers attending, but the people count is measured within active users data. It might be possible to calculate the number of activities of attendance, but this would have to be extracted from a wider volunteering dataset"
+2024/2025,E06000064,Westmorland and Furness,Q22,110,We do not have a mobile library service We do not operate a click and collect service.
+2024/2025,E08000010,Wigan,Q22,111,We do not offer this service
+2024/2025,E06000054,Wiltshire,Q22,112,We do not have a click and collect service
+2024/2025,E06000040,Windsor and Maidenhead,Q22,113,No we no longer have a Mobile library service instead we switched to the Home Library Service (HLS)
+2024/2025,E08000015,Wirral,Q22,114,We do not offer click and collect and have no mobile library service
+2024/2025,E08000031,Wolverhampton,Q22,115,No mobile library service
+2024/2025,E06000014,York,Q22,117,"Our mobile library service data is captured within the relevant cumulative totals, eg issues and visits."
+2025/2026,E08000016,Barnsley,Q13,5,No Click and Collect Service. No Mobile Library Service.
+2025/2026,E09000004,Bexley,Q13,6,We offer a home library service but these figures are captured in overall issue totals as it operates from all sites
+2025/2026,E06000008,Blackburn with Darwen,Q13,7,The click and collect service is no longer used. We don't provide a mobile library service
+2025/2026,E06000009,Blackpool,Q13,8,We don't have click and collect or mobile libraries.
+2025/2026,E08000001,Bolton,Q13,9,"We do not have a mobile library service or offer click and collect, as distinct from picking up a reservation through a normal visit anymore. We only have a Home Library Service and the customers receive one visit every month."
+2025/2026,E06000058,"Bournemouth, Christchurch and Poole",Q13,10,We do not offer Click and Collect and we do not have a mobile library service.
+2025/2026,E08000032,Bradford,Q13,11,No click & collect collated No mobile library service
+2025/2026,E06000043,Brighton and Hove,Q13,13,Do not have mobile library or offer click and collect
+2025/2026,E06000023,City of Bristol,Q13,14,No click and collect service and no mobile library
+2025/2026,E06000060,Buckinghamshire,Q13,15,"We do not have a mobile library or click and collect, and our home library service statistics are incorporated into our base stats in relation to the library they're linked to."
+2025/2026,E06000056,Central Bedfordshire,Q13,19,"We don't offer click and collect, and we don't have a mobile library. We do have home delivery, but we don't currently collect data on monthly interactions."
+2025/2026,E06000049,Cheshire East,Q13,20,We no longer track click and collect requests.
+2025/2026,E06000050,Cheshire West and Chester,Q13,21,Click and Collect data is no longer tracked.
+2025/2026,E06000052,Cornwall,Q13,23,No longer have this service
+2025/2026,E08000026,Coventry,Q13,24,Do not offer click and collect or a Mobile Library Service
+2025/2026,E09000008,Croydon,Q13,25,"We do operate Click & Collect, and do not have any mobile libraries"
+2025/2026,E06000063,Cumberland,Q13,26,We do not have a mobile library service
+2025/2026,E06000005,Darlington,Q13,27,We do not have a mobile library service or Click and collect
+2025/2026,E06000015,Derby,Q13,28,We do not have a mobile service and we are not currently recording the interactions for Home Library Service. Only the amount of issues
+2025/2026,E10000007,Derbyshire,Q13,29,Our mobile library service data is included within our our data
+2025/2026,E10000008,Devon,Q13,30,We do not offer any of these services
+2025/2026,E08000017,Doncaster,Q13,31,We do not have a mobile library service and do not offer click and collect
+2025/2026,E06000059,Dorset Council,Q13,32,We do not have a mobile library service or click and collect service
+2025/2026,E08000027,Dudley,Q13,33,Home library service data is included within the overall service data
+2025/2026,E08000037,Gateshead,Q13,35,We don't have a mobile library service or click and collect offer.
+2025/2026,E10000013,Gloucestershire,Q13,36,No mobile library service
+2025/2026,E09000013,Hammersmith and Fulham,Q13,39,We do not have a mobile library service
+2025/2026,E06000001,Hartlepool,Q13,40,Do not have a mobile library service and don't offer Click & Collect.
+2025/2026,E06000019,Herefordshire,Q13,41,Click and collect is not recorded but issues included in general figures. No Mobile library service.
+2025/2026,E10000015,Hertfordshire,Q13,42,We do not have click & collect or mobile library services. Please note our home delivery figures are estimates based on the total number of users each interacting with the service once a month.
+2025/2026,E06000046,Isle of Wight,Q13,44,we do not do click and collect and we have no mobile. We have a Housebound service staffed by one person.
+2025/2026,E09000020,Kensington and Chelsea,Q13,46,do not have mobile service.
+2025/2026,E10000016,Kent,Q13,47,"We no longer provide a click and collect service, this was discontinued after the pandemic. For the Home Library Service we can provide number of Home Library issues, or number of customers, but not number of interactions."
+2025/2026,E06000010,Kingston upon Hull,Q13,48,We didn't operate click and collect service during this time period and we don't have a mobile library.
+2025/2026,E08000035,Leeds,Q13,50,"Although we o have mobile libraries, we do not collect data compatible with the definition of interactions but will investigate what is possible for future reporting."
+2025/2026,E08000012,Liverpool,Q13,52,No mobile library service
+2025/2026,E09000024,Merton,Q13,53,We don't have a mobile library service
+2025/2026,E06000042,Milton Keynes,Q13,55,Do not have mobile library service or click and collect
+2025/2026,E08000021,Newcastle upon Tyne,Q13,56,"We do not have a mobile library service, and only offered click & collect during the covid pandemic."
+2025/2026,E09000025,Newham,Q13,57,Newham does not operate a mobile or home round reader service
+2025/2026,E06000012,North East Lincolnshire,Q13,58,We do not offer click and collect and have no mobile service.
+2025/2026,E06000013,North Lincolnshire,Q13,59,We do not offer click & collect
+2025/2026,E06000061,North Northamptonshire,Q13,60,We only have a library to you service
+2025/2026,E06000024,North Somerset,Q13,61,we do not have a click and collect service. A limited mobile service was in operation from April - December whilst we awaited delivery of a new EV mobile vehicle.
+2025/2026,E08000022,North Tyneside,Q13,62,Mobile library discontinued in July
+2025/2026,E06000065,North Yorkshire,Q13,63,We don't operate a click and collect service
+2025/2026,E06000057,Northumberland,Q13,64,We do not collect this data for our mobile library service
+2025/2026,E06000018,Nottingham,Q13,65,"Do not provide a Click and Collect service. No mobile service provided. While Home Delivery service provided, data not collected in time to submit return."
+2025/2026,E10000024,Nottinghamshire,Q13,66,Home delivery is counted by number of customers per year. Number of visits by a volunteer is not currently recorded. No click and collect customers currently served.
+2025/2026,E08000004,Oldham,Q13,67,We do not have a mobile library service
+2025/2026,E10000025,Oxfordshire,Q13,68,"No Click and Collect / mobile libraries. Our Home Library Service is delivered by a small team of staff and around 200 volunteers. Each customer is visited every 3 weeks, but we do not record actual visits due to the constant fluctuation of customers and volunteers. As such, this is an estimate, based on an average of 860 customers receiving a visit every 3 weeks."
+2025/2026,E09000027,Richmond upon Thames,Q13,72,We stopped doing Click and Collect once we fully reopened after the pandemic. Richmond upon Thames has no mobile libraries.
+2025/2026,E08000018,Rotherham,Q13,73,We do not have a mobile library service
+2025/2026,E08000028,Sandwell,Q13,74,We don't offer click and collect.
+2025/2026,E08000014,Sefton,Q13,75,WE do not have a mobile library service
+2025/2026,E08000019,Sheffield,Q13,76,no C&C or mobile library service we do have home library service and details in q
+2025/2026,E06000051,Shropshire,Q13,77,We don't offer Click & Collect. Mobile Library data is only available for the past 6 months Home delivery is based on a sample count in April.
+2025/2026,E06000039,Slough,Q13,78,we do not offer any of these services
+2025/2026,E06000025,South Gloucestershire,Q13,80,"We do not offer a Click and Collect service or a mobile library. The annual number of home deliveries is an estimated figure, calculated by multiplying the number of housebound borrowers by 12 months."
+2025/2026,E08000013,St. Helens,Q13,84,No mobile library or click and collect
+2025/2026,E10000028,Staffordshire,Q13,85,"We do not offer a Click & Collect Service. Our Home Delivery visits are estimated from the dates they started with us and whether they have monthly visits, fortnightly visits, etc."
+2025/2026,E06000021,Stoke-on-Trent,Q13,87,We do not have a mobile service.
+2025/2026,E10000030,Surrey,Q13,88,"We do not have a mobile library service, and we do not offer a specific click and collect service (other than standard reservation/hold requests)."
+2025/2026,E09000029,Sutton,Q13,89,We do not have a mobile service and do not operate click and collect
+2025/2026,E06000020,Telford and Wrekin,Q13,91,We do not have a mobile library service or click and collect.
+2025/2026,E06000027,Torbay,Q13,93,We do not offer any of these services
+2025/2026,E08000036,Wakefield,Q13,94,"Do not have a mobile library service anymore, or offer click and collect"
+2025/2026,E09000032,Wandsworth,Q13,96,do not have a mobile library service
+2025/2026,E06000007,Warrington,Q13,97,We don't have a mobile library service or click and collect. Issues from our home library service are not separated from total issues.
+2025/2026,E10000031,Warwickshire,Q13,98,We don't have a Click and Collect service any more.
+2025/2026,E06000062,West Northamptonshire,Q13,100,We only have a library to you service
+2025/2026,E10000032,West Sussex,Q13,101,Click and collect services are included within our loans report. We do not have a mobile library service. Home delivery services are included within our loans report.
+2025/2026,E09000033,Westminster,Q13,102,no mobile library service. We only have home library service
+2025/2026,E06000064,Westmorland and Furness,Q13,103,We do not have a mobile library service. We do not operate click and collect.
+2025/2026,E08000010,Wigan,Q13,104,We do not offer this service
+2025/2026,E06000054,Wiltshire,Q13,105,We do not operate a click and collect service
+2025/2026,E06000040,Windsor and Maidenhead,Q13,106,We do not have a mobile library service. One library was a click and collect service from November 2025 to March 2026 as the building was under refurbishment.
+2025/2026,E06000014,York,Q13,109,"1. The mobile library data is included in our visits figures, we do not differentiate this in terms of it being an additio0l service. We could the stats (issues, visits, volunteers etc) in the same way as we would an ordi0ry branch 2. Home Library Service - we count the number of customers, volunteer hours and issues. We do not have the data on number of interactions"

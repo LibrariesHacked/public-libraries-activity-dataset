@@ -451,6 +451,8 @@ def load_data_quality_anomalies(file_path=ERRORS_CSV):
                 if 'fields' not in anomalies[key]:
                     anomalies[key]['fields'] = {}
                 anomalies[key]['fields'][match_val] = rule_entry
+            elif scope == 'series':
+                anomalies[key].setdefault('series', {})[match_val] = rule_entry
             elif scope == 'total':
                 anomalies[key]['total'] = rule_entry
             elif scope == 'all':
@@ -517,7 +519,10 @@ def numeric_cell_value(value):
         value = value.total_seconds() / 86400
     if isinstance(value, float) and value.is_integer():
         value = int(value)
-    return str(value) if isinstance(value, (int, float)) or str(value).isdigit() else ''
+    if isinstance(value, (int, float)):
+        return str(value)
+    text = str(value).strip()
+    return text if text.isdigit() else ''
 
 
 def number_value(value):
@@ -555,6 +560,22 @@ def get_anomaly_info(year, metric, authority_code, value, field=None):
                 if callable(est):
                     est = est(value)
                 return (info.get('status'), est, info.get('notes'))
+
+    if field and 'series' in rule:
+        series_field = field
+        for month in MONTHS:
+            if field.endswith(f'_{month}_digital'):
+                series_field = field.removesuffix(f'_{month}_digital') + '_digital'
+                break
+            if field.endswith(f'_{month}'):
+                series_field = field.removesuffix(f'_{month}')
+                break
+        if series_field in rule['series']:
+            info = rule['series'][series_field]
+            est = info.get('estimate')
+            if callable(est):
+                est = est(value)
+            return (info.get('status'), est, info.get('notes'))
 
     # 3. Match 'all' (e.g. whole authority)
     if 'all' in rule:

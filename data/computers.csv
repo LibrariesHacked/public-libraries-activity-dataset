@@ -678,18 +678,18 @@ E09000025,2024-01-01/P1M,13891,,,
 E09000025,2024-02-01/P1M,14247,,,
 E09000025,2024-03-01/P1M,13405,,,
 E10000020,2023-04-01/P1Y,181321,,,
-E06000012,2023-04-01/P1M,4302,,,
-E06000012,2023-05-01/P1M,4592,,,
-E06000012,2023-06-01/P1M,4671,,,
-E06000012,2023-07-01/P1M,5155,,,
-E06000012,2023-08-01/P1M,6331,,,
-E06000012,2023-09-01/P1M,6162,,,
-E06000012,2023-10-01/P1M,6286,,,
-E06000012,2023-11-01/P1M,6705,,,
-E06000012,2023-12-01/P1M,3626,,,
-E06000012,2024-01-01/P1M,613,,,
-E06000012,2024-02-01/P1M,5452,,,
-E06000012,2024-03-01/P1M,5286,,,
+E06000012,2023-04-01/P1M,4302,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-05-01/P1M,4592,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-06-01/P1M,4671,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-07-01/P1M,5155,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-08-01/P1M,6331,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-09-01/P1M,6162,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-10-01/P1M,6286,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-11-01/P1M,6705,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2023-12-01/P1M,3626,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2024-01-01/P1M,613,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2024-02-01/P1M,5452,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000012,2024-03-01/P1M,5286,,suspicious,"Source audit: hours_public_computers: January 613 versus median nonzero month 5,220 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
 E06000013,2023-04-01/P1M,681,,,
 E06000013,2023-05-01/P1M,733,,,
 E06000013,2023-06-01/P1M,779,,,
@@ -1637,18 +1637,18 @@ E10000014,2024-12-01/P1M,6930,,,
 E10000014,2025-01-01/P1M,8729,,,
 E10000014,2025-02-01/P1M,7981,,,
 E10000014,2025-03-01/P1M,8402,,,
-E09000015,2024-04-01/P1M,2791,,,
-E09000015,2024-05-01/P1M,2749,,,
-E09000015,2024-06-01/P1M,2366,,,
-E09000015,2024-07-01/P1M,2654,,,
-E09000015,2024-08-01/P1M,3020,,,
-E09000015,2024-09-01/P1M,2559,,,
-E09000015,2024-10-01/P1M,2771,,,
-E09000015,2024-11-01/P1M,2808,,,
-E09000015,2024-12-01/P1M,2316,,,
-E09000015,2025-01-01/P1M,2373,,,
-E09000015,2025-02-01/P1M,2697,,,
-E09000015,2025-03-01/P1M,2645,,,
+E09000015,2024-04-01/P1M,2791,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-05-01/P1M,2749,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-06-01/P1M,2366,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-07-01/P1M,2654,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-08-01/P1M,3020,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-09-01/P1M,2559,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-10-01/P1M,2771,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-11-01/P1M,2808,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2024-12-01/P1M,2316,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2025-01-01/P1M,2373,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2025-02-01/P1M,2697,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E09000015,2025-03-01/P1M,2645,,suspicious,"Source audit: hours_public_computers: 2023/2024: 284,481; 2024/2025: 31,749 (0.11 times; -88.8%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
 E06000001,2024-04-01/P1M,742,,,
 E06000001,2024-05-01/P1M,734,,,
 E06000001,2024-06-01/P1M,790,,,
@@ -1824,30 +1824,30 @@ E06000042,2024-12-01/P1M,786,,,
 E06000042,2025-01-01/P1M,956,,,
 E06000042,2025-02-01/P1M,949,,,
 E06000042,2025-03-01/P1M,980,,,
-E08000021,2024-04-01/P1M,8661,,,
-E08000021,2024-05-01/P1M,8648,,,
-E08000021,2024-06-01/P1M,7560,,,
-E08000021,2024-07-01/P1M,8741,,,
-E08000021,2024-08-01/P1M,8285,,,
-E08000021,2024-09-01/P1M,8778,,,
-E08000021,2024-10-01/P1M,7318,,,
-E08000021,2024-11-01/P1M,8018,,,
-E08000021,2024-12-01/P1M,5737,,,
-E08000021,2025-01-01/P1M,7469,,,
-E08000021,2025-02-01/P1M,6481,,,
-E08000021,2025-03-01/P1M,6319,,,
-E06000012,2024-04-01/P1M,542,,,
-E06000012,2024-05-01/P1M,560,,,
-E06000012,2024-06-01/P1M,483,,,
-E06000012,2024-07-01/P1M,562,,,
-E06000012,2024-08-01/P1M,188,,,
-E06000012,2024-09-01/P1M,458,,,
-E06000012,2024-10-01/P1M,518,,,
-E06000012,2024-11-01/P1M,474,,,
-E06000012,2024-12-01/P1M,343,,,
-E06000012,2025-01-01/P1M,631,,,
-E06000012,2025-02-01/P1M,685,,,
-E06000012,2025-03-01/P1M,658,,,
+E08000021,2024-04-01/P1M,8661,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-05-01/P1M,8648,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-06-01/P1M,7560,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-07-01/P1M,8741,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-08-01/P1M,8285,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-09-01/P1M,8778,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-10-01/P1M,7318,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-11-01/P1M,8018,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2024-12-01/P1M,5737,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2025-01-01/P1M,7469,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2025-02-01/P1M,6481,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E08000021,2025-03-01/P1M,6319,,suspicious,"Source audit: hours_public_computers: 2023/2024: 12,294,410; 2024/2025: 92,015 (0.01 times; -99.3%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-04-01/P1M,542,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-05-01/P1M,560,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-06-01/P1M,483,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-07-01/P1M,562,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-08-01/P1M,188,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-09-01/P1M,458,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-10-01/P1M,518,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-11-01/P1M,474,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2024-12-01/P1M,343,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2025-01-01/P1M,631,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2025-02-01/P1M,685,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000012,2025-03-01/P1M,658,,suspicious,"Source audit: hours_public_computers: 2023/2024: 59,181; 2024/2025: 6,102 (0.10 times; -89.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
 E06000013,2024-04-01/P1M,899,,,
 E06000013,2024-05-01/P1M,828,,,
 E06000013,2024-06-01/P1M,713,,,
@@ -2272,18 +2272,18 @@ E09000032,2025-01-01/P1M,9275,,,
 E09000032,2025-02-01/P1M,9130,,,
 E09000032,2025-03-01/P1M,9855,,,
 E06000007,2024-04-01/P1Y,11390,,,
-E10000031,2024-04-01/P1M,5654,,,
-E10000031,2024-05-01/P1M,5586,,,
-E10000031,2024-06-01/P1M,5219,,,
-E10000031,2024-07-01/P1M,5448,,,
-E10000031,2024-08-01/P1M,5474,,,
-E10000031,2024-09-01/P1M,5431,,,
-E10000031,2024-10-01/P1M,5681,,,
-E10000031,2024-11-01/P1M,5458,,,
-E10000031,2024-12-01/P1M,4435,,,
-E10000031,2025-01-01/P1M,5660,,,
-E10000031,2025-02-01/P1M,5608,,,
-E10000031,2025-03-01/P1M,5676,,,
+E10000031,2024-04-01/P1M,5654,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-05-01/P1M,5586,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-06-01/P1M,5219,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-07-01/P1M,5448,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-08-01/P1M,5474,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-09-01/P1M,5431,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-10-01/P1M,5681,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-11-01/P1M,5458,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2024-12-01/P1M,4435,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2025-01-01/P1M,5660,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2025-02-01/P1M,5608,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E10000031,2025-03-01/P1M,5676,,suspicious,"Source audit: hours_public_computers: 2023/2024: 3,405,995; 2024/2025: 65,330 (0.02 times; -98.1%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
 E06000037,2024-04-01/P1M,1085,,,
 E06000037,2024-05-01/P1M,1039,,,
 E06000037,2024-06-01/P1M,979,,,
@@ -2654,7 +2654,7 @@ E06000063,2025-12-01/P1M,1354,,,
 E06000063,2026-01-01/P1M,1590,,,
 E06000063,2026-02-01/P1M,1915,,,
 E06000063,2026-03-01/P1M,1921,,,
-E06000005,2025-04-01/P1Y,54500,,,
+E06000005,2025-04-01/P1Y,54500,,suspicious,"Source audit: hours_public_computers: 2024/2025: 8,645; 2025/2026: 54,500 (6.30 times; +530.4%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
 E06000015,2025-04-01/P1M,3107,,,
 E06000015,2025-05-01/P1M,3126,,,
 E06000015,2025-06-01/P1M,3393,,,
@@ -2871,18 +2871,18 @@ E09000019,2025-12-01/P1M,4866,,,
 E09000019,2026-01-01/P1M,5422,,,
 E09000019,2026-02-01/P1M,4606,,,
 E09000019,2026-03-01/P1M,5236,,,
-E09000020,2025-04-01/P1M,3162,,,
-E09000020,2025-05-01/P1M,144,,,
-E09000020,2025-06-01/P1M,3463,,,
-E09000020,2025-07-01/P1M,3491,,,
-E09000020,2025-08-01/P1M,2889,,,
-E09000020,2025-09-01/P1M,3181,,,
-E09000020,2025-10-01/P1M,3503,,,
-E09000020,2025-11-01/P1M,0,,,
-E09000020,2025-12-01/P1M,0,,,
-E09000020,2026-01-01/P1M,0,,,
-E09000020,2026-02-01/P1M,0,,,
-E09000020,2026-03-01/P1M,0,,,
+E09000020,2025-04-01/P1M,3162,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-05-01/P1M,144,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-06-01/P1M,3463,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-07-01/P1M,3491,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-08-01/P1M,2889,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-09-01/P1M,3181,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-10-01/P1M,3503,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-11-01/P1M,0,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2025-12-01/P1M,0,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2026-01-01/P1M,0,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2026-02-01/P1M,0,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E09000020,2026-03-01/P1M,0,,suspicious,"Source audit: hours_public_computers: May 144 versus median nonzero month 3,181 (0.05 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
 E10000016,2025-04-01/P1M,14212,,,
 E10000016,2025-05-01/P1M,14172,,,
 E10000016,2025-06-01/P1M,13515,,,
@@ -3028,18 +3028,18 @@ E06000013,2025-12-01/P1M,585,,,
 E06000013,2026-01-01/P1M,711,,,
 E06000013,2026-02-01/P1M,638,,,
 E06000013,2026-03-01/P1M,695,,,
-E06000061,2025-04-01/P1M,2131,,,
-E06000061,2025-05-01/P1M,250,,,
-E06000061,2025-06-01/P1M,2172,,,
-E06000061,2025-07-01/P1M,2387,,,
-E06000061,2025-08-01/P1M,2071,,,
-E06000061,2025-09-01/P1M,2017,,,
-E06000061,2025-10-01/P1M,2342,,,
-E06000061,2025-11-01/P1M,2187,,,
-E06000061,2025-12-01/P1M,1834,,,
-E06000061,2026-01-01/P1M,2216,,,
-E06000061,2026-02-01/P1M,2078,,,
-E06000061,2026-03-01/P1M,2385,,,
+E06000061,2025-04-01/P1M,2131,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-05-01/P1M,250,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-06-01/P1M,2172,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-07-01/P1M,2387,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-08-01/P1M,2071,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-09-01/P1M,2017,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-10-01/P1M,2342,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-11-01/P1M,2187,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2025-12-01/P1M,1834,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2026-01-01/P1M,2216,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2026-02-01/P1M,2078,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
+E06000061,2026-03-01/P1M,2385,,suspicious,"Source audit: hours_public_computers: May 250 versus median nonzero month 2,152 (0.12 times). Could be a typo, changed scope or genuine activity; confirm with service. Values retained as reported pending source confirmation."
 E06000024,2025-04-01/P1M,2662,,,
 E06000024,2025-05-01/P1M,2396,,,
 E06000024,2025-06-01/P1M,2120,,,
@@ -3257,18 +3257,18 @@ E06000066,2025-12-01/P1M,4154,,,
 E06000066,2026-01-01/P1M,4675,,,
 E06000066,2026-02-01/P1M,5242,,,
 E06000066,2026-03-01/P1M,4750,,,
-E06000025,2025-04-01/P1M,176,,,
-E06000025,2025-05-01/P1M,173,,,
-E06000025,2025-06-01/P1M,167,,,
-E06000025,2025-07-01/P1M,164,,,
-E06000025,2025-08-01/P1M,163,,,
-E06000025,2025-09-01/P1M,172,,,
-E06000025,2025-10-01/P1M,191,,,
-E06000025,2025-11-01/P1M,162,,,
-E06000025,2025-12-01/P1M,150,,,
-E06000025,2026-01-01/P1M,185,,,
-E06000025,2026-02-01/P1M,161,,,
-E06000025,2026-03-01/P1M,188,,,
+E06000025,2025-04-01/P1M,176,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-05-01/P1M,173,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-06-01/P1M,167,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-07-01/P1M,164,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-08-01/P1M,163,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-09-01/P1M,172,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-10-01/P1M,191,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-11-01/P1M,162,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2025-12-01/P1M,150,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2026-01-01/P1M,185,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2026-02-01/P1M,161,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
+E06000025,2026-03-01/P1M,188,,suspicious,"Source audit: hours_public_computers: 2024/2025: 48,138; 2025/2026: 2,052 (0.04 times; -95.7%). Check units, collection scope and completeness; a change alone does not prove error. Values retained as reported pending source confirmation."
 E08000023,2025-04-01/P1M,3732,,,
 E08000023,2025-05-01/P1M,4066,,,
 E08000023,2025-06-01/P1M,3887,,,
