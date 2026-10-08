@@ -1,1 +1,1 @@
-The chart shows events and attendees per 1,000 residents in services reporting each measure that month. It separates in-person and online events.
+Monthly events and attendance per 1,000 residents for in-person and online activities.

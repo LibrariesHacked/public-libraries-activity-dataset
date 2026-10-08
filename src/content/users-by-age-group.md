@@ -1,1 +1,1 @@
-Compare active library users as a percentage of the population in each reported age group: under 12, ages 12–17, adults, and unknown age. Each year's rate uses only services that reported that age group, so changing reporting coverage does not appear as a change in the number of users.
+Active users as a percentage of the population in each age group. Each rate uses only services that reported that age group, allowing consistent comparisons across years.

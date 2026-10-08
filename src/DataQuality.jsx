@@ -11,7 +11,7 @@ import DatasetDataGrid from './components/DatasetDataGrid'
 
 /**
  * Data Quality page view rendering explanatory notes from content/data-quality.md
- * and the interactive master DataGrid for the errors and corrections audit register.
+ * and the interactive DataGrid for the errors and corrections audit register.
  *
  * @returns {JSX.Element} The rendered Data Quality page view.
  */

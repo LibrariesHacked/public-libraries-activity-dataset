@@ -1,1 +1,1 @@
-See active users as a share of the population in each library service area. The figure may be higher where services are also used by commuters or students from outside the area.
+Active users as a share of the population in each library service. Percentages may be higher in areas used by commuters, students, or visitors from neighbouring authorities.

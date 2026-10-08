@@ -25,137 +25,86 @@ import VisitsTotalCard from './VisitsTotalCard'
 import WiFiMonthlyPaceCard from './WiFiMonthlyPaceCard'
 import WiFiTotalCard from './WiFiTotalCard'
 
+const PAGE_CARDS = {
+  '/': {
+    sizes: { xs: 12, sm: 6, md: 4 },
+    cards: [
+      LoansTotalCard,
+      VisitsTotalCard,
+      UsersTotalCard,
+      EventsTotalCard,
+      ComputerTotalCard,
+      WiFiTotalCard
+    ]
+  },
+  '/loans': {
+    sizes: { xs: 12, sm: 6, lg: 3 },
+    cards: [
+      LoansTotalCard,
+      LoansPhysicalBooksCard,
+      LoansDigitalCard,
+      LoansPhysicalBooksChildrenCard
+    ]
+  },
+  '/visits': {
+    sizes: { xs: 12, sm: 6, lg: 3 },
+    cards: [
+      VisitsTotalCard,
+      VisitsBranchCard,
+      VisitsMobileCard,
+      VisitsMonthlyPaceCard
+    ]
+  },
+  '/events': {
+    sizes: { xs: 12, sm: 6, lg: 3 },
+    cards: [
+      EventsTotalCard,
+      AttendanceTotalCard,
+      EventsAverageTurnoutCard,
+      EventsChildrenAttendanceCard
+    ]
+  },
+  '/computers': {
+    sizes: { xs: 12, sm: 6, lg: 3 },
+    cards: [
+      ComputerTotalCard,
+      ComputerMonthlyPaceCard,
+      WiFiTotalCard,
+      WiFiMonthlyPaceCard
+    ]
+  },
+  '/users': {
+    sizes: { xs: 12, sm: 6, lg: 3 },
+    cards: [
+      UsersTotalCard,
+      UsersAdultCard,
+      UsersJuniorCard,
+      UsersUnder12Card
+    ]
+  }
+}
+
 /**
  * Responsive grid layout component that displays contextual KPI summary number cards
  * matching the active route/page (e.g. Loans, Users, Visits, Events, Computers, or all on Home).
  * Each page features a balanced set of 4 cards on desktop, and Home features 6 benchmark cards.
  *
- * @returns {JSX.Element} Grid container populated with summary cards.
+ * @returns {JSX.Element|null} Grid container populated with summary cards.
  */
 const CardGrid = () => {
   const { pathname } = useLocation()
+  const pageConfig = PAGE_CARDS[pathname]
+  if (!pageConfig) return null
 
-  if (pathname === '/') {
-    return (
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <LoansTotalCard />
+  return (
+    <Grid container spacing={2}>
+      {pageConfig.cards.map((CardComponent, index) => (
+        <Grid key={index} size={pageConfig.sizes}>
+          <CardComponent />
         </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <VisitsTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <UsersTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <EventsTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <ComputerTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-          <WiFiTotalCard />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (pathname === '/loans') {
-    return (
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <LoansTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <LoansPhysicalBooksCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <LoansDigitalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <LoansPhysicalBooksChildrenCard />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (pathname === '/visits') {
-    return (
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <VisitsTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <VisitsBranchCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <VisitsMobileCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <VisitsMonthlyPaceCard />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (pathname === '/events') {
-    return (
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <EventsTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <AttendanceTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <EventsAverageTurnoutCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <EventsChildrenAttendanceCard />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (pathname === '/computers') {
-    return (
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <ComputerTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <ComputerMonthlyPaceCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <WiFiTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <WiFiMonthlyPaceCard />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  if (pathname === '/users') {
-    return (
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <UsersTotalCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <UsersAdultCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <UsersJuniorCard />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <UsersUnder12Card />
-        </Grid>
-      </Grid>
-    )
-  }
-
-  return null
+      ))}
+    </Grid>
+  )
 }
 
 export default CardGrid

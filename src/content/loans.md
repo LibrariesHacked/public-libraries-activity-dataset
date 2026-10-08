@@ -1,1 +1,1 @@
-A loan is when a registered library member borrows an item. Renewing an item counts as another loan.
+A loan is counted each time a library member borrows or renews an item.

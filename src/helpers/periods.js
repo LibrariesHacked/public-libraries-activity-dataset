@@ -23,7 +23,7 @@ export const getPeriodForMonth = month => {
  * @returns {string[]} Array of 12 month strings in chronological order from April to March.
  */
 export const getPeriodMonths = period => {
-  const startYear = parseInt(period.split('/')[0])
+  const startYear = parseInt(period.split('/')[0], 10)
   const months = []
   for (let offset = 0; offset < 12; offset++) {
     const monthNumber = ((3 + offset) % 12) + 1
@@ -65,8 +65,8 @@ export const getMonthsInRange = monthRange => {
   const [start, end] = monthRange
   const startPeriod = getPeriodForMonth(start)
   const endPeriod = getPeriodForMonth(end)
-  const startYear = parseInt(startPeriod.split('/')[0])
-  const endYear = parseInt(endPeriod.split('/')[0])
+  const startYear = parseInt(startPeriod.split('/')[0], 10)
+  const endYear = parseInt(endPeriod.split('/')[0], 10)
   const periods = []
   for (let year = startYear; year <= endYear; year++) {
     periods.push(`${year}/${year + 1}`)

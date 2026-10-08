@@ -1,1 +1,1 @@
-The visits measure includes people visiting library locations, whether or not they borrow anything, as well as mobile-library and home-delivery interactions. Outreach figures count interactions, not unique people; one person may have several interactions.
+Visits count people entering library buildings, whether or not they borrow items, as well as mobile library stops and home deliveries. Outreach figures count interactions, not unique people.

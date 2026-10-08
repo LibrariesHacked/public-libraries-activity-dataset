@@ -1,1 +1,1 @@
-Explore public library activity across England. Compare services and see how activity changes over time across users, visits, loans, events, computers and Wi-Fi.
+Explore public library activity in England. Compare services and regions to see how visits, loans, events, computers, and Wi-Fi change over time.

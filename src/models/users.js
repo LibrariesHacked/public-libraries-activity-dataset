@@ -20,6 +20,30 @@ const { fetchRecords: getUsers } = createActivityModel({
 export { getUsers }
 
 /**
+ * Calculates per-service user totals for a given financial year period.
+ *
+ * @param {Users[]} users - List of user records.
+ * @param {string} period - Target financial year period.
+ * @param {string} [ageGroup] - Optional age group filter.
+ * @param {string[]} [serviceCodes] - Optional list of service codes to include.
+ * @returns {Map<string, number>} Map of service codes to total user counts.
+ */
+const getUserTotalsForPeriod = (users, period, ageGroup, serviceCodes) => {
+  const totals = new Map()
+  users.forEach(user => {
+    if (user.period !== period) return
+    if (ageGroup && user.ageGroup !== ageGroup) return
+    if (serviceCodes && !serviceCodes.includes(user.serviceCode)) return
+    if (user.countUsers == null || user.countUsers === 0) return
+    totals.set(
+      user.serviceCode,
+      (totals.get(user.serviceCode) || 0) + user.countUsers
+    )
+  })
+  return totals
+}
+
+/**
  * Calculates the percentage change in active users between two financial year periods.
  * Only library services that reported data in both periods are included, preventing distortions
  * caused by services joining or dropping out of reporting.
@@ -41,23 +65,18 @@ export function getUsersPeriodChange (
   if (!users || !earliestPeriod || !latestPeriod) return null
   if (earliestPeriod === latestPeriod) return null
 
-  const totalsFor = period => {
-    const totals = new Map()
-    users.forEach(user => {
-      if (user.period !== period) return
-      if (ageGroup && user.ageGroup !== ageGroup) return
-      if (serviceCodes && !serviceCodes.includes(user.serviceCode)) return
-      if (user.countUsers == null || user.countUsers === 0) return
-      totals.set(
-        user.serviceCode,
-        (totals.get(user.serviceCode) || 0) + user.countUsers
-      )
-    })
-    return totals
-  }
-
-  const earliestTotals = totalsFor(earliestPeriod)
-  const latestTotals = totalsFor(latestPeriod)
+  const earliestTotals = getUserTotalsForPeriod(
+    users,
+    earliestPeriod,
+    ageGroup,
+    serviceCodes
+  )
+  const latestTotals = getUserTotalsForPeriod(
+    users,
+    latestPeriod,
+    ageGroup,
+    serviceCodes
+  )
 
   let earliestTotal = 0
   let latestTotal = 0
@@ -100,23 +119,18 @@ export function getUsersPenetrationPeriodChange (
     : services
   const serviceMap = new Map(activeServices.map(s => [s.code, s]))
 
-  const totalsFor = period => {
-    const totals = new Map()
-    users.forEach(user => {
-      if (user.period !== period) return
-      if (ageGroup && user.ageGroup !== ageGroup) return
-      if (serviceCodes && !serviceCodes.includes(user.serviceCode)) return
-      if (user.countUsers == null || user.countUsers === 0) return
-      totals.set(
-        user.serviceCode,
-        (totals.get(user.serviceCode) || 0) + user.countUsers
-      )
-    })
-    return totals
-  }
-
-  const earliestTotals = totalsFor(earliestPeriod)
-  const latestTotals = totalsFor(latestPeriod)
+  const earliestTotals = getUserTotalsForPeriod(
+    users,
+    earliestPeriod,
+    ageGroup,
+    serviceCodes
+  )
+  const latestTotals = getUserTotalsForPeriod(
+    users,
+    latestPeriod,
+    ageGroup,
+    serviceCodes
+  )
 
   let earliestUserTotal = 0
   let earliestPopTotal = 0
@@ -149,6 +163,8 @@ export function getUsersPenetrationPeriodChange (
   return latestPct - earliestPct
 }
 
+const POPULATION_AGE_GROUPS = ['Under 12', '12-17', 'Adult']
+
 /**
  * Computes active library user penetration as a percentage of the resident population figures
  * for each service across age groups ('Under 12', '12-17', 'Adult') and the overall service population.
@@ -158,46 +174,55 @@ export function getUsersPenetrationPeriodChange (
  * @returns {Object<string, Object<string, number|null>>} Dictionary keyed by service code containing percentage penetration per age group and total.
  */
 export function getUsersPopulationPercentages (services, users) {
-
   const percentagesByService = {}
+  if (!services?.length) return percentagesByService
 
-  // For all services we want a percentage of population for
-  // Under 12, 12-17, Adult
-  const ageGroups = ['Under 12', '12-17', 'Adult']
+  const usersByService = new Map()
+  if (users?.length) {
+    users.forEach(u => {
+      if (u.countUsers == null || u.countUsers === 0) return
+      let serviceGroup = usersByService.get(u.serviceCode)
+      if (!serviceGroup) {
+        serviceGroup = new Map()
+        usersByService.set(u.serviceCode, serviceGroup)
+      }
+      serviceGroup.set(
+        u.ageGroup,
+        (serviceGroup.get(u.ageGroup) || 0) + u.countUsers
+      )
+    })
+  }
+
   services.forEach(service => {
-    percentagesByService[service.code] = {}
-    const serviceUsers = users.filter(u => u.serviceCode === service.code)
-    const sumAllUsers = serviceUsers.reduce(
-      (sum, user) => sum + (user.countUsers || 0),
-      0
-    )
+    const serviceResults = {}
+    const serviceGroup = usersByService.get(service.code)
+    const hasAnyUsers = serviceGroup && serviceGroup.size > 0
 
-    ageGroups.forEach(ageGroup => {
-      const ageGroupUsers = serviceUsers.filter(u => u.ageGroup === ageGroup)
-      if (ageGroupUsers.length === 0 || sumAllUsers === 0) {
-        percentagesByService[service.code][ageGroup] = null
+    POPULATION_AGE_GROUPS.forEach(ageGroup => {
+      if (!hasAnyUsers) {
+        serviceResults[ageGroup] = null
         return
       }
 
-      const totalUsers = ageGroupUsers.reduce(
-        (sum, user) => sum + (user.countUsers || 0),
-        0
-      )
+      const totalUsers = serviceGroup.get(ageGroup) || 0
+      if (totalUsers === 0) {
+        serviceResults[ageGroup] = null
+        return
+      }
+
       const populationForAgeGroup =
         ageGroup === 'Under 12'
           ? service.populationUnder12
           : ageGroup === '12-17'
             ? service.population12To17
-            : ageGroup === 'Adult'
-              ? service.populationAdult
-              : null
+            : service.populationAdult
 
       const percentage =
         populationForAgeGroup > 0
           ? (totalUsers / populationForAgeGroup) * 100
           : null
 
-      percentagesByService[service.code][ageGroup] =
+      serviceResults[ageGroup] =
         percentage != null ? parseFloat(percentage.toFixed(2)) : null
     })
 
@@ -210,10 +235,13 @@ export function getUsersPopulationPercentages (services, users) {
       totalUsers != null && totalPopulation > 0
         ? (totalUsers / totalPopulation) * 100
         : null
-    percentagesByService[service.code].Total =
+
+    serviceResults.Total =
       overallPercentage != null
         ? parseFloat(overallPercentage.toFixed(2))
         : null
+
+    percentagesByService[service.code] = serviceResults
   })
 
   return percentagesByService

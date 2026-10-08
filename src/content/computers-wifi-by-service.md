@@ -1,1 +1,1 @@
-Compare annual computer hours and Wi-Fi sessions per 1,000 residents across library services. Each rate uses only the months in which the service reported that measure.
+Compare annual computer hours and Wi-Fi sessions per 1,000 residents across library services. Rates are adjusted for the months each service reported.

@@ -1,1 +1,1 @@
-These are year-end counts, recorded as of 31 March. They show computers and devices available for use in library buildings, devices available to borrow, and how many times loanable devices were issued. They are snapshots, not monthly activity, so do not add the figures across years.
+Annual snapshots as of 31 March, showing computers and devices available for use or loan. As these are year-end counts, they should not be added together across years.

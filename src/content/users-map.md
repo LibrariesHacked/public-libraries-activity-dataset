@@ -1,1 +1,1 @@
-The map compares active users with the population in each library service area. Choose an age group or view how the percentage has changed over time.
+Active users as a percentage of the population in each library service. Select an age group or view change over time.

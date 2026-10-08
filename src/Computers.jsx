@@ -232,143 +232,78 @@ const Computers = () => {
       }
     }
 
-    if (isRegionMode) {
-      const regionAggregates = getRegionAggregates(services, selectedRegions)
+    const entities = isRegionMode
+      ? getRegionAggregates(services, selectedRegions)
+      : activeServices
 
-      const getRegionTotalHoursSessions = region => {
-        const computerTotal = [...region.serviceCodes].reduce(
-          (sum, code) => sum + (serviceComputersMap.get(code) || 0),
-          0
-        )
-        const wifiTotal = [...region.serviceCodes].reduce(
-          (sum, code) => sum + (serviceWifiMap.get(code) || 0),
-          0
-        )
-        return (perThousandReportingPersonYears(
-          computerTotal,
-          regionComputerCoverage.get(region.region)
-        ) || 0) + (perThousandReportingPersonYears(
-          wifiTotal,
-          regionWifiCoverage.get(region.region)
-        ) || 0)
-      }
-
-      const sortedRegions = sortServicesByMetric(
-        regionAggregates,
-        getRegionTotalHoursSessions,
-        r => r?.computerHours || r?.wifiSessions
-      )
-
-      const rawRegionLabels = sortedRegions.map(r => r.niceName)
-      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
-
-      const serviceDatasets = [
-        {
-          label: 'Computer hours',
-          data: rawRegionLabels.map(regionLabel => {
-            const region = regionByNiceName.get(regionLabel)
-            if (!region) return null
-            const total = [...region.serviceCodes].reduce(
-              (sum, code) => sum + (serviceComputersMap.get(code) || 0),
-              0
-            )
-            const rate = perThousandReportingPersonYears(
-              total,
-              regionComputerCoverage.get(region.region)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        },
-        {
-          label: 'WiFi sessions',
-          data: rawRegionLabels.map(regionLabel => {
-            const region = regionByNiceName.get(regionLabel)
-            if (!region) return null
-            const total = [...region.serviceCodes].reduce(
-              (sum, code) => sum + (serviceWifiMap.get(code) || 0),
-              0
-            )
-            const rate = perThousandReportingPersonYears(
-              total,
-              regionWifiCoverage.get(region.region)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        }
-      ]
-
-      const regionLabels = formatServiceLabelsWithNoData(
-        rawRegionLabels,
-        regionByNiceName,
-        r => r?.computerHours || r?.wifiSessions
-      )
-
-      setServiceChart({
-        labels: regionLabels,
-        datasets: serviceDatasets
-      })
-    } else {
-      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-      const getServiceTotalHoursSessions = service => {
-        if (!service?.code) return 0
-        return (perThousandReportingPersonYears(
-          serviceComputersMap.get(service.code) || 0,
-          serviceComputerCoverage.get(service.code)
-        ) || 0) + (perThousandReportingPersonYears(
-          serviceWifiMap.get(service.code) || 0,
-          serviceWifiCoverage.get(service.code)
-        ) || 0)
-      }
-
-      const sortedServices = sortServicesByMetric(
-        activeServices,
-        getServiceTotalHoursSessions,
-        s => s?.computerHours || s?.wifiSessions
-      )
-
-      const rawServiceLabels = sortedServices.map(s => s.niceName)
-      const serviceByNiceName = new Map(
-        sortedServices.map(s => [s.niceName, s])
-      )
-
-      const serviceDatasets = [
-        {
-          label: 'Computer hours',
-          data: rawServiceLabels.map(serviceLabel => {
-            const service = serviceByNiceName.get(serviceLabel)
-            if (!service) return null
-            const rate = perThousandReportingPersonYears(
-              serviceComputersMap.get(service.code) || 0,
-              serviceComputerCoverage.get(service.code)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        },
-        {
-          label: 'WiFi sessions',
-          data: rawServiceLabels.map(serviceLabel => {
-            const service = serviceByNiceName.get(serviceLabel)
-            if (!service) return null
-            const rate = perThousandReportingPersonYears(
-              serviceWifiMap.get(service.code) || 0,
-              serviceWifiCoverage.get(service.code)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        }
-      ]
-
-      const serviceLabels = formatServiceLabelsWithNoData(
-        rawServiceLabels,
-        serviceByNiceName,
-        s => s?.computerHours || s?.wifiSessions
-      )
-
-      setServiceChart({
-        labels: serviceLabels,
-        datasets: serviceDatasets
-      })
+    const getCoverage = (entity, coverageMap) => {
+      const key = isRegionMode ? (entity.region || entity.niceName) : entity.code
+      return coverageMap.get(key)
     }
+
+    const getTotal = (entity, countMap) => {
+      const codes = isRegionMode ? entity.serviceCodes : [entity.code]
+      let sum = 0
+      for (const code of codes) {
+        sum += countMap.get(code) || 0
+      }
+      return sum
+    }
+
+    const getEntityTotalHoursSessions = entity => {
+      if (!entity?.code && !entity?.serviceCodes) return 0
+      const compTotal = getTotal(entity, serviceComputersMap)
+      const compCov = getCoverage(entity, isRegionMode ? regionComputerCoverage : serviceComputerCoverage)
+      const wifiTotal = getTotal(entity, serviceWifiMap)
+      const wifiCov = getCoverage(entity, isRegionMode ? regionWifiCoverage : serviceWifiCoverage)
+      return (perThousandReportingPersonYears(compTotal, compCov) || 0) +
+        (perThousandReportingPersonYears(wifiTotal, wifiCov) || 0)
+    }
+
+    const sortedEntities = sortServicesByMetric(
+      entities,
+      getEntityTotalHoursSessions,
+      e => e?.computerHours || e?.wifiSessions
+    )
+
+    const rawLabels = sortedEntities.map(e => e.niceName)
+    const entityByNiceName = new Map(sortedEntities.map(e => [e.niceName, e]))
+
+    const serviceDatasets = [
+      {
+        label: 'Computer hours',
+        data: rawLabels.map(label => {
+          const entity = entityByNiceName.get(label)
+          if (!entity) return null
+          const total = getTotal(entity, serviceComputersMap)
+          const cov = getCoverage(entity, isRegionMode ? regionComputerCoverage : serviceComputerCoverage)
+          const rate = perThousandReportingPersonYears(total, cov)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
+        })
+      },
+      {
+        label: 'WiFi sessions',
+        data: rawLabels.map(label => {
+          const entity = entityByNiceName.get(label)
+          if (!entity) return null
+          const total = getTotal(entity, serviceWifiMap)
+          const cov = getCoverage(entity, isRegionMode ? regionWifiCoverage : serviceWifiCoverage)
+          const rate = perThousandReportingPersonYears(total, cov)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
+        })
+      }
+    ]
+
+    const labels = formatServiceLabelsWithNoData(
+      rawLabels,
+      entityByNiceName,
+      e => e?.computerHours || e?.wifiSessions
+    )
+
+    setServiceChart({
+      labels,
+      datasets: serviceDatasets
+    })
   }, [
     filteredServices,
     services,

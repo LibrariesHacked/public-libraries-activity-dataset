@@ -86,8 +86,8 @@ export function createActivityModel ({
       this[field] = json[index + 1]
     })
     const len = json.length
-    this.estimatedCount = json[len - 4] != null ? parseInt(json[len - 4]) : null
-    this.originalCount = json[len - 3] != null ? parseInt(json[len - 3]) : null
+    this.estimatedCount = json[len - 4] != null ? parseInt(json[len - 4], 10) : null
+    this.originalCount = json[len - 3] != null ? parseInt(json[len - 3], 10) : null
     this.status = json[len - 2] || null
     this.notes = json[len - 1] || null
     this._countProp = countProp

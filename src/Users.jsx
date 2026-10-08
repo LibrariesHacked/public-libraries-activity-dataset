@@ -219,92 +219,47 @@ const Users = () => {
       datasets: ageGroupChartDatasets
     })
 
-    if (isRegionMode) {
-      const regionAggregates = getRegionAggregates(services, selectedRegions)
+    const entities = isRegionMode
+      ? getRegionAggregates(services, selectedRegions)
+      : activeServices
 
-      const getRegionUserPercentage = region => {
-        if (!region || !region.totalPopulation) return 0
-        return ((region.users || 0) / region.totalPopulation) * 100
-      }
-
-      const sortedRegions = sortServicesByMetric(
-        regionAggregates,
-        getRegionUserPercentage,
-        r => r?.users
-      )
-
-      const rawRegionLabels = sortedRegions.map(r => r.niceName)
-      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
-
-      const regionData = rawRegionLabels.map(regionLabel => {
-        const region = regionByNiceName.get(regionLabel)
-        if (!region) return 0
-        const totalUsers = region.users || 0
-        const totalPopulation = region.totalPopulation || 0
-        const percentageUsers =
-          totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
-        return Math.round(percentageUsers)
-      })
-
-      const regionLabels = formatServiceLabelsWithNoData(
-        rawRegionLabels,
-        regionByNiceName,
-        r => r?.users
-      )
-
-      setServiceChart({
-        labels: regionLabels,
-        datasets: [
-          {
-            label: '% of population',
-            data: regionData
-          }
-        ]
-      })
-    } else {
-      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-      const getServiceUserPercentage = svc => {
-        if (!svc || !svc.totalPopulation) return 0
-        return ((svc.users || 0) / svc.totalPopulation) * 100
-      }
-
-      const sortedServices = sortServicesByMetric(
-        activeServices,
-        getServiceUserPercentage,
-        s => s?.users
-      )
-
-      const rawServiceLabels = sortedServices.map(s => s.niceName)
-      const serviceByNiceName = new Map(
-        sortedServices.map(s => [s.niceName, s])
-      )
-
-      const serviceData = rawServiceLabels.map(serviceLabel => {
-        const svc = serviceByNiceName.get(serviceLabel)
-        if (!svc) return 0
-        const totalUsers = svc.users || 0
-        const totalPopulation = svc.totalPopulation || 0
-        const percentageUsers =
-          totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
-        return Math.round(percentageUsers)
-      })
-
-      const serviceLabels = formatServiceLabelsWithNoData(
-        rawServiceLabels,
-        serviceByNiceName,
-        s => s?.users
-      )
-
-      setServiceChart({
-        labels: serviceLabels,
-        datasets: [
-          {
-            label: '% of population',
-            data: serviceData
-          }
-        ]
-      })
+    const getEntityUserPercentage = entity => {
+      if (!entity || !entity.totalPopulation) return 0
+      return ((entity.users || 0) / entity.totalPopulation) * 100
     }
+
+    const sortedEntities = sortServicesByMetric(
+      entities,
+      getEntityUserPercentage,
+      e => e?.users
+    )
+
+    const rawLabels = sortedEntities.map(e => e.niceName)
+    const entityByNiceName = new Map(sortedEntities.map(e => [e.niceName, e]))
+
+    const serviceData = rawLabels.map(label => {
+      const entity = entityByNiceName.get(label)
+      if (!entity) return 0
+      const totalUsers = entity.users || 0
+      const totalPopulation = entity.totalPopulation || 0
+      return totalPopulation > 0 ? Math.round((totalUsers / totalPopulation) * 100) : 0
+    })
+
+    const labels = formatServiceLabelsWithNoData(
+      rawLabels,
+      entityByNiceName,
+      e => e?.users
+    )
+
+    setServiceChart({
+      labels,
+      datasets: [
+        {
+          label: '% of population',
+          data: serviceData
+        }
+      ]
+    })
   }, [
     users,
     services,

@@ -8,6 +8,17 @@ const authorityByCode = new Map(
   libraryAuthorities.map(auth => [auth.code, auth])
 )
 
+const METRICS = [
+  'users',
+  'events',
+  'attendance',
+  'loans',
+  'visits',
+  'computerHours',
+  'wifiSessions'
+]
+const ACTIVITY_METRICS = METRICS.slice(1)
+
 export { DataQualityStatus, resolveEffectiveValue }
 
 /**
@@ -55,66 +66,29 @@ export class Service {
     this.region = authorityByCode.get(this.code)?.region || null
 
     if (json.length >= 40) {
-      this.usersOriginal = json[4]
-      this.usersEstimated = json[5]
-      this.usersStatus = json[6]
-      this.usersNotes = json[7]
-      this.users = resolveEffectiveValue(json[4], json[5], json[6], true)
-
-      this.eventsOriginal = json[8]
-      this.eventsEstimated = json[9]
-      this.eventsStatus = json[10]
-      this.eventsNotes = json[11]
-      this.events = resolveEffectiveValue(json[8], json[9], json[10], true)
-
-      this.attendanceOriginal = json[12]
-      this.attendanceEstimated = json[13]
-      this.attendanceStatus = json[14]
-      this.attendanceNotes = json[15]
-      this.attendance = resolveEffectiveValue(json[12], json[13], json[14], true)
-
-      this.loansOriginal = json[16]
-      this.loansEstimated = json[17]
-      this.loansStatus = json[18]
-      this.loansNotes = json[19]
-      this.loans = resolveEffectiveValue(json[16], json[17], json[18], true)
-
-      this.visitsOriginal = json[20]
-      this.visitsEstimated = json[21]
-      this.visitsStatus = json[22]
-      this.visitsNotes = json[23]
-      this.visits = resolveEffectiveValue(json[20], json[21], json[22], true)
-
-      this.computerHoursOriginal = json[24]
-      this.computerHoursEstimated = json[25]
-      this.computerHoursStatus = json[26]
-      this.computerHoursNotes = json[27]
-      this.computerHours = resolveEffectiveValue(json[24], json[25], json[26], true)
-
-      this.wifiSessionsOriginal = json[28]
-      this.wifiSessionsEstimated = json[29]
-      this.wifiSessionsStatus = json[30]
-      this.wifiSessionsNotes = json[31]
-      this.wifiSessions = resolveEffectiveValue(json[28], json[29], json[30], true)
+      METRICS.forEach((prop, idx) => {
+        const offset = 4 + idx * 4
+        this[`${prop}Original`] = json[offset]
+        this[`${prop}Estimated`] = json[offset + 1]
+        this[`${prop}Status`] = json[offset + 2]
+        this[`${prop}Notes`] = json[offset + 3]
+        this[prop] = resolveEffectiveValue(json[offset], json[offset + 1], json[offset + 2], true)
+      })
 
       this.populationUnder12 = json[32]
       this.population12To17 = json[33]
       this.populationAdult = json[34]
       this.totalPopulation = (json[32] || 0) + (json[33] || 0) + (json[34] || 0)
-      this.nearestNeighbours = json.slice(35, 40).filter(n => n)
+      this.nearestNeighbours = json.slice(35, 40).filter(Boolean)
     } else {
-      this.users = json[4]
-      this.events = json[5]
-      this.attendance = json[6]
-      this.loans = json[7]
-      this.visits = json[8]
-      this.computerHours = json[9]
-      this.wifiSessions = json[10]
+      METRICS.forEach((prop, idx) => {
+        this[prop] = json[4 + idx]
+      })
       this.populationUnder12 = json[11]
       this.population12To17 = json[12]
       this.populationAdult = json[13]
       this.totalPopulation = (json[11] || 0) + (json[12] || 0) + (json[13] || 0)
-      this.nearestNeighbours = json.slice(14, 20).filter(n => n)
+      this.nearestNeighbours = json.slice(14, 20).filter(Boolean)
     }
 
     return this
@@ -231,24 +205,26 @@ export const getServicesForPeriods = (serviceRecords, periods, useEstimates = tr
       ? latest.resolveMetric('users', useEstimates)
       : latest.users
 
+    const aggregatedMetrics = {}
+    METRICS.forEach(metric => {
+      Object.assign(
+        aggregatedMetrics,
+        aggregateMetricMetadata(orderedRecords, metric)
+      )
+    })
+
+    const activityTotals = {}
+    ACTIVITY_METRICS.forEach(metric => {
+      activityTotals[metric] = sumMetric(orderedRecords, metric)
+    })
+
     return new Service({
       ...latest,
       periods: orderedRecords.map(record => record.period),
       periodCount: orderedRecords.length,
       users: latestUsers,
-      events: sumMetric(orderedRecords, 'events'),
-      attendance: sumMetric(orderedRecords, 'attendance'),
-      loans: sumMetric(orderedRecords, 'loans'),
-      visits: sumMetric(orderedRecords, 'visits'),
-      computerHours: sumMetric(orderedRecords, 'computerHours'),
-      wifiSessions: sumMetric(orderedRecords, 'wifiSessions'),
-      ...aggregateMetricMetadata(orderedRecords, 'users'),
-      ...aggregateMetricMetadata(orderedRecords, 'events'),
-      ...aggregateMetricMetadata(orderedRecords, 'attendance'),
-      ...aggregateMetricMetadata(orderedRecords, 'loans'),
-      ...aggregateMetricMetadata(orderedRecords, 'visits'),
-      ...aggregateMetricMetadata(orderedRecords, 'computerHours'),
-      ...aggregateMetricMetadata(orderedRecords, 'wifiSessions')
+      ...activityTotals,
+      ...aggregatedMetrics
     })
   })
 }
@@ -459,30 +435,37 @@ export const getRegionAggregates = (services = [], selectedRegions = []) => {
     const regionServices = services.filter(s => s.region === regionName)
     const serviceCodes = new Set(regionServices.map(s => s.code))
 
-    const totalPopulation = regionServices.reduce(
-      (sum, s) => sum + (s.totalPopulation || 0),
-      0
-    )
-    const populationUnder12 = regionServices.reduce(
-      (sum, s) => sum + (s.populationUnder12 || 0),
-      0
-    )
-    const population12To17 = regionServices.reduce(
-      (sum, s) => sum + (s.population12To17 || 0),
-      0
-    )
-    const populationAdult = regionServices.reduce(
-      (sum, s) => sum + (s.populationAdult || 0),
-      0
-    )
+    let totalPopulation = 0
+    let populationUnder12 = 0
+    let population12To17 = 0
+    let populationAdult = 0
 
-    const sumMetricOrNull = prop => {
-      const reportingServices = regionServices.filter(
-        s => s[prop] != null && Number.isFinite(s[prop])
-      )
-      if (reportingServices.length === 0) return null
-      return reportingServices.reduce((sum, s) => sum + s[prop], 0)
-    }
+    const metricSums = {}
+    const metricCounts = {}
+    METRICS.forEach(prop => {
+      metricSums[prop] = 0
+      metricCounts[prop] = 0
+    })
+
+    regionServices.forEach(s => {
+      totalPopulation += s.totalPopulation || 0
+      populationUnder12 += s.populationUnder12 || 0
+      population12To17 += s.population12To17 || 0
+      populationAdult += s.populationAdult || 0
+
+      METRICS.forEach(prop => {
+        const val = s[prop]
+        if (val != null && Number.isFinite(val)) {
+          metricSums[prop] += val
+          metricCounts[prop]++
+        }
+      })
+    })
+
+    const metricResults = {}
+    METRICS.forEach(prop => {
+      metricResults[prop] = metricCounts[prop] > 0 ? metricSums[prop] : null
+    })
 
     return {
       region: regionName,
@@ -493,13 +476,7 @@ export const getRegionAggregates = (services = [], selectedRegions = []) => {
       populationUnder12,
       population12To17,
       populationAdult,
-      loans: sumMetricOrNull('loans'),
-      visits: sumMetricOrNull('visits'),
-      events: sumMetricOrNull('events'),
-      attendance: sumMetricOrNull('attendance'),
-      computerHours: sumMetricOrNull('computerHours'),
-      wifiSessions: sumMetricOrNull('wifiSessions'),
-      users: sumMetricOrNull('users')
+      ...metricResults
     }
   })
 }

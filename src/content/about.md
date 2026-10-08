@@ -1,43 +1,40 @@
 # About
 
-The **Public Libraries Activity Dataset** dashboard lets you explore how public libraries across England are used.
+This dashboard provides tools to explore public library use across England, covering loans, visits, events, computers, Wi-Fi, and active borrowers.
 
-It is made and maintained by [Libraries Hacked](https://www.librarieshacked.org), an initiative that helps people use open data about public libraries.
+It is maintained by [Libraries Hacked](https://www.librarieshacked.org), an open data project focused on public libraries.
 
-## The data
+## Data source
 
-The figures come from the official Public Libraries Activity Dataset, collected and published by [Arts Council England (ACE)](https://www.artscouncil.org.uk/supporting-arts-museums-and-libraries/supporting-libraries).
+The data is published annually by [Arts Council England (ACE)](https://www.artscouncil.org.uk/supporting-arts-museums-and-libraries/supporting-libraries) as the Public Libraries Activity Dataset.
 
-The dataset covers activity reported by library services in England, including:
+The dataset includes:
 
-* **Loans:** Physical books, audiobooks, ebooks, and digital audio, recorded for adults, young people, and children.
-* **Visits:** Visits to library sites, plus mobile-library and home-delivery interactions.
-* **Events and attendance:** Events held in person or online, and the number of people who attended.
-* **Computers and Wi-Fi:** Hours spent using public computers and the number of wireless internet sessions.
-* **Active users:** Registered library members who borrowed at least one physical or digital item in the last 12 months. Each member is counted once.
+* **Loans:** Books, audiobooks, ebooks, and digital audio, categorised by audience age group.
+* **Visits:** Visits to physical libraries, mobile libraries, and home deliveries.
+* **Events and attendance:** Activities organised in person and online, and participant numbers.
+* **Computers and Wi-Fi:** Public computer hours and wireless internet sessions.
+* **Active users:** Members who borrowed or renewed at least one item during the year.
 
-Not all services report every measure in every period, so data coverage varies. Check the reported service and population coverage when comparing figures.
+Reporting coverage varies, as not every service submits figures for every measure each year.
 
-## Comparisons and population context
+## Population comparisons
 
-Library services cover areas with different populations. To make comparisons fairer:
+To allow fair comparisons between areas with different population sizes:
 
-* Rates per 1,000 residents use population figures from the Office for National Statistics (ONS).
-* You can compare individual services or view totals by region.
-* For each service, the dashboard shows five services with similar populations and characteristics, using the ONS Nearest Neighbours model.
+* Figures are shown as rates per 1,000 residents, using Office for National Statistics (ONS) mid-year population estimates.
+* You can compare individual library services, view regional totals, or compare a service with its ONS Nearest Neighbours.
 
-## Data quality and corrections
+## Data quality
 
-Local authorities report their own figures. Reports can include unusual values or mistakes, such as a faulty computer counter, the wrong unit, or a typing error.
+Local authorities collect and submit their own data, which can include reporting errors, missing periods, or differences in counting methods.
 
-To make changes clear:
+* The dashboard allows switching between reported figures and corrected estimates.
+* All identified issues, adjustments, and exclusions are recorded in the public [audit register](https://github.com/LibrariesHacked/public-libraries-activity-dataset/blob/master/data/errors.csv).
 
-* You can view either the **Original data** or **Corrected data** throughout the dashboard.
-* Every known issue and change is listed in the public [errors and corrections register](https://github.com/LibrariesHacked/public-libraries-activity-dataset/blob/master/data/errors.csv). You can view it on the dashboard or download it.
+## Project repository
 
-## Open source
+The code and processing scripts are open source:
 
-This project is open source, and its data is available to everyone:
-
-* The code and data update scripts are on [GitHub](https://github.com/LibrariesHacked/public-libraries-activity-dataset).
-* To report an error, share feedback, or contribute, [raise an issue on GitHub](https://github.com/LibrariesHacked/public-libraries-activity-dataset/issues) or contact [Libraries Hacked](https://www.librarieshacked.org).
+* Repository: [GitHub](https://github.com/LibrariesHacked/public-libraries-activity-dataset)
+* Feedback and issue reports: [GitHub issues](https://github.com/LibrariesHacked/public-libraries-activity-dataset/issues) or contact [Libraries Hacked](https://www.librarieshacked.org).

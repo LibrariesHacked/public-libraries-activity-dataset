@@ -26,7 +26,7 @@ export class ErrorRecord {
 }
 
 /**
- * Fetches the master data quality anomaly and correction register.
+ * Fetches the data quality anomaly and correction audit register.
  *
  * @returns {Promise<ErrorRecord[]>} Promise resolving to an array of ErrorRecord instances.
  */

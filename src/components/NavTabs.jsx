@@ -34,6 +34,17 @@ const useRouteMatch = patterns => {
   return null
 }
 
+const NAV_ITEMS = [
+  { label: 'Summary', path: '/', icon: <SummarizeRoundedIcon /> },
+  { label: 'Loans', path: '/loans', icon: <MenuBookRoundedIcon /> },
+  { label: 'Users', path: '/users', icon: <PeopleRoundedIcon /> },
+  { label: 'Visits', path: '/visits', icon: <PlaceRoundedIcon /> },
+  { label: 'Events', path: '/events', icon: <EventRoundedIcon /> },
+  { label: 'Computers', path: '/computers', icon: <DevicesRoundedIcon /> }
+]
+
+const ROUTE_PATTERNS = NAV_ITEMS.map(item => item.path)
+
 /**
  * Top navigation tabs component allowing users to switch between datasets and application views.
  * Uses full-width tabs on desktop and built-in scrollable tabs with arrows on mobile.
@@ -42,14 +53,7 @@ const useRouteMatch = patterns => {
  */
 const NavTabs = () => {
   const isMobile = useMediaQuery(theme => theme.breakpoints.down('sm'))
-  const routeMatch = useRouteMatch([
-    '/',
-    '/loans',
-    '/users',
-    '/visits',
-    '/events',
-    '/computers'
-  ])
+  const routeMatch = useRouteMatch(ROUTE_PATTERNS)
   const currentTab = routeMatch?.pattern?.path || false
 
   return (
@@ -71,54 +75,17 @@ const NavTabs = () => {
           }
         }}
       >
-        <Tab
-          icon={<SummarizeRoundedIcon />}
-          iconPosition='start'
-          label='Summary'
-          value='/'
-          to='/'
-          component={Link}
-        />
-        <Tab
-          icon={<MenuBookRoundedIcon />}
-          iconPosition='start'
-          label='Loans'
-          value='/loans'
-          to='/loans'
-          component={Link}
-        />
-        <Tab
-          icon={<PeopleRoundedIcon />}
-          iconPosition='start'
-          label='Users'
-          value='/users'
-          to='/users'
-          component={Link}
-        />
-        <Tab
-          icon={<PlaceRoundedIcon />}
-          iconPosition='start'
-          label='Visits'
-          value='/visits'
-          to='/visits'
-          component={Link}
-        />
-        <Tab
-          icon={<EventRoundedIcon />}
-          iconPosition='start'
-          label='Events'
-          value='/events'
-          to='/events'
-          component={Link}
-        />
-        <Tab
-          icon={<DevicesRoundedIcon />}
-          iconPosition='start'
-          label='Computers'
-          value='/computers'
-          to='/computers'
-          component={Link}
-        />
+        {NAV_ITEMS.map(({ label, path, icon }) => (
+          <Tab
+            key={path}
+            icon={icon}
+            iconPosition='start'
+            label={label}
+            value={path}
+            to={path}
+            component={Link}
+          />
+        ))}
       </Tabs>
     </Paper>
   )

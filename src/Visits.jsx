@@ -217,98 +217,62 @@ const Visits = () => {
       }
     }
 
-    if (isRegionMode) {
-      const regionAggregates = getRegionAggregates(services, selectedRegions)
+    const entities = isRegionMode
+      ? getRegionAggregates(services, selectedRegions)
+      : activeServices
 
-      const getRegionTotalVisitsPerCapita = region => {
-        return locationTypes.reduce((rate, locationType) => {
-          const total = [...region.serviceCodes].reduce(
-            (sum, serviceCode) => sum + (serviceLocationMap.get(`${serviceCode}|||${locationType}`) || 0),
-            0
-          )
-          return rate + (perThousandReportingPersonYears(
-            total,
-            regionLocationCoverage.get(`${region.region}|||${locationType}`)
-          ) || 0)
-        }, 0)
-      }
-
-      const sortedRegions = sortServicesByMetric(
-        regionAggregates,
-        getRegionTotalVisitsPerCapita,
-        r => r?.visits
-      )
-
-      const rawRegionLabels = sortedRegions.map(r => r.niceName)
-      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
-
-      const datasets = locationTypes.map(locationType => ({
-        label: locationType,
-        data: rawRegionLabels.map(regionLabel => {
-          const region = regionByNiceName.get(regionLabel)
-          if (!region) return null
-          const visitCount = [...region.serviceCodes].reduce(
-            (sum, serviceCode) => sum + (serviceLocationMap.get(`${serviceCode}|||${locationType}`) || 0),
-            0
-          )
-          const rate = perThousandReportingPersonYears(
-            visitCount,
-            regionLocationCoverage.get(`${region.region}|||${locationType}`)
-          )
-          return rate == null ? null : parseFloat(rate.toFixed(2))
-        })
-      }))
-
-      const regionLabels = formatServiceLabelsWithNoData(
-        rawRegionLabels,
-        regionByNiceName,
-        r => r?.visits
-      )
-
-      setServiceChart({ labels: regionLabels, datasets })
-    } else {
-      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-      const getServiceTotalVisitsPerCapita = service => {
-        return locationTypes.reduce((rate, locationType) => {
-          const total = serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
-          const coverage = serviceLocationCoverage.get(`${service.code}|||${locationType}`)
-          return rate + (perThousandReportingPersonYears(total, coverage) || 0)
-        }, 0)
-      }
-
-      const sortedServices = sortServicesByMetric(
-        activeServices,
-        getServiceTotalVisitsPerCapita,
-        s => s?.visits
-      )
-
-      const rawServiceLabels = sortedServices.map(s => s.niceName)
-      const serviceByNiceName = new Map(
-        sortedServices.map(s => [s.niceName, s])
-      )
-
-      const datasets = locationTypes.map(locationType => ({
-        label: locationType,
-        data: rawServiceLabels.map(serviceLabel => {
-          const service = serviceByNiceName.get(serviceLabel)
-          const visitCount = service
-            ? serviceLocationMap.get(`${service.code}|||${locationType}`) || 0
-            : 0
-
-          const coverage = serviceLocationCoverage.get(`${service.code}|||${locationType}`)
-          const rate = perThousandReportingPersonYears(visitCount, coverage)
-          return rate == null ? null : parseFloat(rate.toFixed(2))
-        })
-      }))
-
-      const serviceLabels = formatServiceLabelsWithNoData(
-        rawServiceLabels,
-        serviceByNiceName,
-        s => s?.visits
-      )
-
-      setServiceChart({ labels: serviceLabels, datasets })
+    const getCoverage = (entity, locationType) => {
+      const key = isRegionMode
+        ? `${entity.region || entity.niceName}|||${locationType}`
+        : `${entity.code}|||${locationType}`
+      return (isRegionMode ? regionLocationCoverage : serviceLocationCoverage).get(key)
     }
+
+    const getTotalVisits = (entity, locationType) => {
+      const codes = isRegionMode ? entity.serviceCodes : [entity.code]
+      let sum = 0
+      for (const code of codes) {
+        sum += serviceLocationMap.get(`${code}|||${locationType}`) || 0
+      }
+      return sum
+    }
+
+    const getEntityTotalVisitsPerCapita = entity => {
+      return locationTypes.reduce((rate, locationType) => {
+        const total = getTotalVisits(entity, locationType)
+        const coverage = getCoverage(entity, locationType)
+        return rate + (perThousandReportingPersonYears(total, coverage) || 0)
+      }, 0)
+    }
+
+    const sortedEntities = sortServicesByMetric(
+      entities,
+      getEntityTotalVisitsPerCapita,
+      e => e?.visits
+    )
+
+    const rawLabels = sortedEntities.map(e => e.niceName)
+    const entityByNiceName = new Map(sortedEntities.map(e => [e.niceName, e]))
+
+    const datasets = locationTypes.map(locationType => ({
+      label: locationType,
+      data: rawLabels.map(label => {
+        const entity = entityByNiceName.get(label)
+        if (!entity) return null
+        const visitCount = getTotalVisits(entity, locationType)
+        const coverage = getCoverage(entity, locationType)
+        const rate = perThousandReportingPersonYears(visitCount, coverage)
+        return rate == null ? null : parseFloat(rate.toFixed(2))
+      })
+    }))
+
+    const serviceLabels = formatServiceLabelsWithNoData(
+      rawLabels,
+      entityByNiceName,
+      e => e?.visits
+    )
+
+    setServiceChart({ labels: serviceLabels, datasets })
   }, [
     visits,
     clickAndCollect,

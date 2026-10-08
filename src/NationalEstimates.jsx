@@ -165,11 +165,40 @@ const NationalEstimates = () => {
     )
   }
 
-  const usersEst = nationalEstimates.find(e => e.key === 'users')
-  const visitsEst = nationalEstimates.find(e => e.key === 'visits')
-  const loansEst = nationalEstimates.find(e => e.key === 'loans')
-  const eventsEst = nationalEstimates.find(e => e.key === 'events')
-  const attendanceEst = nationalEstimates.find(e => e.key === 'attendance')
+  const headlineCards = useMemo(() => {
+    const usersEst = nationalEstimates.find(e => e.key === 'users')
+    const visitsEst = nationalEstimates.find(e => e.key === 'visits')
+    const loansEst = nationalEstimates.find(e => e.key === 'loans')
+    const eventsEst = nationalEstimates.find(e => e.key === 'events')
+    const attendanceEst = nationalEstimates.find(e => e.key === 'attendance')
+
+    return [
+      {
+        title: 'Active Users',
+        icon: <PeopleRoundedIcon color='primary' fontSize='small' />,
+        est: usersEst,
+        subText: usersEst ? `${usersEst.grossedRate.toFixed(1)}% of population` : ''
+      },
+      {
+        title: 'Visits',
+        icon: <PlaceRoundedIcon color='primary' fontSize='small' />,
+        est: visitsEst,
+        subText: visitsEst ? `${visitsEst.grossedRate.toFixed(1)} per 1,000 residents` : ''
+      },
+      {
+        title: 'Total Loans',
+        icon: <MenuBookRoundedIcon color='primary' fontSize='small' />,
+        est: loansEst,
+        subText: loansEst ? `${loansEst.grossedRate.toFixed(1)} per 1,000 residents` : ''
+      },
+      {
+        title: 'Events',
+        icon: <EventRoundedIcon color='primary' fontSize='small' />,
+        est: eventsEst,
+        subText: attendanceEst ? `${formatNumber(attendanceEst.grossedTotal)} attendees` : ''
+      }
+    ]
+  }, [nationalEstimates])
 
   return (
     <Box sx={{ my: 3 }}>
@@ -231,145 +260,42 @@ const NationalEstimates = () => {
       </Typography>
 
       <Grid container spacing={2} sx={{ mb: 4 }}>
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
-            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-              <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-                <PeopleRoundedIcon color='primary' fontSize='small' />
-                <Typography variant='subtitle2' color='text.secondary'>
-                  Active Users
+        {headlineCards.map(({ title, icon, est, subText }) => (
+          <Grid key={title} size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
+            <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
+              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+                  {icon}
+                  <Typography variant='subtitle2' color='text.secondary'>
+                    {title}
+                  </Typography>
+                </Stack>
+                <Typography
+                  variant='h4'
+                  title={est ? formatNumber(est.grossedTotal) : undefined}
+                  sx={{
+                    fontWeight: 800,
+                    color: 'primary.main',
+                    fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.02em',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                >
+                  {est ? formatNumber(est.grossedTotal) : '—'}
                 </Typography>
-              </Stack>
-              <Typography
-                variant='h4'
-                title={usersEst ? formatNumber(usersEst.grossedTotal) : undefined}
-                sx={{
-                  fontWeight: 800,
-                  color: 'primary.main',
-                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.02em',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {usersEst ? formatNumber(usersEst.grossedTotal) : '—'}
-              </Typography>
-              <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                {usersEst ? `${usersEst.grossedRate.toFixed(1)}% of population` : ''}
-              </Typography>
-              <Typography variant='caption' color='text.secondary'>
-                {usersEst ? `${usersEst.reportingAuthorities}/${usersEst.totalAuthorities} authorities` : ''}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
-            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-              <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-                <PlaceRoundedIcon color='primary' fontSize='small' />
-                <Typography variant='subtitle2' color='text.secondary'>
-                  Visits
+                <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
+                  {subText}
                 </Typography>
-              </Stack>
-              <Typography
-                variant='h4'
-                title={visitsEst ? formatNumber(visitsEst.grossedTotal) : undefined}
-                sx={{
-                  fontWeight: 800,
-                  color: 'primary.main',
-                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.02em',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {visitsEst ? formatNumber(visitsEst.grossedTotal) : '—'}
-              </Typography>
-              <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                {visitsEst ? `${visitsEst.grossedRate.toFixed(1)} per 1,000 residents` : ''}
-              </Typography>
-              <Typography variant='caption' color='text.secondary'>
-                {visitsEst ? `${visitsEst.reportingAuthorities}/${visitsEst.totalAuthorities} authorities` : ''}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
-            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-              <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-                <MenuBookRoundedIcon color='primary' fontSize='small' />
-                <Typography variant='subtitle2' color='text.secondary'>
-                  Total Loans
+                <Typography variant='caption' color='text.secondary'>
+                  {est ? `${est.reportingAuthorities}/${est.totalAuthorities} authorities` : ''}
                 </Typography>
-              </Stack>
-              <Typography
-                variant='h4'
-                title={loansEst ? formatNumber(loansEst.grossedTotal) : undefined}
-                sx={{
-                  fontWeight: 800,
-                  color: 'primary.main',
-                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.02em',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {loansEst ? formatNumber(loansEst.grossedTotal) : '—'}
-              </Typography>
-              <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                {loansEst ? `${loansEst.grossedRate.toFixed(1)} per 1,000 residents` : ''}
-              </Typography>
-              <Typography variant='caption' color='text.secondary'>
-                {loansEst ? `${loansEst.reportingAuthorities}/${loansEst.totalAuthorities} authorities` : ''}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-          <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
-            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-              <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-                <EventRoundedIcon color='primary' fontSize='small' />
-                <Typography variant='subtitle2' color='text.secondary'>
-                  Events
-                </Typography>
-              </Stack>
-              <Typography
-                variant='h4'
-                title={eventsEst ? formatNumber(eventsEst.grossedTotal) : undefined}
-                sx={{
-                  fontWeight: 800,
-                  color: 'primary.main',
-                  fontSize: { xs: '1.75rem', sm: '1.6rem', md: '1.65rem', lg: '1.35rem', xl: '1.65rem' },
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.02em',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {eventsEst ? formatNumber(eventsEst.grossedTotal) : '—'}
-              </Typography>
-              <Typography variant='body2' color='text.secondary' sx={{ mt: 0.5 }}>
-                {attendanceEst ? `${formatNumber(attendanceEst.grossedTotal)} attendees` : ''}
-              </Typography>
-              <Typography variant='caption' color='text.secondary'>
-                {eventsEst ? `${eventsEst.reportingAuthorities}/${eventsEst.totalAuthorities} authorities` : ''}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
       {/* Section 1: National Estimates Table */}

@@ -127,20 +127,23 @@ export const calculateNationalEstimates = (serviceRecords, period) => {
   )
 
   return CORE_METRICS.map(metric => {
-    const reportingRecords = periodRecords.filter(r => {
+    let reportingAuthorities = 0
+    let reportingPopulation = 0
+    let sampleTotal = 0
+
+    periodRecords.forEach(r => {
       const val = getNationalMetricValue(r, metric.key)
-      return val != null && Number.isFinite(val)
+      if (val != null && Number.isFinite(val)) {
+        reportingAuthorities++
+        reportingPopulation += r.totalPopulation || 0
+        sampleTotal += val
+      }
     })
 
-    const reportingAuthorities = reportingRecords.length
     const minimumReportingAuthorities = getMinimumReportingAuthorities(totalAuthorities)
     const authorityCoveragePercent =
       totalAuthorities > 0 ? (reportingAuthorities / totalAuthorities) * 100 : 0
 
-    const reportingPopulation = reportingRecords.reduce(
-      (acc, r) => acc + (r.totalPopulation || 0),
-      0
-    )
     const populationCoveragePercent =
       totalEnglandPopulation > 0
         ? (reportingPopulation / totalEnglandPopulation) * 100
@@ -149,11 +152,6 @@ export const calculateNationalEstimates = (serviceRecords, period) => {
     const meetsThreshold =
       reportingAuthorities >= minimumReportingAuthorities ||
       populationCoveragePercent >= DCMS_THRESHOLD_PERCENT
-
-    const sampleTotal = reportingRecords.reduce((acc, r) => {
-      const val = getNationalMetricValue(r, metric.key)
-      return acc + (val || 0)
-    }, 0)
 
     const grossedTotal =
       reportingPopulation > 0
@@ -340,31 +338,29 @@ export const calculateRegionalEstimates = (serviceRecords, period) => {
     const metricSummaries = {}
 
     CORE_METRICS.forEach(metric => {
-      const reportingRecords = regionRecords.filter(r => {
+      let reportingAuthorities = 0
+      let reportingPopulation = 0
+      let sampleTotal = 0
+
+      regionRecords.forEach(r => {
         const val = getNationalMetricValue(r, metric.key)
-        return val != null && Number.isFinite(val)
+        if (val != null && Number.isFinite(val)) {
+          reportingAuthorities++
+          reportingPopulation += r.totalPopulation || 0
+          sampleTotal += val
+        }
       })
 
-      const reportingAuthorities = reportingRecords.length
       const minimumReportingAuthorities = getMinimumReportingAuthorities(totalAuthorities)
       const authorityCoveragePercent =
         totalAuthorities > 0 ? (reportingAuthorities / totalAuthorities) * 100 : 0
 
-      const reportingPopulation = reportingRecords.reduce(
-        (acc, r) => acc + (r.totalPopulation || 0),
-        0
-      )
       const populationCoveragePercent =
         totalPopulation > 0 ? (reportingPopulation / totalPopulation) * 100 : 0
 
       const meetsThreshold =
         reportingAuthorities >= minimumReportingAuthorities ||
         populationCoveragePercent >= DCMS_THRESHOLD_PERCENT
-
-      const sampleTotal = reportingRecords.reduce((acc, r) => {
-        const val = getNationalMetricValue(r, metric.key)
-        return acc + (val || 0)
-      }, 0)
 
       const grossedTotal =
         reportingPopulation > 0

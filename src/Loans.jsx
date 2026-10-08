@@ -194,109 +194,72 @@ const Loans = () => {
       }
     }
 
-    if (isRegionMode) {
-      const regionAggregates = getRegionAggregates(services, selectedRegions)
+    const entities = isRegionMode
+      ? getRegionAggregates(services, selectedRegions)
+      : activeServices
 
-      const getRegionTotalLoansPerCapita = region => {
-        return itemFormats.reduce((rate, format) => {
-          let totalLoans = 0
-          for (const serviceCode of region.serviceCodes) {
-            totalLoans += serviceFormatMap.get(`${serviceCode}|||${format}`) || 0
-          }
-          const coverage = regionFormatCoverage.get(`${region.region}|||${format}`)
-          return rate + (perThousandReportingPersonYears(totalLoans, coverage) || 0)
-        }, 0)
-      }
-
-      const sortedRegions = sortServicesByMetric(
-        regionAggregates,
-        getRegionTotalLoansPerCapita,
-        r => r?.loans
-      )
-
-      const rawRegionLabels = sortedRegions.map(r => r.niceName)
-      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
-
-      const datasets = itemFormats.map(format => {
-        const data = rawRegionLabels.map(regionLabel => {
-          const region = regionByNiceName.get(regionLabel)
-          if (!region?.totalPopulation) return 0
-
-          let totalLoans = 0
-          for (const sCode of region.serviceCodes) {
-            totalLoans += serviceFormatMap.get(`${sCode}|||${format}`) || 0
-          }
-          const coverage = regionFormatCoverage.get(`${region.niceName}|||${format}`)
-          const rate = perThousandReportingPersonYears(totalLoans, coverage)
-          return rate == null ? null : parseFloat(rate.toFixed(2))
-        })
-        return {
-          label: format,
-          data
-        }
-      })
-
-      const regionLabels = formatServiceLabelsWithNoData(
-        rawRegionLabels,
-        regionByNiceName,
-        r => r?.loans
-      )
-
-      setServiceChart({
-        labels: regionLabels,
-        datasets
-      })
-    } else {
-      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-      const getServiceLoansPerCapita = service => {
-        if (!service?.code) return 0
-        return itemFormats.reduce((rate, format) => {
-          const total = serviceFormatMap.get(`${service.code}|||${format}`) || 0
-          const coverage = serviceFormatCoverage.get(`${service.code}|||${format}`)
-          return rate + (perThousandReportingPersonYears(total, coverage) || 0)
-        }, 0)
-      }
-
-      const sortedServices = sortServicesByMetric(
-        activeServices,
-        getServiceLoansPerCapita,
-        s => s?.loans
-      )
-
-      const rawServiceLabels = sortedServices.map(s => s.niceName)
-      const serviceByNiceName = new Map(
-        sortedServices.map(s => [s.niceName, s])
-      )
-
-      const datasets = itemFormats.map(format => {
-        const data = rawServiceLabels.map(serviceLabel => {
-          const service = serviceByNiceName.get(serviceLabel)
-          const serviceCode = service?.code
-          if (!serviceCode) return 0
-
-          const totalLoans =
-            serviceFormatMap.get(`${serviceCode}|||${format}`) || 0
-          const coverage = serviceFormatCoverage.get(`${serviceCode}|||${format}`)
-          const rate = perThousandReportingPersonYears(totalLoans, coverage)
-          return rate == null ? null : parseFloat(rate.toFixed(2))
-        })
-        return {
-          label: format,
-          data
-        }
-      })
-
-      const serviceLabels = formatServiceLabelsWithNoData(
-        rawServiceLabels,
-        serviceByNiceName,
-        s => s?.loans
-      )
-
-      setServiceChart({
-        labels: serviceLabels,
-        datasets
-      })
+    const getCoverage = (entity, format) => {
+      const key = isRegionMode
+        ? `${entity.region || entity.niceName}|||${format}`
+        : `${entity.code}|||${format}`
+      return (isRegionMode ? regionFormatCoverage : serviceFormatCoverage).get(key)
     }
+
+    const getTotalLoans = (entity, format) => {
+      const codes = isRegionMode ? entity.serviceCodes : [entity.code]
+      let sum = 0
+      for (const code of codes) {
+        sum += serviceFormatMap.get(`${code}|||${format}`) || 0
+      }
+      return sum
+    }
+
+    const getEntityLoansPerCapita = entity => {
+      if (!entity?.code && !entity?.serviceCodes) return 0
+      return itemFormats.reduce((rate, format) => {
+        const total = getTotalLoans(entity, format)
+        const coverage = getCoverage(entity, format)
+        return rate + (perThousandReportingPersonYears(total, coverage) || 0)
+      }, 0)
+    }
+
+    const sortedEntities = sortServicesByMetric(
+      entities,
+      getEntityLoansPerCapita,
+      e => e?.loans
+    )
+
+    const rawLabels = sortedEntities.map(e => e.niceName)
+    const entityByNiceName = new Map(sortedEntities.map(e => [e.niceName, e]))
+
+    const datasets = itemFormats.map(format => {
+      const data = rawLabels.map(label => {
+        const entity = entityByNiceName.get(label)
+        if (!entity || (isRegionMode && !entity.totalPopulation) || (!isRegionMode && !entity.code)) {
+          return 0
+        }
+
+        const totalLoans = getTotalLoans(entity, format)
+        const coverage = getCoverage(entity, format)
+        const rate = perThousandReportingPersonYears(totalLoans, coverage)
+        return rate == null ? null : parseFloat(rate.toFixed(2))
+      })
+      return {
+        label: format,
+        data
+      }
+    })
+
+    const labels = formatServiceLabelsWithNoData(
+      rawLabels,
+      entityByNiceName,
+      e => e?.loans
+    )
+
+    setServiceChart({
+      labels,
+      datasets
+    })
   }, [
     filteredServices,
     loans,

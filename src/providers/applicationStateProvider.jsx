@@ -85,10 +85,7 @@ const buildPeriodState = (
 ) => {
   if (!serviceRecords) return state
   const services = getServicesForPeriods(serviceRecords, selectedPeriods, useEstimates)
-  const serviceLookup = {}
-  services.forEach(service => {
-    serviceLookup[service.code] = service
-  })
+  const serviceLookup = Object.fromEntries(services.map(s => [s.code, s]))
   const allPeriodsMonthRange = getMonthRangeForPeriods(state.periods || selectedPeriods)
   const periodMonthRange = state.periodMonthRange || allPeriodsMonthRange
   const filteredServices = resolveFilteredServices(
@@ -168,17 +165,12 @@ const applicationReducer = (state, action) => {
         periodMonthRange: allPeriodsMonthRange,
         monthRange: state.monthRange || allPeriodsMonthRange
       }
-      return {
-        ...buildPeriodState(
-          nextState,
-          action.serviceRecords,
-          periods,
-          state.useEstimates
-        ),
+      return buildPeriodState(
+        nextState,
+        action.serviceRecords,
         periods,
-        periodMonthRange: allPeriodsMonthRange,
-        monthRange: state.monthRange || allPeriodsMonthRange
-      }
+        state.useEstimates
+      )
     }
     case 'SetDateRange':
     case 'SetMonthRange': {

@@ -251,143 +251,83 @@ const Events = () => {
       }
     }
 
-    if (isRegionMode) {
-      const regionAggregates = getRegionAggregates(services, selectedRegions)
+    const entities = isRegionMode
+      ? getRegionAggregates(services, selectedRegions)
+      : activeServices
 
-      const getRegionTotalEventsAttendance = region => {
-        return ['Physical', 'Digital'].reduce((sum, eventType) => {
-          const eventTotal = [...region.serviceCodes].reduce(
-            (total, code) => total + (serviceEventsMap.get(`${code}|||${eventType}`) || 0),
-            0
-          )
-          const attendanceTotal = [...region.serviceCodes].reduce(
-            (total, code) => total + (serviceAttendanceMap.get(`${code}|||${eventType}`) || 0),
-            0
-          )
-          return sum +
-            (perThousandReportingPersonYears(eventTotal, regionEventCoverage.get(`${region.region}|||${eventType}`)) || 0) +
-            (perThousandReportingPersonYears(attendanceTotal, regionAttendanceCoverage.get(`${region.region}|||${eventType}`)) || 0)
-        }, 0)
-      }
-
-      const sortedRegions = sortServicesByMetric(
-        regionAggregates,
-        getRegionTotalEventsAttendance,
-        r => r?.events || r?.attendance
-      )
-
-      const rawRegionLabels = sortedRegions.map(r => r.niceName)
-      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
-
-      const datasets = ['Physical', 'Digital'].flatMap(eventType => [
-        {
-          label: `${eventTypes[eventType].label} events`,
-          data: rawRegionLabels.map(regionLabel => {
-            const region = regionByNiceName.get(regionLabel)
-            if (!region) return null
-            const total = [...region.serviceCodes].reduce(
-              (sum, code) => sum + (serviceEventsMap.get(`${code}|||${eventType}`) || 0),
-              0
-            )
-            const rate = perThousandReportingPersonYears(
-              total,
-              regionEventCoverage.get(`${region.region}|||${eventType}`)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        },
-        {
-          label: `${eventTypes[eventType].label} attendees`,
-          data: rawRegionLabels.map(regionLabel => {
-            const region = regionByNiceName.get(regionLabel)
-            if (!region) return null
-            const total = [...region.serviceCodes].reduce(
-              (sum, code) => sum + (serviceAttendanceMap.get(`${code}|||${eventType}`) || 0),
-              0
-            )
-            const rate = perThousandReportingPersonYears(
-              total,
-              regionAttendanceCoverage.get(`${region.region}|||${eventType}`)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        }
-      ])
-
-      const regionLabels = formatServiceLabelsWithNoData(
-        rawRegionLabels,
-        regionByNiceName,
-        r => r?.events || r?.attendance
-      )
-
-      setServiceChart({
-        labels: regionLabels,
-        datasets
-      })
-    } else {
-      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
-      const getServiceTotalEventsAttendance = service => {
-        if (!service?.code) return 0
-        return ['Physical', 'Digital'].reduce((sum, eventType) => {
-          const eventTotal = serviceEventsMap.get(`${service.code}|||${eventType}`) || 0
-          const attendanceTotal = serviceAttendanceMap.get(`${service.code}|||${eventType}`) || 0
-          return sum +
-            (perThousandReportingPersonYears(eventTotal, serviceEventCoverage.get(`${service.code}|||${eventType}`)) || 0) +
-            (perThousandReportingPersonYears(attendanceTotal, serviceAttendanceCoverage.get(`${service.code}|||${eventType}`)) || 0)
-        }, 0)
-      }
-
-      const sortedServices = sortServicesByMetric(
-        activeServices,
-        getServiceTotalEventsAttendance,
-        s => s?.events || s?.attendance
-      )
-
-      const rawServiceLabels = sortedServices.map(s => s.niceName)
-      const serviceByNiceName = new Map(
-        sortedServices.map(s => [s.niceName, s])
-      )
-
-      const datasets = ['Physical', 'Digital'].flatMap(eventType => [
-        {
-          label: `${eventTypes[eventType].label} events`,
-          data: rawServiceLabels.map(serviceLabel => {
-            const service = serviceByNiceName.get(serviceLabel)
-            if (!service) return null
-            const total = serviceEventsMap.get(`${service.code}|||${eventType}`) || 0
-            const rate = perThousandReportingPersonYears(
-              total,
-              serviceEventCoverage.get(`${service.code}|||${eventType}`)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        },
-        {
-          label: `${eventTypes[eventType].label} attendees`,
-          data: rawServiceLabels.map(serviceLabel => {
-            const service = serviceByNiceName.get(serviceLabel)
-            if (!service) return null
-            const total = serviceAttendanceMap.get(`${service.code}|||${eventType}`) || 0
-            const rate = perThousandReportingPersonYears(
-              total,
-              serviceAttendanceCoverage.get(`${service.code}|||${eventType}`)
-            )
-            return rate == null ? null : parseFloat(rate.toFixed(2))
-          })
-        }
-      ])
-
-      const serviceLabels = formatServiceLabelsWithNoData(
-        rawServiceLabels,
-        serviceByNiceName,
-        s => s?.events || s?.attendance
-      )
-
-      setServiceChart({
-        labels: serviceLabels,
-        datasets
-      })
+    const getCoverage = (entity, coverageMap, eventType) => {
+      const key = isRegionMode
+        ? `${entity.region || entity.niceName}|||${eventType}`
+        : `${entity.code}|||${eventType}`
+      return coverageMap.get(key)
     }
+
+    const getTotal = (entity, countMap, eventType) => {
+      const codes = isRegionMode ? entity.serviceCodes : [entity.code]
+      let sum = 0
+      for (const code of codes) {
+        sum += countMap.get(`${code}|||${eventType}`) || 0
+      }
+      return sum
+    }
+
+    const getEntityTotalEventsAttendance = entity => {
+      if (!entity?.code && !entity?.serviceCodes) return 0
+      return ['Physical', 'Digital'].reduce((sum, eventType) => {
+        const evTotal = getTotal(entity, serviceEventsMap, eventType)
+        const evCov = getCoverage(entity, isRegionMode ? regionEventCoverage : serviceEventCoverage, eventType)
+        const attTotal = getTotal(entity, serviceAttendanceMap, eventType)
+        const attCov = getCoverage(entity, isRegionMode ? regionAttendanceCoverage : serviceAttendanceCoverage, eventType)
+        return sum +
+          (perThousandReportingPersonYears(evTotal, evCov) || 0) +
+          (perThousandReportingPersonYears(attTotal, attCov) || 0)
+      }, 0)
+    }
+
+    const sortedEntities = sortServicesByMetric(
+      entities,
+      getEntityTotalEventsAttendance,
+      e => e?.events || e?.attendance
+    )
+
+    const rawLabels = sortedEntities.map(e => e.niceName)
+    const entityByNiceName = new Map(sortedEntities.map(e => [e.niceName, e]))
+
+    const datasets = ['Physical', 'Digital'].flatMap(eventType => [
+      {
+        label: `${eventTypes[eventType].label} events`,
+        data: rawLabels.map(label => {
+          const entity = entityByNiceName.get(label)
+          if (!entity) return null
+          const total = getTotal(entity, serviceEventsMap, eventType)
+          const cov = getCoverage(entity, isRegionMode ? regionEventCoverage : serviceEventCoverage, eventType)
+          const rate = perThousandReportingPersonYears(total, cov)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
+        })
+      },
+      {
+        label: `${eventTypes[eventType].label} attendees`,
+        data: rawLabels.map(label => {
+          const entity = entityByNiceName.get(label)
+          if (!entity) return null
+          const total = getTotal(entity, serviceAttendanceMap, eventType)
+          const cov = getCoverage(entity, isRegionMode ? regionAttendanceCoverage : serviceAttendanceCoverage, eventType)
+          const rate = perThousandReportingPersonYears(total, cov)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
+        })
+      }
+    ])
+
+    const labels = formatServiceLabelsWithNoData(
+      rawLabels,
+      entityByNiceName,
+      e => e?.events || e?.attendance
+    )
+
+    setServiceChart({
+      labels,
+      datasets
+    })
   }, [
     filteredServices,
     services,

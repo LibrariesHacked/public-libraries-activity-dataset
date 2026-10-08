@@ -1,1 +1,1 @@
-Events are scheduled activities organised by a library service, either in person or online. An event is counted only if at least one person attends. Attendance counts the people who actually took part, not the number of bookings.
+Events are scheduled activities organised by a library service, in person or online. An event is counted only if at least one person attends. Attendance counts actual participants, not advance bookings.
