@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
 import { getServicesAdultPopulation } from '../models/service'
 
 import LoansCategoryCard from './LoansCategoryCard'
@@ -20,6 +21,7 @@ const LoansPhysicalBooksAdultsCard = () => {
     <LoansCategoryCard
       title='Adult physical book loans'
       colour='chartBlue'
+      icon={PersonRoundedIcon}
       filterLoan={filterLoan}
       populationFn={getServicesAdultPopulation}
       perCapitaLabel='adult residents'

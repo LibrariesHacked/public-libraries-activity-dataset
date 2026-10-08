@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
@@ -20,7 +21,7 @@ import NumberCard from './NumberCard'
  * @param {Function} props.filterLoan - Predicate function determining if a loan record matches this category.
  * @param {Function} props.populationFn - Function calculating the relevant population denominator from service records.
  * @param {string} props.perCapitaLabel - Name of the population group used for the rate.
- * @param {React.ElementType} [props.icon] - Optional icon displayed next to the description.
+ * @param {React.ElementType} [props.icon] - Optional category title icon, defaulting to a book.
  * @returns {JSX.Element} Rendered NumberCard component.
  */
 const LoansCategoryCard = ({
@@ -29,7 +30,7 @@ const LoansCategoryCard = ({
   filterLoan,
   populationFn,
   perCapitaLabel,
-  icon
+  icon = MenuBookRoundedIcon
 }) => {
   const [
     { filteredServices, services, loans, periods, selectedPeriods, monthRange, useEstimates }

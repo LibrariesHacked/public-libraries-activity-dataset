@@ -21,6 +21,7 @@ import Typography from '@mui/material/Typography'
 
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
+import EventRoundedIcon from '@mui/icons-material/EventRounded'
 import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded'
 import PlaceRoundedIcon from '@mui/icons-material/PlaceRounded'
@@ -119,7 +120,7 @@ const NationalEstimates = () => {
     dispatchApplication
   ] = useApplicationState()
 
-  const [selectedPeriod, setSelectedPeriod] = useState(DCMS_BASELINE_PERIOD)
+  const [selectedPeriod, setSelectedPeriod] = useState('2025/2026')
 
   useEffect(() => {
     if (!serviceRecords) {
@@ -339,7 +340,7 @@ const NationalEstimates = () => {
           <Card elevation={0} variant='outlined' sx={{ height: '100%', minWidth: 0, boxShadow: 'none' }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
-                <PeopleRoundedIcon color='primary' fontSize='small' />
+                <EventRoundedIcon color='primary' fontSize='small' />
                 <Typography variant='subtitle2' color='text.secondary'>
                   Events
                 </Typography>

@@ -80,9 +80,24 @@ test('register groups retain all rules and distinct notes', () => {
 test('plain summaries distinguish unchanged values from corrections and exclusions', () => {
   assert.match(getQualitySummary({ status: 'suspicious', notes: 'Annual SUM ignores numeric text.' }), /total is unchanged/)
   assert.match(getQualitySummary({ status: 'suspicious', notes: 'category sum 20,385' }), /remain unchanged/)
-  assert.match(getQualitySummary({ status: 'replaced' }), /estimated correction/)
+  assert.match(getQualitySummary({ status: 'replaced' }), /correction is available/)
   assert.match(getQualitySummary({ status: 'excluded' }), /left out/)
   assert.equal(groupQualityIssues([]).length, 0)
+})
+
+test('public correction wording does not use national-estimate terminology', () => {
+  assert.doesNotMatch(getQualitySummary({ status: 'replaced' }), /\bestimat\w*/i)
+  for (const path of ['src/components/NumberCard.jsx', 'src/content/data-quality.md']) {
+    const source = readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
+    assert.doesNotMatch(source, /\bestimat\w*/i, path)
+  }
+  const table = readFileSync(new URL('../src/components/DatasetDataGrid.jsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(table, /estimated correction|label: 'Estimated count'/i)
+  const register = JSON.parse(readFileSync(new URL('../public/errors.json', import.meta.url), 'utf8'))
+  for (const record of register.filter(record => record.Status === 'replaced')) {
+    const authoredNote = record.Notes.split('Respondent explanation', 1)[0]
+    assert.doesNotMatch(authoredNote, /\bestimat\w*/i, `${record['Authority name']} ${record.Period}`)
+  }
 })
 
 test('data modes preserve zero, missing values, exclusions and unchanged review figures', () => {

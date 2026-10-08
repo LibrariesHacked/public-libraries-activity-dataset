@@ -150,7 +150,7 @@ export function getUsersPenetrationPeriodChange (
 }
 
 /**
- * Computes active library user penetration as a percentage of the estimated resident population
+ * Computes active library user penetration as a percentage of the resident population figures
  * for each service across age groups ('Under 12', '12-17', 'Adult') and the overall service population.
  *
  * @param {import('./service').Service[]} services - List of library services with population statistics.

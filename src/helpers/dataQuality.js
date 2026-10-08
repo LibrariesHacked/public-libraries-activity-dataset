@@ -13,7 +13,7 @@ export const DataQualityStatus = Object.freeze({
 
 export const getQualitySummary = ({ status, notes = '' }) => {
   if (status === 'excluded') return 'Some figures were left out because of reporting problems.'
-  if (status === 'replaced') return 'An estimated correction is available for some figures.'
+  if (status === 'replaced') return 'A correction is available for some figures.'
   if (status === 'standardised') return 'Figures were spread evenly across months.'
 
   const text = notes.toLowerCase()
@@ -57,7 +57,7 @@ export const groupQualityIssues = rows => {
  * it returns the corrected figure. Otherwise, it returns the original data value.
  *
  * @param {number|null} original - The raw value as originally submitted in survey returns.
- * @param {number|null} estimated - The algorithmically or manually estimated correction.
+ * @param {number|null} estimated - The corrected figure (legacy parameter name).
  * @param {string|null} status - Data quality status ('excluded', 'replaced', 'suspicious', or null).
  * @param {boolean} [useEstimates=true] - Whether to use corrected data when available.
  * @returns {number|null} The resolved numeric value, or null if excluded or missing.
@@ -76,7 +76,7 @@ export const resolveEffectiveValue = (
 /**
  * Determines whether any active library services have data quality warnings for a specific metric.
  *
- * For a single service, returns that service's specific status, original figure, estimate, and note.
+ * For a single service, returns its status, original figure, corrected figure, and note.
  * For multiple services, aggregates whether any are excluded or replaced, and builds a summary note.
  *
  * @param {Array<object>} activeServices - Currently active or filtered library service objects.
@@ -131,7 +131,7 @@ export const getServiceQualityWarning = (activeServices, prop) => {
 /**
  * Generates an aggregated data quality warning object from an array of detailed activity records.
  *
- * Sums the original and estimated figures across all flagged records and identifies distinct services affected.
+ * Sums the original and corrected figures across flagged records and identifies distinct services affected.
  *
  * @param {Array<{ status?: string, serviceCode?: string, service?: string, serviceName?: string, originalCount?: number, estimatedCount?: number, notes?: string }>} records - Activity records.
  * @returns {{ status: string, serviceCount: number, recordCount: number, original: number, estimated: number, notes?: string }|null} Warning summary or null if no records are flagged.

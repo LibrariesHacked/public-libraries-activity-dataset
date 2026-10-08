@@ -196,7 +196,7 @@ export const resolvePeriodComparison = (selectedPeriods, periods) => {
  * @param {string} options.baselinePeriod - Baseline period (e.g. '2022/2023').
  * @param {string} options.targetPeriod - Target comparison period (e.g. '2023/2024').
  * @param {string[]|Set<string>} [options.serviceCodes] - Optional collection of active service codes to filter by.
- * @param {boolean} [options.useEstimates=true] - Whether to use estimated/corrected counts.
+ * @param {boolean} [options.useEstimates=true] - Whether to apply corrections.
  * @returns {number|null} Percentage change, or null if insufficient data.
  */
 export const getActivityRecordsPeriodChange = ({
@@ -263,7 +263,7 @@ export const getActivityRecordsPeriodChange = ({
  * @param {string} options.baselinePeriod - Baseline period (e.g. '2022/2023').
  * @param {string} options.targetPeriod - Target comparison period (e.g. '2023/2024').
  * @param {string[]|Set<string>} [options.serviceCodes] - Optional collection of active service codes to filter by.
- * @param {boolean} [options.useEstimates=true] - Whether to use estimated/corrected counts.
+ * @param {boolean} [options.useEstimates=true] - Whether to apply corrections.
  * @returns {number|null} Percentage points difference (e.g. 1.5 for +1.5 pp), or null if insufficient data.
  */
 export const getActivityRecordsSharePeriodChange = ({

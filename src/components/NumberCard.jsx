@@ -1,5 +1,6 @@
 import React from 'react'
 
+import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded'
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded'
 import TrendingFlatRoundedIcon from '@mui/icons-material/TrendingFlatRounded'
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded'
@@ -43,20 +44,20 @@ const getSummaryTooltip = (warning, isShowingEstimated) => {
       isShowingEstimated !== false && warning.isShowingEstimated !== false
     if (showingEst) {
       if (serviceName) {
-        return `Estimates applied for ${serviceName}.`
+        return `Corrections applied for ${serviceName}.`
       }
       if (serviceCount > 1) {
-        return `Estimates applied for ${serviceCount} services.`
+        return `Corrections applied for ${serviceCount} services.`
       }
-      return 'Estimates applied due to reporting anomalies.'
+      return 'Corrections applied for reporting errors.'
     } else {
       if (serviceName) {
-        return `Showing unadjusted figures for ${serviceName}.`
+        return `Showing original figures for ${serviceName}.`
       }
       if (serviceCount > 1) {
-        return `Showing unadjusted figures for ${serviceCount} services.`
+        return `Showing original figures for ${serviceCount} services.`
       }
-      return 'Showing unadjusted figures.'
+      return 'Showing original figures.'
     }
   }
 
@@ -106,12 +107,12 @@ const NumberCard = props => {
 
   const warningDetails = getWarningDetails(warning, isShowingEstimated)
 
-  const renderDescriptionIcon = () => {
-    const IconToRender = descriptionIcon || icon
+  const renderIcon = (IconToRender, fontSize = '1rem') => {
     if (!IconToRender) return null
 
     const iconSx = {
-      fontSize: '1rem',
+      fontSize,
+      flexShrink: 0,
       transform: 'translateY(-1px)',
       color: theme =>
         theme.palette[colour]?.main ||
@@ -161,15 +162,12 @@ const NumberCard = props => {
         </Tooltip>
       )}
       <CardContent>
-        <Typography
-          component='h2'
-          variant='subtitle2'
-          color='text.secondary'
-          gutterBottom
-          sx={{ px: 2 }}
-        >
-          {title}
-        </Typography>
+        <Stack direction='row' spacing={0.75} sx={{ justifyContent: 'center', alignItems: 'center', px: 2, mb: 1 }}>
+          {renderIcon(icon || descriptionIcon || InsightsRoundedIcon, '1.25rem')}
+          <Typography component='h2' variant='subtitle2' color='text.secondary' sx={{ minWidth: 0 }}>
+            {title}
+          </Typography>
+        </Stack>
         <Stack
           direction='column'
           sx={{
@@ -228,7 +226,7 @@ const NumberCard = props => {
                                 alignItems: 'center'
                               }}
                             >
-                              {renderDescriptionIcon()}
+                              {renderIcon(descriptionIcon)}
                               <Typography
                                 variant='body2'
                                 color='text.secondary'

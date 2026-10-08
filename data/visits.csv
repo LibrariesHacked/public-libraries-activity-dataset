@@ -5826,7 +5826,7 @@ E08000006,Shared building,2024-11-01/P1M,60673,,,
 E08000006,Shared building,2024-12-01/P1M,48452,,,
 E08000006,Shared building,2025-01-01/P1M,59449,,,
 E08000006,Shared building,2025-02-01/P1M,63599,,,
-E08000006,Shared building,2025-03-01/P1M,715224,66045,replaced,"Monthly return (March): March visits entered as 715,224, which is the total for the whole year rather than just March. Estimated March visits as 66,045 by deducting the other eleven months. Respondent explanation (Q22, outreach only): Do not have a mobile library or do click and collect (reservations are included in main data)"
+E08000006,Shared building,2025-03-01/P1M,715224,66045,replaced,"Monthly return (March): March visits entered as 715,224, which is the total for the whole year rather than just March. Corrected March visits to 66,045 by deducting the other eleven months. Respondent explanation (Q22, outreach only): Do not have a mobile library or do click and collect (reservations are included in main data)"
 E08000006,Mobile library,2024-04-01/P1Y,0,,,
 E08000006,Home delivery,2024-04-01/P1M,230,,,
 E08000006,Home delivery,2024-05-01/P1M,133,,,

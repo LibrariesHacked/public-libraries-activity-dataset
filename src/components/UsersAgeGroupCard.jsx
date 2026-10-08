@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
+import ChildCareRoundedIcon from '@mui/icons-material/ChildCareRounded'
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded'
+import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
@@ -9,6 +12,12 @@ import { getUsersPenetrationPeriodChange } from '../models/users'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
 
 import NumberCard from './NumberCard'
+
+const AGE_GROUP_ICONS = {
+  Adult: PersonRoundedIcon,
+  '12-17': SchoolRoundedIcon,
+  'Under 12': ChildCareRoundedIcon
+}
 
 /**
  * Generic KPI card component for age-demographic active users ('Under 12', '12-17', 'Adult'),
@@ -21,7 +30,7 @@ import NumberCard from './NumberCard'
  * @param {string} props.ageGroup - Age category identifier ('Under 12', '12-17', or 'Adult').
  * @param {Function} props.populationFn - Function returning the resident population for this demographic across services.
  * @param {string} props.descLabel - Context label for the subtitle percentage (e.g. 'residents aged 12-17').
- * @param {React.ElementType} [props.icon] - Optional icon displayed next to the description.
+ * @param {React.ElementType} [props.icon] - Optional override for the age-group title icon.
  * @returns {JSX.Element} Rendered NumberCard component.
  */
 const UsersAgeGroupCard = ({
@@ -123,7 +132,7 @@ const UsersAgeGroupCard = ({
       title={title}
       number={formatCompactNumber(usersCount)}
       description={`${Math.round(percentageUsers)}% of ${descLabel}`}
-      icon={icon}
+      icon={icon || AGE_GROUP_ICONS[ageGroup]}
       change={usersChange}
       changeDescription={comparison?.changeDescription || ''}
       changeUnit='percentage points'

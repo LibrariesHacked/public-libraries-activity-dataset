@@ -23,6 +23,7 @@ import ClearRoundedIcon from '@mui/icons-material/ClearRounded'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded'
+import TableChartRoundedIcon from '@mui/icons-material/TableChartRounded'
 
 import { DataGrid } from '@mui/x-data-grid'
 
@@ -238,7 +239,7 @@ function downloadCsv (rows, config, filename) {
         { key: 'scope', label: 'Scope' },
         { key: 'match', label: 'Match' },
         { key: 'status', label: 'Status' },
-        { key: 'estimatedCount', label: 'Estimated count' },
+        { key: 'estimatedCount', label: 'Corrected figure' },
         { key: 'notes', label: 'Notes' }
       ]
     : [
@@ -744,6 +745,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           >
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 0.5, flexWrap: 'wrap' }}>
+                <TableChartRoundedIcon color='primary' fontSize='small' sx={{ flexShrink: 0 }} />
                 <Typography variant='subtitle1' sx={{ fontWeight: 700 }}>
                   {config.isErrorRegister ? 'Notes and changes' : config.filename}
                 </Typography>
@@ -1047,7 +1049,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                 </Typography>
                 {selectedNote.records?.filter(record => record.estimatedCount !== '—').map(record => (
                   <Typography key={record.id} variant='body2' sx={{ mt: 1, overflowWrap: 'anywhere' }}>
-                    {record.scope === 'total' ? 'Annual total' : record.match}: estimated correction {record.estimatedCount}
+                    {record.scope === 'total' ? 'Annual total' : record.match}: corrected figure {record.estimatedCount}
                   </Typography>
                 ))}
               </Box>

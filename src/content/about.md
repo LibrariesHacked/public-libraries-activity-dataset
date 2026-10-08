@@ -16,13 +16,13 @@ The dataset covers activity reported by library services in England, including:
 * **Computers and Wi-Fi:** Hours spent using public computers and the number of wireless internet sessions.
 * **Active users:** Registered library members who borrowed at least one physical or digital item in the last 12 months. Each member is counted once.
 
-Not all services report every measure in every period, so data coverage varies. Check the reported service and population coverage when comparing estimates.
+Not all services report every measure in every period, so data coverage varies. Check the reported service and population coverage when comparing figures.
 
 ## Comparisons and population context
 
 Library services cover areas with different populations. To make comparisons fairer:
 
-* Rates per 1,000 residents use population estimates from the Office for National Statistics (ONS).
+* Rates per 1,000 residents use population figures from the Office for National Statistics (ONS).
 * You can compare individual services or view totals by region.
 * For each service, the dashboard shows five services with similar populations and characteristics, using the ONS Nearest Neighbours model.
 

@@ -26,10 +26,10 @@ export class Service {
 
   /**
    * Resolves the effective numeric value for a given activity metric, respecting user preferences
-   * for estimated figures and checking whether values are excluded due to data quality issues.
+  * for corrected figures and checking whether values are excluded due to data quality issues.
    *
    * @param {string} prop - The base metric name (e.g. 'loans', 'visits', 'users', 'events').
-   * @param {boolean} [useEstimates=true] - Whether to use replacement or estimated values when available.
+  * @param {boolean} [useEstimates=true] - Whether to apply corrections when available.
    * @returns {number|null} The resolved numeric value, or null if excluded or unavailable.
    */
   resolveMetric (prop, useEstimates = true) {
@@ -151,12 +151,12 @@ const sumOrNull = (records, property) => {
 }
 
 /**
- * Combines data quality status flags, explanatory notes, and original/estimated totals
+ * Combines data quality status flags, explanatory notes, and original/corrected totals
  * for a specific metric across multiple financial year records of a single service.
  *
  * @param {Array<Object>} records - List of annual service records for a single library service.
  * @param {string} prop - The metric property name (e.g. 'loans', 'visits', 'users').
- * @returns {Object} Consolidated quality metadata containing status, notes, original sum, and estimated sum.
+ * @returns {Object} Consolidated quality metadata containing status, notes, original sum, and corrected sum.
  */
 const aggregateMetricMetadata = (records, prop) => {
   const statusProp = `${prop}Status`
@@ -199,7 +199,7 @@ const aggregateMetricMetadata = (records, prop) => {
  *
  * @param {Service[]} serviceRecords - All annual service records.
  * @param {string[]} [periods] - Selected financial year periods to filter by; if empty or null, all periods are included.
- * @param {boolean} [useEstimates=true] - Whether to include estimated values when calculating totals.
+ * @param {boolean} [useEstimates=true] - Whether to apply corrections when calculating totals.
  * @returns {Service[]} Array of aggregated Service records (one per unique library authority).
  */
 export const getServicesForPeriods = (serviceRecords, periods, useEstimates = true) => {
@@ -277,7 +277,7 @@ export const getActiveServices = (services, filteredServices) => {
  * @param {string} earliestPeriod - Baseline financial year period (e.g. '2022/23').
  * @param {string} latestPeriod - Target comparison financial year period (e.g. '2023/24').
  * @param {string[]} [serviceCodes] - Optional list of service codes to restrict the comparison to.
- * @param {boolean} [useEstimates=true] - Whether to use estimated metric values when available.
+ * @param {boolean} [useEstimates=true] - Whether to apply corrections when available.
  * @returns {number|null} Percentage change between periods (e.g. 10.5 for +10.5%), or null if insufficient data.
  */
 export const getServicePeriodChange = (

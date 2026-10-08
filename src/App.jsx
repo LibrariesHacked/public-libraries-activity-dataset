@@ -18,6 +18,7 @@ import DataChoiceSelection from './components/DataChoiceSelection'
 import NavTabs from './components/NavTabs'
 import PeriodSelection from './components/PeriodSelection'
 import ServiceSelection from './components/ServiceSelection'
+
 import homeMd from './content/home.md?raw'
 
 import theme from './theme'
@@ -78,15 +79,7 @@ function AppContent () {
               </Typography>
               {location.pathname === '/'
                 ? (
-                  <Markdown
-                    components={{
-                      p: ({ children }) => (
-                        <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
-                          {children}
-                        </Typography>
-                      )
-                    }}
-                  >
+                  <Markdown>
                     {homeMd}
                   </Markdown>
                   )

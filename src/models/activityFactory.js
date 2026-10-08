@@ -20,7 +20,7 @@ export class ActivityRecord {
 
   /**
    * Resolves the effective numeric count for this record based on its data quality status
-   * and the user's estimate toggle.
+  * and the user's corrections toggle.
    *
    * @param {boolean} [useEstimates=true] - Whether to use corrected data when available.
    * @returns {number|null} The resolved count, or null if excluded or missing.

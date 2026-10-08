@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Stack from '@mui/material/Stack'
@@ -102,9 +103,10 @@ const LoansByTypeCard = () => {
   return (
     <Card variant='outlined' sx={{ height: '100%', flexGrow: 1 }}>
       <CardContent>
-        <Typography component='h2' variant='h6' gutterBottom>
-          Loans
-        </Typography>
+        <Stack direction='row' spacing={1} sx={{ alignItems: 'center', mb: 1 }}>
+          <MenuBookRoundedIcon color='primary' fontSize='small' />
+          <Typography component='h2' variant='h6'>Loans</Typography>
+        </Stack>
         <Stack
           spacing={1}
           sx={{ justifyContent: 'space-between', flexGrow: 1 }}

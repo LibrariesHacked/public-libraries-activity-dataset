@@ -90,10 +90,10 @@ The script configures year-specific parser mappings in `YEAR_SOURCES` to handle 
 
 To prevent data distortions while maintaining audit transparency, raw survey anomalies are catalogued in `DATA_QUALITY_ANOMALIES`:
 * **`excluded`:** Unresolvable corrupted values (e.g. hardware timer overflows of 2.2 billion hours, or millisecond timestamps) are excluded from headline aggregates.
-* **`replaced`:** Systemic errors (e.g. minutes reported instead of hours, misread units, extra trailing zeroes) where an estimated correction is calculated.
+* **`replaced`:** Reporting errors (e.g. minutes reported instead of hours, misread units, extra trailing zeroes) where a corrected figure is calculated.
 * **`suspicious`:** Irregular returns (such as reporting cumulative historical cardholders rather than 12-month active borrowers) flagged for transparency.
 
-Both original reported values and corrected estimates are preserved in the data, allowing users to toggle between **Original data** and **Corrected data** on the frontend dashboard.
+Both original reported values and corrected figures are preserved in the data, allowing users to toggle between **Original data** and **Corrected data** on the frontend dashboard. Corrections change reported figures; national estimates allow for missing returns. Legacy field names such as `Estimated count` refer to corrected figures and are retained for compatibility.
 
 ### 4. Running the Transformation
 

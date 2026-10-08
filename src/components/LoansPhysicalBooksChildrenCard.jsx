@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import ChildCareRoundedIcon from '@mui/icons-material/ChildCareRounded'
 import { getServicesChildPopulation } from '../models/service'
 
 import LoansCategoryCard from './LoansCategoryCard'
@@ -22,6 +23,7 @@ const LoansPhysicalBooksChildrenCard = () => {
     <LoansCategoryCard
       title="Children's physical book loans"
       colour='chartOrange'
+      icon={ChildCareRoundedIcon}
       filterLoan={filterLoan}
       populationFn={getServicesChildPopulation}
       perCapitaLabel='child residents'

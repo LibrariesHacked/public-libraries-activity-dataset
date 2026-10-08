@@ -425,7 +425,7 @@ def load_data_quality_anomalies(file_path=ERRORS_CSV):
             status = row['Status']
             est_str = row.get('Estimated count', '').strip()
 
-            # Parse estimate (can be integer, division formula e.g. '// 60', or None)
+            # Parse correction (integer, division formula e.g. '// 60', or None)
             if not est_str:
                 est = None
             elif est_str.startswith('//'):

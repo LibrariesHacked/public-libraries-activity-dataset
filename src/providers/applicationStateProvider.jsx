@@ -67,12 +67,12 @@ const resolveFilteredServices = (
 
 /**
  * Recomputes derived service aggregates, service code lookups, and month date ranges
- * whenever the selected financial years or estimation preferences change.
+ * whenever the selected financial years or correction preferences change.
  *
  * @param {Object} state - Current application state.
  * @param {import('../models/service').Service[]} serviceRecords - Raw annual service records.
  * @param {string[]} selectedPeriods - Array of financial year periods (e.g. ['2022/23']).
- * @param {boolean} [useEstimates=true] - Whether to use estimated or replaced data values.
+ * @param {boolean} [useEstimates=true] - Whether to apply corrections.
  * @param {[string, string]|null} [monthRange] - Optional specific month range to apply.
  * @returns {Object} Updated application state slice containing recalculated services, ranges, and snapshot period.
  */
@@ -127,10 +127,10 @@ const ACTIVITY_KEYS = [
 
 /**
  * Iterates through a collection of activity records and updates their active count property
- * based on whether estimated figures should be included.
+ * based on whether corrections should be applied.
  *
  * @param {Array<import('../models/activityFactory').ActivityRecord>} records - Collection of activity records.
- * @param {boolean} useEstimates - Whether to use estimated or replaced count values.
+ * @param {boolean} useEstimates - Whether to apply corrections.
  * @param {string} [fallbackProp] - Optional property name to update if record lacks `updateCount`.
  * @returns {Array<import('../models/activityFactory').ActivityRecord>|null} The updated records array, or null if input was null.
  */
