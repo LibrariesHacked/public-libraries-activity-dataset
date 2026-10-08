@@ -86,6 +86,12 @@ export const getMonthsInRange = monthRange => {
 export const isMonthInRange = (month, monthRange) =>
   !monthRange || (month >= monthRange[0] && month <= monthRange[1])
 
+export const isRecordInMonthRange = (record, monthRange) => {
+  if (!monthRange) return true
+  if (record.month) return isMonthInRange(record.month, monthRange)
+  return Boolean(record.period && getPeriodsInMonthRange([record.period], monthRange).length)
+}
+
 /**
  * Filters an array of activity records to only those whose month falls within a given range.
  *

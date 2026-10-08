@@ -120,6 +120,8 @@ This writes the detailed findings, return coverage, source-column manifest and r
 
 The public register groups notes by library service, financial year and measure. Short summaries explain whether figures were changed; the full evidence is available in a details dialog, and CSV downloads retain every underlying rule. Definitions are available on demand on the Data quality page.
 
+Data tables and their downloads follow the shared date range and library service or region selection. Table search and quality pills filter within that selection. Annual records are included when their financial year overlaps the date range; their counts remain annual.
+
 ```bash
 npm test
 python3 -m unittest discover -s scripts -p 'test_*.py'

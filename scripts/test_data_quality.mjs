@@ -4,7 +4,19 @@ import test from 'node:test'
 
 import { getQualitySummary, groupQualityIssues, resolveEffectiveValue } from '../src/helpers/dataQuality.js'
 import { ErrorRecord } from '../src/models/errors.js'
-import { getMonthRangeForPeriods, getPeriodMonths, getPeriodsInMonthRange } from '../src/helpers/periods.js'
+import { getMonthRangeForPeriods, getPeriodMonths, getPeriodsInMonthRange, isRecordInMonthRange } from '../src/helpers/periods.js'
+
+test('shared slider filters monthly records and overlapping financial-year records', () => {
+  const range = ['2024-07', '2024-07']
+  assert.equal(isRecordInMonthRange({ month: '2024-07' }, range), true)
+  assert.equal(isRecordInMonthRange({ month: '2024-06' }, range), false)
+  assert.equal(isRecordInMonthRange({ month: '2024-08' }, range), false)
+  assert.equal(isRecordInMonthRange({ period: '2024/2025' }, range), true)
+  assert.equal(isRecordInMonthRange({ period: '2023/2024' }, range), false)
+  assert.equal(isRecordInMonthRange({ period: '2025/2026' }, range), false)
+  assert.equal(isRecordInMonthRange({ period: '2024/2025' }, ['2024-03', '2024-04']), true)
+  assert.equal(isRecordInMonthRange({ month: '2024-06' }, null), true)
+})
 
 test('year shortcuts and slider ranges select continuous financial years', () => {
   const periods = ['2023/2024', '2024/2025', '2025/2026']

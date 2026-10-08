@@ -36,8 +36,7 @@ const ServiceSelection = () => {
       serviceLookup,
       comparisonMode,
       selectedServices,
-      selectedRegions,
-      filteredServices
+      selectedRegions
     },
     dispatchApplication
   ] = useApplicationState()
@@ -408,15 +407,6 @@ const ServiceSelection = () => {
             )}
           </Box>
 
-          {hasSelectedRegions && (
-            <Typography
-              variant='caption'
-              color='text.secondary'
-              sx={{ display: 'block', mt: 0.75, textAlign: 'center' }}
-            >
-              Comparing {filteredServices.length} services across {selectedRegions.length} {selectedRegions.length === 1 ? 'region' : 'regions'}
-            </Typography>
-          )}
         </>
       )}
     </Box>

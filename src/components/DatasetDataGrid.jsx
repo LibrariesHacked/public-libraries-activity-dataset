@@ -11,13 +11,9 @@ import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
-import FormControl from '@mui/material/FormControl'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
 import Paper from '@mui/material/Paper'
-import Select from '@mui/material/Select'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
@@ -43,7 +39,7 @@ import * as usersModel from '../models/users'
 import * as visitsModel from '../models/visits'
 import * as wifiModel from '../models/wifi'
 
-import { formatPeriod, formatMonth } from '../helpers/periods'
+import { formatPeriod, formatMonth, isRecordInMonthRange } from '../helpers/periods'
 import { getQualitySummary, groupQualityIssues } from '../helpers/dataQuality'
 
 const QUALITY_LABELS = {
@@ -282,7 +278,7 @@ function downloadCsv (rows, config, filename) {
 
 /**
  * Reusable DataGrid component displaying a full activity CSV dataset,
- * featuring interactive search, quality status filters, service dropdown,
+ * using shared date and comparison selections, search and quality pills,
  * side-by-side original/corrected figures, highlighting, and single CSV download.
  *
  * @param {object} props - Component properties.
@@ -291,7 +287,7 @@ function downloadCsv (rows, config, filename) {
  * @returns {JSX.Element} The rendered dataset data grid view.
  */
 export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
-  const [{ serviceLookup, [datasetId]: stateDataset }] = useApplicationState()
+  const [{ serviceLookup, filteredServices, monthRange, [datasetId]: stateDataset }] = useApplicationState()
 
   const config = DATASET_CONFIGS[datasetId] || DATASET_CONFIGS.loans
 
@@ -303,8 +299,6 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
   // Filtering state
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedServiceCode, setSelectedServiceCode] = useState('all')
-  const [selectedMonth, setSelectedMonth] = useState('all')
 
   // Load records from context or fetch via model
   useEffect(() => {
@@ -392,92 +386,55 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
     })
   }, [localRecords, config, serviceLookup])
 
+  const scopedRows = useMemo(() => {
+    const serviceCodes = new Set(filteredServices || [])
+    return rawRows.filter(row =>
+      (serviceCodes.size === 0 || serviceCodes.has(row.serviceCode)) && isRecordInMonthRange(row, monthRange)
+    )
+  }, [rawRows, filteredServices, monthRange])
+
   // Compute dataset statistics
   const stats = useMemo(() => {
     let excludedCount = 0
     let replacedCount = 0
     let suspiciousCount = 0
-    let suspiciousRowCount = 0
     let standardisedCount = 0
-    const suspiciousIssueKeys = new Set()
     const uniqueServices = new Set()
-    const uniqueMonths = new Set()
 
-    rawRows.forEach(r => {
+    scopedRows.forEach(r => {
       uniqueServices.add(r.serviceCode)
-      if (r.month && r.month !== '—') uniqueMonths.add(r.month)
-      if (r.period && r.period !== '—') uniqueMonths.add(r.period)
-
       const statuses = r.statuses || [r.status]
       if (statuses.includes('excluded')) excludedCount += 1
       if (statuses.includes('replaced')) replacedCount += 1
       if (statuses.includes('standardised')) standardisedCount += 1
       if (statuses.includes('suspicious')) {
-        suspiciousRowCount += 1
-        if (config.id === 'loans') {
-          suspiciousIssueKeys.add(r.reviewIssueId == null
-            ? JSON.stringify([r.serviceCode, r.format, r.period, r.notes || ''])
-            : r.reviewIssueId)
-        } else {
-          suspiciousCount += 1
-        }
+        suspiciousCount += 1
       }
     })
 
-    const anomaliesCount = rawRows.filter(row => row.status).length
-    const reviewIssueCount = config.id === 'loans' ? suspiciousIssueKeys.size : suspiciousCount
+    const anomaliesCount = scopedRows.filter(row => row.status).length
 
     return {
-      totalRows: rawRows.length,
+      totalRows: scopedRows.length,
       excludedCount,
       replacedCount,
-      suspiciousCount: reviewIssueCount,
-      suspiciousRowCount,
+      suspiciousCount,
       standardisedCount,
-      anomaliesCount,
-      cleanCount: rawRows.length - anomaliesCount,
-      servicesCount: uniqueServices.size,
-      uniqueMonths: [...uniqueMonths].sort()
+      cleanCount: scopedRows.length - anomaliesCount,
+      servicesCount: uniqueServices.size
     }
-  }, [rawRows, config])
+  }, [scopedRows])
 
-  // Available service options for filter dropdown
-  const serviceOptions = useMemo(() => {
-    const list = []
-    const codes = new Set(rawRows.map(r => r.serviceCode))
-    codes.forEach(code => {
-      const s = serviceLookup?.[code]
-      list.push({
-        code,
-        name: s?.niceName || s?.name || code
-      })
-    })
-    return list.sort((a, b) => a.name.localeCompare(b.name))
-  }, [rawRows, serviceLookup])
-
-  // Filter rows based on search, status, service, and period/month
+  // Filter the shared selection by search and quality status
   const filteredRows = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
 
-    return rawRows.filter(row => {
+    return scopedRows.filter(row => {
       const statuses = row.statuses || [row.status]
       // 1. Status filter
-      if (statusFilter === 'anomalies' && !row.status) return false
       if (['excluded', 'replaced', 'suspicious', 'standardised'].includes(statusFilter) && !statuses.includes(statusFilter)) return false
       if (statusFilter === 'clean' && row.status) return false
 
-      // 2. Service filter
-      if (selectedServiceCode !== 'all' && row.serviceCode !== selectedServiceCode) {
-        return false
-      }
-
-      // 3. Month/Period filter
-      if (selectedMonth !== 'all') {
-        const rowTime = row.month || row.period
-        if (rowTime !== selectedMonth) return false
-      }
-
-      // 4. Text search
       if (query) {
         const matchesCode = row.serviceCode.toLowerCase().includes(query)
         const matchesName = row.serviceName.toLowerCase().includes(query)
@@ -501,7 +458,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
 
       return true
     })
-  }, [rawRows, searchQuery, statusFilter, selectedServiceCode, selectedMonth, config])
+  }, [scopedRows, searchQuery, statusFilter, config])
 
   // DataGrid Column definitions
   const columns = useMemo(() => {
@@ -921,7 +878,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             sx={{ flex: 1.5, minWidth: 240 }}
-            InputProps={{
+            slotProps={{ input: {
               startAdornment: (
                 <InputAdornment position='start'>
                   <SearchRoundedIcon fontSize='small' color='action' />
@@ -934,80 +891,11 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
                   </IconButton>
                 </InputAdornment>
               ) : null
-            }}
+            } }}
           />
 
-          {/* Service Dropdown Filter */}
-          <FormControl size='small' sx={{ minWidth: 200, flex: 1 }}>
-            <InputLabel id={`service-filter-label-${config.id}`}>Library service</InputLabel>
-            <Select
-              labelId={`service-filter-label-${config.id}`}
-              value={selectedServiceCode}
-              label='Library service'
-              onChange={e => setSelectedServiceCode(e.target.value)}
-            >
-              <MenuItem value='all'>All library services ({serviceOptions.length})</MenuItem>
-              {serviceOptions.map(s => (
-                <MenuItem key={s.code} value={s.code}>
-                  {s.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Status Dropdown Filter */}
-          <FormControl size='small' sx={{ minWidth: 160 }}>
-            <InputLabel id={`status-filter-label-${config.id}`}>Quality status</InputLabel>
-            <Select
-              labelId={`status-filter-label-${config.id}`}
-              value={statusFilter}
-              label='Quality status'
-              onChange={e => setStatusFilter(e.target.value)}
-            >
-              <MenuItem value='all'>All records</MenuItem>
-              {stats.anomaliesCount > 0 && <MenuItem value='anomalies'>Records with notes ({stats.anomaliesCount})</MenuItem>}
-              {stats.excludedCount > 0 && <MenuItem value='excluded'>Excluded figures ({stats.excludedCount})</MenuItem>}
-              {stats.replacedCount > 0 && <MenuItem value='replaced'>Corrected figures ({stats.replacedCount})</MenuItem>}
-              {stats.standardisedCount > 0 && <MenuItem value='standardised'>{QUALITY_LABELS.standardised} ({stats.standardisedCount})</MenuItem>}
-              {stats.suspiciousCount > 0 && (
-                <MenuItem value='suspicious'>Worth checking ({stats.suspiciousRowCount})</MenuItem>
-              )}
-              {stats.cleanCount > 0 && config.id !== 'errors' && <MenuItem value='clean'>No known issues</MenuItem>}
-            </Select>
-          </FormControl>
-
-          {/* Month / Period Filter if available */}
-          {stats.uniqueMonths.length > 0 && (
-            <FormControl size='small' sx={{ minWidth: 140 }}>
-              <InputLabel id={`month-filter-label-${config.id}`}>
-                {config.id === 'users' || config.id === 'errors' ? 'Period' : 'Month'}
-              </InputLabel>
-              <Select
-                labelId={`month-filter-label-${config.id}`}
-                value={selectedMonth}
-                label={config.id === 'users' || config.id === 'errors' ? 'Period' : 'Month'}
-                onChange={e => setSelectedMonth(e.target.value)}
-              >
-                <MenuItem value='all'>All {config.id === 'users' || config.id === 'errors' ? 'periods' : 'months'}</MenuItem>
-                {stats.uniqueMonths.map(m => {
-                  let label = m
-                  if (/^\d{4}-\d{2}$/.test(m)) {
-                    label = formatMonth(m)
-                  } else if (/^\d{4}\/\d{4}$/.test(m)) {
-                    label = formatPeriod(m)
-                  }
-                  return (
-                    <MenuItem key={m} value={m}>
-                      {label}
-                    </MenuItem>
-                  )
-                })}
-              </Select>
-            </FormControl>
-          )}
-
           {/* Clear filters button */}
-          {(searchQuery || statusFilter !== 'all' || selectedServiceCode !== 'all' || selectedMonth !== 'all') && (
+          {(searchQuery || statusFilter !== 'all') && (
             <Button
               size='small'
               variant='outlined'
@@ -1015,8 +903,6 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
               onClick={() => {
                 setSearchQuery('')
                 setStatusFilter('all')
-                setSelectedServiceCode('all')
-                setSelectedMonth('all')
               }}
               startIcon={<ClearRoundedIcon fontSize='small' />}
               sx={{ whiteSpace: 'nowrap' }}
@@ -1145,7 +1031,7 @@ export const DatasetDataGrid = ({ datasetId, height = 540 }) => {
           {selectedNote && (
             <Stack spacing={2}>
               <Typography variant='body2' color='text.secondary'>
-                {formatPeriod(selectedNote.period) || selectedNote.period || formatMonth(selectedNote.month)}
+                {selectedNote.period ? formatPeriod(selectedNote.period) : formatMonth(selectedNote.month)}
                 {' · '}{DATASET_DISPLAY_NAMES[selectedNote.dataset] || config.name}
               </Typography>
               <Stack direction='row' spacing={1} useFlexGap flexWrap='wrap'>
