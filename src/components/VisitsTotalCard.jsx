@@ -1,63 +1,33 @@
-import React, { useEffect, useState } from 'react'
-
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { getActiveServices } from '../models/service'
+import React, { useCallback } from 'react'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying library visits and outreach interactions across active services,
+ * along with average annual visits per 1,000 reporting residents.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for library visits.
+ */
 const VisitsTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
-
-  const [visitsCount, setVisitsCount] = useState(0)
-  const [visitsPerCapita, setVisitsPerCapita] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const visitServices = activeServices?.filter(service =>
-      Number.isInteger(service.visits)
-    )
-
-    if (!visitServices || visitServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    // The visits count is the sum of the visits integer from each service object
-    const totalVisits =
-      visitServices?.reduce(
-        (acc, service) => acc + (service.visits || 0),
-        0
-      ) || 0
-
-    // The population is the totalPopulation on the service object
-    const totalPopulation =
-      visitServices?.reduce(
-        (acc, service) => acc + (service.totalPopulation || 0),
-        0
-      ) || 0
-
-    const visitsPerCapita =
-      totalPopulation > 0 ? Math.round(totalVisits / totalPopulation) : 0
-
-    setVisitsCount(totalVisits)
-    setVisitsPerCapita(visitsPerCapita)
-  }, [services, filteredServices])
+  const formatDescription = useCallback(
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? (total / totalPopulation / yearCount) * 1000
+          : 0
+      return `${formatCompactNumber(perCapita, 1)} visits per 1,000 residents / yr`
+    },
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='visits'
       title='Visits'
-      number={formatCompactNumber(visitsCount)}
-      description={`${formatCompactNumber(
-        visitsPerCapita
-      )} per resident per year`}
       colour='chartBlue'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

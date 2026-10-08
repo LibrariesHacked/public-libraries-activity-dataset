@@ -1,26 +1,20 @@
-import axios from 'axios'
+import { ActivityRecord, createActivityModel } from './activityFactory'
 
-export class Events {
-  constructor (obj) {
-    Object.assign(this, obj)
-  }
+/**
+ * Domain model representing library events broken down by event type, age group, and month.
+ */
+export class Events extends ActivityRecord {}
 
-  fromJson (json) {
-    this.serviceCode = json[0]
-    this.type = json[1]
-    this.ageGroup = json[2]
-    this.month = json[3]
-    this.countEvents = parseInt(json[4]) || null
+const { fetchRecords: getEvents } = createActivityModel({
+  fields: ['type', 'ageGroup', 'month'],
+  countProp: 'countEvents',
+  endpoint: './events.json',
+  RecordClass: Events
+})
 
-    return this
-  }
-}
-
-export async function getEvents () {
-  const response = await axios.get('./events.json')
-  if (response && response.data && response.data.length > 0) {
-    return response.data.map(e => new Events().fromJson(e))
-  } else {
-    return []
-  }
-}
+/**
+ * Fetches and deserializes all library event count records from the static dataset.
+ *
+ * @returns {Promise<Events[]>} Promise resolving to an array of Events record instances.
+ */
+export { getEvents }

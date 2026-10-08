@@ -1,1 +1,1 @@
-The service comparison chart plots the total loans for each service as an average per resident, as a stacked bar chart. Each bar represents a service, with different sections of the bar representing the different item formats. This allows for easy comparison of loans across services and the distribution of loans by format within each service.
+Compare loans per 1,000 residents each year across library services, by format. Each rate uses only the months in which that service reported loans for that format.

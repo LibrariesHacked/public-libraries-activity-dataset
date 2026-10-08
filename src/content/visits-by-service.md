@@ -1,1 +1,1 @@
-The service comparison chart plots the visits for each service as an average per resident, as a stacked bar chart. Each bar represents a service, with different sections of the bar representing the different visit types. This allows for easy comparison of loans across services and the distribution of visit types within each service.
+Compare annual visits and outreach interactions per 1,000 residents across library services, by location type. Each rate uses only the months in which that service reported that location type.

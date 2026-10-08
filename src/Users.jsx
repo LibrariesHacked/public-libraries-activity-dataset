@@ -1,51 +1,68 @@
-import React, { useEffect, useState } from 'react'
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-import { Bar } from 'react-chartjs-2'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
-import usersMd from './content/users.md'
-import usersMapMd from './content/users-map.md'
-import usersByAgeGroupMd from './content/users-by-age-group.md'
-import usersByServiceMd from './content/users-by-service.md'
+import usersMd from './content/users.md?raw'
+import usersMapMd from './content/users-map.md?raw'
+import usersByAgeGroupMd from './content/users-by-age-group.md?raw'
+import usersByServiceMd from './content/users-by-service.md?raw'
 
 import Box from '@mui/material/Box'
+import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
-import { getActiveServices } from './models/service'
+import { formatPeriod } from './helpers/periods'
+
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as usersModel from './models/users'
 
 import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
 import UsersMap from './components/UsersMap'
+import { AppChart } from './components/charts'
 
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
+import {
+  createServiceBarChartOptions,
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
+} from './helpers/charts'
 
+/**
+ * Chart configuration for active-user penetration by age group and year.
+ */
 const ageGroupChartOptions = {
   plugins: {
+    legend: {
+      position: 'top',
+      labels: {
+        usePointStyle: true,
+        boxWidth: 8
+      }
+    },
     title: {
       display: true,
-      text: 'Active users by age group'
+      text: 'Active users as a share of reporting population',
+      font: {
+        size: 14,
+        weight: 'bold'
+      },
+      padding: {
+        bottom: 12
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: function (context) {
+          let label = context.dataset.label || ''
+          if (label) label += ': '
+          if (context.parsed.x !== null && context.parsed.x !== undefined) {
+            label += `${Number(context.parsed.x).toFixed(1)}%`
+          }
+          return label
+        }
+      }
     }
   },
   responsive: true,
@@ -53,42 +70,69 @@ const ageGroupChartOptions = {
   indexAxis: 'y',
   scales: {
     x: {
-      stacked: true,
-      title: { display: true, text: 'Count of active users' }
+      stacked: false,
+      beginAtZero: true,
+      title: { display: true, text: 'Active users as a share of reporting population' },
+      grid: {
+        color: context =>
+          context.tick && context.tick.value === 0 ? '#707070' : '#e5e7eb',
+        lineWidth: context =>
+          context.tick && context.tick.value === 0 ? 1.5 : 1
+      },
+      ticks: {
+        callback: value => `${Number(value)}%`
+      }
     },
     y: {
-      stacked: true,
-      title: { display: true, text: 'Year' }
+      stacked: false,
+      grid: {
+        display: false
+      }
     }
   }
 }
 
-const serviceChartOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    title: {
-      display: true,
-      text: 'Active users % population by service'
-    }
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Active users as % of population'
-      },
-      beginAtZero: true
-    }
-  }
-}
-
+/**
+ * Active library users dashboard page view displaying summary KPI cards,
+ * demographic age group proportions, an interactive geographic coverage/change map,
+ * and service population penetration bar charts.
+ *
+ * @returns {JSX.Element} The rendered Users page view.
+ */
 const Users = () => {
   const [
-    { filteredServices, services, serviceLookup, users },
+    {
+      filteredServices,
+      services,
+      serviceRecords,
+      users,
+      selectedPeriods,
+      snapshotPeriod,
+      comparisonMode,
+      selectedRegions
+    },
     dispatchApplication
   ] = useApplicationState()
+
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartTitle = isRegionMode
+    ? `Active users as % of population by region${
+        snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
+      }`
+    : `Active users as % of population by service${
+        snapshotPeriod ? ` (${formatPeriod(snapshotPeriod)})` : ''
+      }`
+
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        serviceChartTitle,
+        'Active users as % of population',
+        { isPercentage: true }
+      ),
+    [serviceChartTitle]
+  )
 
   const [ageGroupChart, setAgeGroupChart] = useState({
     labels: [],
@@ -96,26 +140,6 @@ const Users = () => {
   })
 
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
-
-  const [usersMarkdown, setUsersMarkdown] = useState('')
-  const [usersMapMarkdown, setUsersMapMarkdown] = useState('')
-  const [usersByAgeGroupMarkdown, setUsersByAgeGroupMarkdown] = useState('')
-  const [usersByServiceMarkdown, setUsersByServiceMarkdown] = useState('')
-
-  useEffect(() => {
-    fetch(usersMd)
-      .then(res => res.text())
-      .then(text => setUsersMarkdown(text))
-    fetch(usersMapMd)
-      .then(res => res.text())
-      .then(text => setUsersMapMarkdown(text))
-    fetch(usersByAgeGroupMd)
-      .then(res => res.text())
-      .then(text => setUsersByAgeGroupMarkdown(text))
-    fetch(usersByServiceMd)
-      .then(res => res.text())
-      .then(text => setUsersByServiceMarkdown(text))
-  }, [])
 
   useEffect(() => {
     const getUsers = async () => {
@@ -128,160 +152,233 @@ const Users = () => {
   }, [services, users, dispatchApplication])
 
   useEffect(() => {
-    if (!users || !serviceLookup) return
+    if (!users || !serviceRecords || !services) return
+
+    const filteredSet = filteredServices?.length
+      ? new Set(filteredServices)
+      : null
 
     const activeServices = getActiveServices(services, filteredServices)
 
-    const yearLabels = [...new Set(users.map(m => m.period))].sort()
-    // We have a dataset for each age group
-    const ageGroups = [...new Set(users.map(m => m.ageGroup))].sort()
-    ageGroups.push('Non-users') // Add non-users as an age group
-    const ageGroupChartDatasets = ageGroups.map((ageGroup, i) => {
-      // For each age group we need the data for each period
-      const data = yearLabels.map(label => {
-        // For each period we need the total users in that age group
-        let total = 0
-        users.forEach(m => {
-          if (m.period === label && m.ageGroup === ageGroup) {
-            // If we are filtering by service, only include if the service is in the filtered list
-            if (
-              !filteredServices ||
-              filteredServices.length === 0 ||
-              filteredServices.includes(m.serviceCode)
-            ) {
-              total += m.countUsers
-            }
-          }
-        })
+    // Active users are annual snapshots. Compare rates against the population
+    // covered by services reporting each age group, not raw headcounts.
+    const periods = selectedPeriods?.length
+      ? selectedPeriods
+      : [...new Set(users.map(m => m.period))].sort()
 
-        if (ageGroup === 'Non-users') {
-          // We need to add in the non-users for this period.
-          // Non-users are the total population for the period minus the users
-          let totalPopulation = 0
-          Object.values(serviceLookup).forEach(service => {
-            if (service.period === label) {
-              // If we are filtering by service, only include if the service is in the filtered list
-              if (
-                !filteredServices ||
-                filteredServices.length === 0 ||
-                filteredServices.includes(service.code)
-              ) {
-                totalPopulation += service.totalPopulation || 0
-              }
-            }
-          })
-          // The total non-users are the total population minus the total users
-          total = totalPopulation // We'll change this later to subtract users
-        }
-        return total
-      })
-      return {
-        label: ageGroup,
-        data,
-        hidden: ageGroup === 'Non-users'
+    const yearLabels = periods.map(formatPeriod)
+    const ageGroups = [...new Set(users.map(user => user.ageGroup))].sort()
+    const populationPropertyByAgeGroup = {
+      'Under 12': 'populationUnder12',
+      '12-17': 'population12To17',
+      Adult: 'populationAdult',
+      Unknown: 'totalPopulation'
+    }
+
+    const usersByPeriodAgeGroup = new Map()
+    const reportingServicesByPeriodAgeGroup = new Map()
+    users.forEach(user => {
+      if (filteredSet && !filteredSet.has(user.serviceCode)) return
+      if (!Number.isFinite(user.countUsers)) return
+
+      const key = `${user.period}|||${user.ageGroup}`
+      usersByPeriodAgeGroup.set(
+        key,
+        (usersByPeriodAgeGroup.get(key) || 0) + user.countUsers
+      )
+      if (!reportingServicesByPeriodAgeGroup.has(key)) {
+        reportingServicesByPeriodAgeGroup.set(key, new Set())
       }
+      reportingServicesByPeriodAgeGroup.get(key).add(user.serviceCode)
     })
 
-    // Now we need to adjust the non-users to be total population minus users
-    const nonUserIndex = ageGroups.indexOf('Non-users')
-    if (nonUserIndex !== -1) {
-      ageGroupChartDatasets[nonUserIndex].data = ageGroupChartDatasets[
-        nonUserIndex
-      ].data.map((totalNonUsers, index) => {
-        // Total users for this period is the sum of all other datasets for this index
-        const totalUsers = ageGroupChartDatasets.reduce(
-          (sum, dataset, dsIndex) => {
-            if (dsIndex !== nonUserIndex) {
-              return sum + dataset.data[index]
-            }
-            return sum
-          },
-          0
-        )
-        return Math.max(0, totalNonUsers - totalUsers)
+    const ageGroupChartDatasets = ageGroups.map(ageGroup => {
+      const populationProperty = populationPropertyByAgeGroup[ageGroup]
+      const data = periods.map(period => {
+        const key = `${period}|||${ageGroup}`
+        const reportingCodes = reportingServicesByPeriodAgeGroup.get(key)
+        if (!populationProperty || !reportingCodes?.size) return null
+
+        const reportingPopulation = serviceRecords
+          .filter(record =>
+            record.period === period && reportingCodes.has(record.code)
+          )
+          .reduce(
+            (sum, record) => sum + (record[populationProperty] || 0),
+            0
+          )
+        if (reportingPopulation === 0) return null
+
+        return Number((usersByPeriodAgeGroup.get(key) / reportingPopulation * 100).toFixed(2))
       })
-    }
+      return { label: ageGroup, data }
+    })
 
     setAgeGroupChart({
       labels: yearLabels,
       datasets: ageGroupChartDatasets
     })
 
-    const serviceLabels = activeServices.map(s => s.niceName).sort()
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
 
-    const serviceData = serviceLabels.map(serviceLabel => {
-      const svc = services.find(s => s.niceName === serviceLabel)
-      if (!svc) return 0
-      const totalUsers = svc.users || 0
-      const totalPopulation = svc.totalPopulation || 0
-      const percentageUsers =
-        totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
-      return Math.round(percentageUsers)
-    })
-
-    // If users data is null for a service change the label to include (no data)
-    serviceLabels.forEach((label, index) => {
-      const service = services.find(s => s.niceName === label)
-      if (!service.users) {
-        serviceLabels[index] = `${label} (no data)`
+      const getRegionUserPercentage = region => {
+        if (!region || !region.totalPopulation) return 0
+        return ((region.users || 0) / region.totalPopulation) * 100
       }
-    })
 
-    setServiceChart({
-      labels: serviceLabels,
-      datasets: [
-        {
-          label: '% of population',
-          data: serviceData
-        }
-      ]
-    })
-  }, [users, services, filteredServices, serviceLookup])
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionUserPercentage,
+        r => r?.users
+      )
+
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const regionData = rawRegionLabels.map(regionLabel => {
+        const region = regionByNiceName.get(regionLabel)
+        if (!region) return 0
+        const totalUsers = region.users || 0
+        const totalPopulation = region.totalPopulation || 0
+        const percentageUsers =
+          totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
+        return Math.round(percentageUsers)
+      })
+
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.users
+      )
+
+      setServiceChart({
+        labels: regionLabels,
+        datasets: [
+          {
+            label: '% of population',
+            data: regionData
+          }
+        ]
+      })
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceUserPercentage = svc => {
+        if (!svc || !svc.totalPopulation) return 0
+        return ((svc.users || 0) / svc.totalPopulation) * 100
+      }
+
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceUserPercentage,
+        s => s?.users
+      )
+
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const serviceData = rawServiceLabels.map(serviceLabel => {
+        const svc = serviceByNiceName.get(serviceLabel)
+        if (!svc) return 0
+        const totalUsers = svc.users || 0
+        const totalPopulation = svc.totalPopulation || 0
+        const percentageUsers =
+          totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
+        return Math.round(percentageUsers)
+      })
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.users
+      )
+
+      setServiceChart({
+        labels: serviceLabels,
+        datasets: [
+          {
+            label: '% of population',
+            data: serviceData
+          }
+        ]
+      })
+    }
+  }, [
+    users,
+    services,
+    serviceRecords,
+    filteredServices,
+    selectedPeriods,
+    isRegionMode,
+    selectedRegions
+  ])
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Active users
       </Typography>
       <CardGrid />
-      <Markdown>{usersMarkdown}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Active users by age group
-      </Typography>
-      <Markdown>{usersByAgeGroupMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${ageGroupChart.labels.length * 30 + 120}px`
-        }}
-      >
-        <Bar options={ageGroupChartOptions} data={ageGroupChart} />
+      <Box sx={{ my: 2 }}>
+        <Markdown>{usersMd}</Markdown>
       </Box>
-      <Typography variant='h5' gutterBottom>
-        Active users map
-      </Typography>
-      <Markdown>{usersMapMarkdown}</Markdown>
-      <Box
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Active users by age group
+        </Typography>
+        <Markdown>{usersByAgeGroupMd}</Markdown>
+      </Box>
+      <AppChart
+        type='bar'
+        options={ageGroupChartOptions}
+        data={ageGroupChart}
+        height={`${ageGroupChart.labels.length * 30 + 120}px`}
+      />
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Active users map
+        </Typography>
+        <Markdown>{usersMapMd}</Markdown>
+      </Box>
+      <Paper
+        variant='outlined'
         sx={{
-          position: 'relative',
-          width: '100%'
+          borderRadius: 2,
+          mb: 3,
+          overflow: 'hidden'
         }}
       >
         <UsersMap />
+      </Paper>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Active users by region' : 'Active users by service'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Active users as a percentage of resident population by region (typically 5–20%). Commuters and students can push this percentage higher.'
+            : usersByServiceMd}
+        </Markdown>
       </Box>
-      <Typography variant='h5' gutterBottom>
-        Active users by service
-      </Typography>
-      <Markdown>{usersByServiceMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${serviceChart.labels.length * 18 + 120}px`
-        }}
-      >
-        <Bar options={serviceChartOptions} data={serviceChart} />
+      <AppChart
+        type='service'
+        data={serviceChart}
+        options={serviceChartOptions}
+      />
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Active users data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Full dataset of annual active library borrowers, reporting anomalies, and demographic breakdowns.
+        </Typography>
+        <DatasetDataGrid datasetId='users' />
       </Box>
     </Box>
   )

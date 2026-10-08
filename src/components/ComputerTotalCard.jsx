@@ -1,52 +1,33 @@
-import React, { useEffect, useState } from 'react'
-
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { getActiveServices } from '../models/service'
+import React, { useCallback } from 'react'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total public computer access hours across active library services,
+ * along with average computer hours per 1,000 reporting residents per year.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for public computer hours.
+ */
 const ComputerTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
-
-  const [computerHoursCount, setComputerHoursCount] = useState(0)
-  const [computerHoursPerDay, setComputerHoursPerDay] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const computerServices = activeServices?.filter(service =>
-      Number.isInteger(service.computerHours)
-    )
-
-    if (!computerServices || computerServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const totalComputerHours =
-      computerServices?.reduce(
-        (acc, service) => acc + (service.computerHours || 0),
-        0
-      ) || 0
-
-    setComputerHoursCount(totalComputerHours)
-    setComputerHoursPerDay(totalComputerHours / 365)
-  }, [services, filteredServices])
+  const formatDescription = useCallback(
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? Math.round((total / totalPopulation / yearCount) * 1000)
+          : 0
+      return `${formatCompactNumber(perCapita)} hrs per 1,000 residents / yr`
+    },
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='computerHours'
       title='Computer hours'
-      number={formatCompactNumber(computerHoursCount)}
-      description={`${formatCompactNumber(
-        computerHoursPerDay
-      )} computer hours per day`}
       colour='chartBlue'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

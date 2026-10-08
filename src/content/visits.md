@@ -1,1 +1,1 @@
-A visit is a physical interaction with a library service, without necesarily resulting in any item being borrowed.
+The visits measure includes people visiting library locations, whether or not they borrow anything, as well as mobile-library and home-delivery interactions. Outreach figures count interactions, not unique people; one person may have several interactions.

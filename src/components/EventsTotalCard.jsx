@@ -1,50 +1,32 @@
-import React, { useEffect, useState } from 'react'
-
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { getActiveServices } from '../models/service'
+import React, { useCallback } from 'react'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total library events held across active library services,
+ * along with average events held per day.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for library events.
+ */
 const EventsTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
-
-  const [eventsCount, setEventsCount] = useState(0)
-  const [eventsPerDay, setEventsPerDay] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const eventServices = activeServices?.filter(service =>
-      Number.isInteger(service.events)
-    )
-
-    if (!eventServices || eventServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const totalEvents =
-      eventServices?.reduce(
-        (acc, service) => acc + (service.events || 0),
-        0
-      ) || 0
-
-    setEventsCount(totalEvents)
-    setEventsPerDay(totalEvents / 365)
-  }, [services, filteredServices])
+  const formatDescription = useCallback(
+    ({ total, totalPopulation, yearCount }) => {
+      const rate = totalPopulation > 0
+        ? (total / totalPopulation / yearCount) * 1000
+        : 0
+      return `${formatCompactNumber(rate, 1)} events per 1,000 residents / yr`
+    },
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='events'
       title='Events'
-      number={formatCompactNumber(eventsCount)}
-      description={`${formatCompactNumber(eventsPerDay)} events per day`}
       colour='chartOrange'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

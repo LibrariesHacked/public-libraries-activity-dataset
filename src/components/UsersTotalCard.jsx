@@ -1,40 +1,30 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import { useApplicationState } from '../hooks/useApplicationState'
+import { getUsersPenetrationPeriodChange } from '../models/users'
+import * as usersModel from '../models/users'
+import MetricTotalCard from './MetricTotalCard'
 
-import { formatCompactNumber } from '../helpers/numbers'
-
-import { getActiveServices } from '../models/service'
-
-import NumberCard from './NumberCard'
-
+/**
+ * Summary KPI card component displaying total active library users across active library services,
+ * percentage of total resident population, and percentage point change since the earliest selected financial year.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for total active users.
+ */
 const UsersTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
-
-  const [usersCount, setUsersCount] = useState(0)
-  const [percentageUsers, setPercentageUsers] = useState(0)
-  const [noData, setNoData] = useState(false)
+  const [{ users, services }, dispatchApplication] = useApplicationState()
 
   useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const userServices = activeServices?.filter(service =>
-      Number.isInteger(service.users)
-    )
-
-    if (!userServices || userServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
+    if (!users) {
+      usersModel.getUsers().then(data => {
+        dispatchApplication({ type: 'SetUsers', users: data })
+      })
     }
+  }, [users, dispatchApplication])
 
-    // The user count is the sum of the users integer from each service object
-    const totalUsers =
-      userServices?.reduce((acc, service) => acc + (service.users || 0), 0) || 0
-
-    // The population is the sum of populationUnder12, population_12_17, population_adult
+  const formatDescription = useCallback(({ total, validServices }) => {
     const totalPopulation =
-      userServices?.reduce(
+      validServices?.reduce(
         (acc, service) =>
           acc +
           (service.populationUnder12 || 0) +
@@ -44,19 +34,34 @@ const UsersTotalCard = () => {
       ) || 0
 
     const percentageUsers =
-      totalPopulation > 0 ? (totalUsers / totalPopulation) * 100 : 0
+      totalPopulation > 0 ? (total / totalPopulation) * 100 : 0
 
-    setUsersCount(totalUsers)
-    setPercentageUsers(percentageUsers)
-  }, [services, filteredServices])
+    return `${Math.round(percentageUsers)}% of residents`
+  }, [])
+
+  const computeChange = useCallback(
+    ({ activeServices, comparison }) => {
+      if (!comparison || !users || !services) return null
+      return getUsersPenetrationPeriodChange(
+        users,
+        services,
+        null,
+        comparison.baselinePeriod,
+        comparison.targetPeriod,
+        activeServices?.map(s => s.code)
+      )
+    },
+    [users, services]
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='users'
       title='Active users'
-      number={formatCompactNumber(usersCount)}
-      description={`${Math.round(percentageUsers)}% of residents`}
       colour='chartPurple'
-      noData={noData}
+      formatDescription={formatDescription}
+      computeChange={computeChange}
+      changeUnit='percentage points'
     />
   )
 }

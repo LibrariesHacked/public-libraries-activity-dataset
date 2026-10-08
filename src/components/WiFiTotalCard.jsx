@@ -1,51 +1,33 @@
-import React, { useEffect, useState } from 'react'
-
-import { useApplicationState } from '../hooks/useApplicationState'
-
-import { getActiveServices } from '../models/service'
+import React, { useCallback } from 'react'
 
 import { formatCompactNumber } from '../helpers/numbers'
 
-import NumberCard from './NumberCard'
+import MetricTotalCard from './MetricTotalCard'
 
+/**
+ * Summary KPI card component displaying total public Wi-Fi sessions across active library services,
+ * along with average Wi-Fi sessions per 1,000 reporting residents per year.
+ *
+ * @returns {JSX.Element} MetricTotalCard configured for Wi-Fi sessions.
+ */
 const WiFiTotalCard = () => {
-  const [{ filteredServices, services }] = useApplicationState()
-
-  const [wifiSessionsCount, setWifiSessionsCount] = useState(0)
-  const [wifiSessionsPerDay, setWifiSessionsPerDay] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  useEffect(() => {
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const wiFiServices = activeServices?.filter(service =>
-      Number.isInteger(service.wifiSessions)
-    )
-
-    if (!wiFiServices || wiFiServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    // The wifi sessions count is the sum of the wifiSessions integer from each service object
-    const totalWifiSessions =
-      wiFiServices?.reduce(
-        (acc, service) => acc + (service.wifiSessions || 0),
-        0
-      ) || 0
-
-    setWifiSessionsCount(totalWifiSessions)
-    setWifiSessionsPerDay(totalWifiSessions / 365)
-  }, [services, filteredServices])
+  const formatDescription = useCallback(
+    ({ total, totalPopulation, yearCount }) => {
+      const perCapita =
+        totalPopulation > 0
+          ? Math.round((total / totalPopulation / yearCount) * 1000)
+          : 0
+      return `${formatCompactNumber(perCapita)} per 1,000 residents / yr`
+    },
+    []
+  )
 
   return (
-    <NumberCard
+    <MetricTotalCard
+      metric='wifiSessions'
       title='WiFi sessions'
-      number={formatCompactNumber(wifiSessionsCount)}
-      description={`${formatCompactNumber(wifiSessionsPerDay, 2)} sessions per day`}
       colour='chartYellow'
-      noData={noData}
+      formatDescription={formatDescription}
     />
   )
 }

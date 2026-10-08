@@ -1,24 +1,21 @@
-import axios from 'axios'
+import { ActivityRecord, createActivityModel } from './activityFactory'
 
-export class WiFi {
-  constructor (obj) {
-    Object.assign(this, obj)
-  }
+/**
+ * Domain model representing library Wi-Fi usage sessions by month.
+ */
+export class WiFi extends ActivityRecord {}
 
-  fromJson (json) {
-    this.serviceCode = json[0]
-    this.month = json[1]
-    this.countSessions = parseInt(json[2]) || null
+const { fetchRecords: getWiFi } = createActivityModel({
+  fields: ['month'],
+  countProp: 'countSessions',
+  endpoint: './wifi.json',
+  RecordClass: WiFi
+})
 
-    return this
-  }
-}
+/**
+ * Fetches and deserializes all Wi-Fi session records from the static dataset.
+ *
+ * @returns {Promise<WiFi[]>} Promise resolving to an array of WiFi record instances.
+ */
+export { getWiFi, getWiFi as getWifi }
 
-export async function getWiFi () {
-  const response = await axios.get('./wifi.json')
-  if (response && response.data && response.data.length > 0) {
-    return response.data.map(a => new WiFi().fromJson(a))
-  } else {
-    return []
-  }
-}

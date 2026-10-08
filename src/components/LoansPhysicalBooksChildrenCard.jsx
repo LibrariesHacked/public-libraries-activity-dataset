@@ -1,73 +1,32 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 
-import { useApplicationState } from '../hooks/useApplicationState'
+import ChildCareRoundedIcon from '@mui/icons-material/ChildCareRounded'
+import { getServicesChildPopulation } from '../models/service'
 
-import { formatCompactNumber } from '../helpers/numbers'
+import LoansCategoryCard from './LoansCategoryCard'
 
-import {
-  getActiveServices,
-  getServicesChildPopulation
-} from '../models/service'
-
-import NumberCard from './NumberCard'
-
+/**
+ * Summary KPI card component displaying physical book loans for children and young people (under 18)
+ * across active library services, along with average loans per child resident per year.
+ *
+ * @returns {JSX.Element} LoansCategoryCard configured for children's physical book loans.
+ */
 const LoansPhysicalBooksChildrenCard = () => {
-  const [{ filteredServices, services, loans }] = useApplicationState()
-
-  const [loansChildrenCount, setLoansChildrenCount] = useState(0)
-  const [loansChildrenPerCapita, setLoansChildrenPerCapita] = useState(0)
-  const [noData, setNoData] = useState(false)
-
-  useEffect(() => {
-    if (!loans || !services) return
-
-    const activeServices = getActiveServices(services, filteredServices)
-
-    const loansChildrenPhysicalBooks = loans.filter(
-      l =>
-        l.format === 'Physical book' &&
-        (l.contentAgeGroup === '12-17' || l.contentAgeGroup === 'Under 12')
-    )
-
-    const loanServices = activeServices?.filter(
-      service =>
-        loansChildrenPhysicalBooks.filter(l => l.serviceCode === service.code)
-          .length > 0
-    )
-
-    if (!loanServices || loanServices.length === 0) {
-      setNoData(true)
-    } else {
-      setNoData(false)
-    }
-
-    const totalLoans = loansChildrenPhysicalBooks
-      .filter(
-        l =>
-          filteredServices.length === 0 ||
-          filteredServices.includes(l.serviceCode)
-      )
-      .reduce((sum, loan) => sum + loan.countLoans, 0)
-
-    // The population is the totalPopulation of the active services that are being considered
-    const totalPopulation = getServicesChildPopulation(loanServices)
-
-    const loansPerCapita =
-      totalPopulation > 0 ? Math.round(totalLoans / totalPopulation) : 0
-
-    setLoansChildrenCount(totalLoans)
-    setLoansChildrenPerCapita(loansPerCapita)
-  }, [services, filteredServices, loans])
+  const filterLoan = useCallback(
+    l =>
+      l.format === 'Physical book' &&
+      (l.contentAgeGroup === '12-17' || l.contentAgeGroup === 'Under 12'),
+    []
+  )
 
   return (
-    <NumberCard
+    <LoansCategoryCard
       title="Children's physical book loans"
-      number={formatCompactNumber(loansChildrenCount)}
-      description={`${Math.round(
-        loansChildrenPerCapita
-      )} per child resident per year`}
       colour='chartOrange'
-      noData={noData}
+      icon={ChildCareRoundedIcon}
+      filterLoan={filterLoan}
+      populationFn={getServicesChildPopulation}
+      perCapitaLabel='child residents'
     />
   )
 }

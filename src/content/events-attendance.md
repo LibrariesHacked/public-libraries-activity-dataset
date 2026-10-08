@@ -1,1 +1,1 @@
-Events are separated into physical and virtual events. These charts show the count of events held, and attendance of those events by each type per month. It can be interesting to see how the events and attendance change over time, and whether the attendance correlates with number of events.
+The chart shows events and attendees per 1,000 residents in services reporting each measure that month. It separates in-person and online events.

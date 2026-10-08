@@ -1,100 +1,75 @@
-import React, { useEffect, useState } from 'react'
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  PointElement,
-  BarElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-import { Bar, Line } from 'react-chartjs-2'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
 import Box from '@mui/material/Box'
-import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
-import loansMd from './content/loans.md'
-import loansByTypeMd from './content/loans-by-type.md'
-import loansByServiceMd from './content/loans-by-service.md'
+import loansMd from './content/loans.md?raw'
+import loansByTypeMd from './content/loans-by-type.md?raw'
+import loansByServiceMd from './content/loans-by-service.md?raw'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
-import { getActiveServices } from './models/service'
+import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
+import { AppChart } from './components/charts'
+
+import {
+  createTimelineChartOptions,
+  createServiceBarChartOptions,
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
+} from './helpers/charts'
+import {
+  getReportingCoverageByGroup,
+  perThousandReportingPersonYears,
+  perThousandReportingResidents
+} from './helpers/reportingRates'
+
+import {
+  filterByMonthRange,
+  getMonthsInRange
+} from './helpers/periods'
+
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as loansModel from './models/loans'
 
-import CardGrid from './components/CardGrid'
-
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  PointElement,
-  BarElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
-const serviceChartOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    },
-    title: {
-      display: true,
-      text: 'Loans per population by service and format'
-    }
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Count of loans per population'
-      },
-      stacked: true,
-      beginAtZero: true
-    },
-    y: {
-      stacked: true
-    }
-  }
-}
-
+/**
+ * Loans dashboard page view displaying summary KPI cards, monthly loan trends
+ * by media format and audience age group, and a per-capita service comparison bar chart.
+ *
+ * @returns {JSX.Element} The rendered Loans page view.
+ */
 const Loans = () => {
-  const [{ filteredServices, services, loans }, dispatchApplication] =
-    useApplicationState()
+  const [
+    {
+      filteredServices,
+      services,
+      loans,
+      monthRange,
+      comparisonMode,
+      selectedRegions
+    },
+    dispatchApplication
+  ] = useApplicationState()
+
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        isRegionMode
+          ? 'Loans per 1,000 reporting residents by region and format'
+          : 'Loans per 1,000 reporting residents by service and format',
+        'Annual loans per 1,000 reporting residents',
+        { stacked: true }
+      ),
+    [isRegionMode]
+  )
 
   const [formatCharts, setFormatCharts] = useState([])
-
   const [serviceChart, setServiceChart] = useState([])
-
-  const [loansMarkdown, setLoansMarkdown] = useState('')
-  const [loansByTypeMarkdown, setLoansByTypeMarkdown] = useState('')
-  const [loansByServiceMarkdown, setLoansByServiceMarkdown] = useState('')
-
-  useEffect(() => {
-    fetch(loansMd)
-      .then(res => res.text())
-      .then(text => setLoansMarkdown(text))
-    fetch(loansByTypeMd)
-      .then(res => res.text())
-      .then(text => setLoansByTypeMarkdown(text))
-    fetch(loansByServiceMd)
-      .then(res => res.text())
-      .then(text => setLoansByServiceMarkdown(text))
-  }, [])
 
   useEffect(() => {
     const getLoans = async () => {
@@ -107,11 +82,23 @@ const Loans = () => {
   }, [services, loans, dispatchApplication])
 
   useEffect(() => {
-    if (!loans) return
+    if (!loans || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
+    const activeServiceCodes = new Set(activeServices.map(s => s.code))
 
     const formatCharts = []
+
+    const chartLoans = filterByMonthRange(loans, monthRange).filter(loan =>
+      activeServiceCodes.has(loan.serviceCode)
+    )
+    const formatLabels = getMonthsInRange(monthRange)
+    const monthlyCoverage = getReportingCoverageByGroup(
+      chartLoans,
+      activeServices,
+      'countLoans',
+      loan => `${loan.format}|||${loan.contentAgeGroup}|||${loan.month}`
+    )
 
     const itemFormats = [...new Set(loans.map(m => m.format))].sort((a, b) => {
       const order = ['Physical book', 'Ebook', 'Physical audiobook', 'Eaudio']
@@ -123,80 +110,52 @@ const Loans = () => {
       return a.localeCompare(b)
     })
 
-    itemFormats.forEach(format => {
-      const formatChartOptions = {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top'
-          },
-          title: {
-            display: true,
-            text: `Loans per month of ${format}s by content age group`
-          }
-        },
-        scales: {
-          x: {
-            title: {
-              display: true,
-              text: 'Month'
-            },
-            ticks: {
-              callback: function (value) {
-                const label = this.getLabelForValue(value)
-                const date = new Date(label + '-01')
-                return date.toLocaleDateString('en-GB', {
-                  month: 'short',
-                  year: '2-digit'
-                })
-              }
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: 'Count of loans'
-            },
-            beginAtZero: true
-          }
+    // Pre-aggregate monthly loans: (format, contentAgeGroup, month) -> sum
+    const formatGroupMonthMap = new Map()
+    const contentAgeGroupsByFormat = new Map()
+
+    for (let i = 0; i < chartLoans.length; i++) {
+      const loan = chartLoans[i]
+      if (Number.isFinite(loan.countLoans)) {
+        const key = `${loan.format}|||${loan.contentAgeGroup}|||${loan.month}`
+        formatGroupMonthMap.set(
+          key,
+          (formatGroupMonthMap.get(key) || 0) + loan.countLoans
+        )
+
+        let groups = contentAgeGroupsByFormat.get(loan.format)
+        if (!groups) {
+          groups = new Set()
+          contentAgeGroupsByFormat.set(loan.format, groups)
         }
+        groups.add(loan.contentAgeGroup)
       }
-      const formatLoans = loans.filter(m => m.format === format)
+    }
 
-      let formatLabels = []
-      const datasets = []
-      // The labels are the months in the data. The months are already formattted as YYYY-MM
-      formatLabels = [...new Set(formatLoans.map(loan => loan.month))].sort()
+    itemFormats.forEach(format => {
+      const formatChartOptions = createTimelineChartOptions(
+        `Loans per month of ${format.toLowerCase()}s by content age group`,
+        'Loans per 1,000 reporting residents per month'
+      )
 
-      // We want a dataset for each content age group
-      const contentAgeGroups = [
-        ...new Set(formatLoans.map(m => m.contentAgeGroup))
-      ].sort()
-      contentAgeGroups.forEach(contentAgeGroup => {
-        // We want a dataset for each age group
-        const data = []
-        formatLabels.forEach(label => {
-          // For each label (month) we need to count the count of loans for this age group
-          let count = 0
-          formatLoans.forEach(loan => {
-            if (
-              loan.countLoans &&
-              loan.month === label &&
-              loan.contentAgeGroup === contentAgeGroup &&
-              (filteredServices.length === 0 ||
-                filteredServices.includes(loan.serviceCode))
-            ) {
-              count += loan.countLoans
-            }
-          })
-          data.push(count)
+      const groups = contentAgeGroupsByFormat.get(format)
+      const contentAgeGroups = groups ? [...groups].sort() : []
+
+      const datasets = contentAgeGroups.map(contentAgeGroup => {
+        const data = formatLabels.map(label => {
+          const key = `${format}|||${contentAgeGroup}|||${label}`
+          const total = formatGroupMonthMap.get(key)
+          return total == null
+            ? null
+            : perThousandReportingResidents(total, monthlyCoverage.get(key))
         })
-        datasets.push({
+        return {
           label: contentAgeGroup,
           data,
           borderWidth: 2
-        })
+        }
       })
+
       formatCharts.push({
         format,
         labels: formatLabels,
@@ -207,83 +166,197 @@ const Loans = () => {
 
     setFormatCharts(formatCharts)
 
-    const serviceLabels = activeServices.map(s => s.niceName).sort()
+    const serviceLoans = chartLoans
+    const serviceFormatCoverage = getReportingCoverageByGroup(
+      serviceLoans,
+      activeServices,
+      'countLoans',
+      loan => `${loan.serviceCode}|||${loan.format}`
+    )
+    const serviceByCode = new Map(activeServices.map(service => [service.code, service]))
+    const regionFormatCoverage = getReportingCoverageByGroup(
+      serviceLoans,
+      activeServices,
+      'countLoans',
+      loan => `${serviceByCode.get(loan.serviceCode)?.region}|||${loan.format}`
+    )
 
-    const datasets = itemFormats.map((format, i) => {
-      const data = []
-      serviceLabels.forEach(serviceLabel => {
-        const service = services.find(s => s.niceName === serviceLabel)
-        const serviceCode = service?.code
-        if (!serviceCode) return null
-
-        const serviceFormatLoans = loans.filter(
-          m => m.serviceCode === serviceCode && m.format === format
+    // Pre-aggregate service loans: (serviceCode, format) -> sum
+    const serviceFormatMap = new Map()
+    for (let i = 0; i < serviceLoans.length; i++) {
+      const loan = serviceLoans[i]
+      if (Number.isFinite(loan.countLoans)) {
+        const key = `${loan.serviceCode}|||${loan.format}`
+        serviceFormatMap.set(
+          key,
+          (serviceFormatMap.get(key) || 0) + loan.countLoans
         )
-        const totalLoans = serviceFormatLoans.reduce(
-          (acc, loan) => acc + (loan.countLoans || 0),
-          0
-        )
-        const servicePopulation = service?.totalPopulation || 1
-        const loansPerCapita = Math.round(totalLoans / servicePopulation)
+      }
+    }
 
-        data.push(loansPerCapita)
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
+
+      const getRegionTotalLoansPerCapita = region => {
+        return itemFormats.reduce((rate, format) => {
+          let totalLoans = 0
+          for (const serviceCode of region.serviceCodes) {
+            totalLoans += serviceFormatMap.get(`${serviceCode}|||${format}`) || 0
+          }
+          const coverage = regionFormatCoverage.get(`${region.region}|||${format}`)
+          return rate + (perThousandReportingPersonYears(totalLoans, coverage) || 0)
+        }, 0)
+      }
+
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionTotalLoansPerCapita,
+        r => r?.loans
+      )
+
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const datasets = itemFormats.map(format => {
+        const data = rawRegionLabels.map(regionLabel => {
+          const region = regionByNiceName.get(regionLabel)
+          if (!region?.totalPopulation) return 0
+
+          let totalLoans = 0
+          for (const sCode of region.serviceCodes) {
+            totalLoans += serviceFormatMap.get(`${sCode}|||${format}`) || 0
+          }
+          const coverage = regionFormatCoverage.get(`${region.niceName}|||${format}`)
+          const rate = perThousandReportingPersonYears(totalLoans, coverage)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
+        })
+        return {
+          label: format,
+          data
+        }
       })
-      return {
-        label: format,
-        data
-      }
-    })
 
-    // If loans data is null for a service change the label to include (no data)
-    serviceLabels.forEach((label, index) => {
-      const service = services.find(s => s.niceName === label)
-      if (!service.loans) {
-        serviceLabels[index] = `${label} (no data)`
-      }
-    })
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.loans
+      )
 
-    setServiceChart({
-      labels: serviceLabels,
-      datasets
-    })
-  }, [filteredServices, loans, services])
+      setServiceChart({
+        labels: regionLabels,
+        datasets
+      })
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceLoansPerCapita = service => {
+        if (!service?.code) return 0
+        return itemFormats.reduce((rate, format) => {
+          const total = serviceFormatMap.get(`${service.code}|||${format}`) || 0
+          const coverage = serviceFormatCoverage.get(`${service.code}|||${format}`)
+          return rate + (perThousandReportingPersonYears(total, coverage) || 0)
+        }, 0)
+      }
+
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceLoansPerCapita,
+        s => s?.loans
+      )
+
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const datasets = itemFormats.map(format => {
+        const data = rawServiceLabels.map(serviceLabel => {
+          const service = serviceByNiceName.get(serviceLabel)
+          const serviceCode = service?.code
+          if (!serviceCode) return 0
+
+          const totalLoans =
+            serviceFormatMap.get(`${serviceCode}|||${format}`) || 0
+          const coverage = serviceFormatCoverage.get(`${serviceCode}|||${format}`)
+          const rate = perThousandReportingPersonYears(totalLoans, coverage)
+          return rate == null ? null : parseFloat(rate.toFixed(2))
+        })
+        return {
+          label: format,
+          data
+        }
+      })
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.loans
+      )
+
+      setServiceChart({
+        labels: serviceLabels,
+        datasets
+      })
+    }
+  }, [
+    filteredServices,
+    loans,
+    services,
+    monthRange,
+    isRegionMode,
+    selectedRegions
+  ])
+
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Loans
       </Typography>
       <CardGrid />
-      <Markdown>{loansMarkdown}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Loans by format and age group
-      </Typography>
-      <Markdown>{loansByTypeMarkdown}</Markdown>
+      <Box sx={{ my: 2 }}>
+        <Markdown>{loansMd}</Markdown>
+      </Box>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Loans by format and age group
+        </Typography>
+        <Markdown>{loansByTypeMd}</Markdown>
+      </Box>
       {formatCharts.map((chart, index) => (
-        <Box key={index} sx={{ mb: 2 }}>
-          <ListSubheader component='div' disableSticky disableGutters>
-            {chart.format}
-          </ListSubheader>
-          <Line
-            options={chart.options}
-            data={{ labels: chart.labels, datasets: chart.datasets }}
-          />
-        </Box>
+        <AppChart
+          key={index}
+          type='line'
+          title={chart.format}
+          options={chart.options}
+          data={{ labels: chart.labels, datasets: chart.datasets }}
+        />
       ))}
-      <Typography variant='h5' gutterBottom>
-        Loans by service and format
-      </Typography>
-      <Markdown>{loansByServiceMarkdown}</Markdown>
-      {serviceChart && serviceChart.labels && (
-        <Box
-          sx={{
-            position: 'relative',
-            width: '100%',
-            height: `${serviceChart.labels.length * 18 + 120}px`
-          }}
-        >
-          <Bar options={serviceChartOptions} data={serviceChart} />
-        </Box>
-      )}
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Loans by region and format' : 'Loans by service and format'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Annual loans per 1,000 residents in services reporting each format, by format.'
+            : loansByServiceMd}
+        </Markdown>
+      </Box>
+      <AppChart
+        type='service'
+        data={serviceChart}
+        options={serviceChartOptions}
+      />
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Loans data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Full dataset of monthly library loans, reporting anomalies, and corrected figures.
+        </Typography>
+        <DatasetDataGrid datasetId='loans' />
+      </Box>
     </Box>
   )
 }

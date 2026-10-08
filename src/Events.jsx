@@ -1,46 +1,44 @@
-import React, { useEffect, useState } from 'react'
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-
-import { Bar } from 'react-chartjs-2'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
-import eventsMd from './content/events.md'
-import eventsAttendanceMd from './content/events-attendance.md'
-import eventsAttendanceByServiceMd from './content/events-attendance-by-service.md'
+import eventsMd from './content/events.md?raw'
+import eventsAttendanceMd from './content/events-attendance.md?raw'
+import eventsAttendanceByServiceMd from './content/events-attendance-by-service.md?raw'
 
 import Box from '@mui/material/Box'
-import ListSubheader from '@mui/material/ListSubheader'
 import Typography from '@mui/material/Typography'
 
 import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
+import DatasetDataGrid from './components/DatasetDataGrid'
+import { AppChart } from './components/charts'
 
-import { getActiveServices } from './models/service'
+import {
+  createTimelineChartOptions,
+  createServiceBarChartOptions,
+  formatServiceLabelsWithNoData,
+  sortServicesByMetric
+} from './helpers/charts'
+import {
+  getReportingCoverageByGroup,
+  perThousandReportingPersonYears,
+  perThousandReportingResidents
+} from './helpers/reportingRates'
+
+import {
+  filterByMonthRange,
+  getMonthsInRange
+} from './helpers/periods'
+
+import { getActiveServices, getRegionAggregates } from './models/service'
 import * as eventsModel from './models/events'
 import * as attendanceModel from './models/attendance'
 
-ChartJS.register(
-  CategoryScale,
-  Colors,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-)
-
+/**
+ * Configuration mapping event delivery medium keys to human-readable chart labels.
+ */
 const eventTypes = {
   Physical: {
     label: 'Physical'
@@ -50,57 +48,41 @@ const eventTypes = {
   }
 }
 
-const serviceChartOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'top'
-    },
-    title: {
-      display: true,
-      text: 'Event counts and attendance by service'
-    }
-  },
-  scales: {
-    x: {
-      title: {
-        display: true,
-        text: 'Count of events and attendees'
-      },
-      beginAtZero: true
-    }
-  }
-}
-
+/**
+ * Events and attendance dashboard page view displaying summary KPI cards,
+ * monthly dual-axis timeline charts (events count vs attendance), and authority comparisons.
+ *
+ * @returns {JSX.Element} The rendered Events page view.
+ */
 const Events = () => {
   const [
-    { services, filteredServices, events, attendance },
+    {
+      services,
+      filteredServices,
+      events,
+      attendance,
+      monthRange,
+      comparisonMode,
+      selectedRegions
+    },
     dispatchApplication
   ] = useApplicationState()
 
+  const isRegionMode = comparisonMode === 'regions'
+
+  const serviceChartOptions = useMemo(
+    () =>
+      createServiceBarChartOptions(
+        isRegionMode
+          ? 'Events and attendees per 1,000 reporting residents by region'
+          : 'Events and attendees per 1,000 reporting residents by service',
+        'Events and attendees per 1,000 reporting residents per year'
+      ),
+    [isRegionMode]
+  )
+
   const [eventsAttendanceChartData, setEventsAttendanceChartData] = useState([])
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
-
-  const [eventsMarkdown, setEventsMarkdown] = useState('')
-  const [eventsAttendanceMarkdown, setEventsAttendanceMarkdown] = useState('')
-  const [
-    eventsAttendanceByServiceMarkdown,
-    setEventsAttendanceByServiceMarkdown
-  ] = useState('')
-
-  useEffect(() => {
-    fetch(eventsMd)
-      .then(res => res.text())
-      .then(text => setEventsMarkdown(text))
-    fetch(eventsAttendanceMd)
-      .then(res => res.text())
-      .then(text => setEventsAttendanceMarkdown(text))
-    fetch(eventsAttendanceByServiceMd)
-      .then(res => res.text())
-      .then(text => setEventsAttendanceByServiceMarkdown(text))
-  }, [])
 
   useEffect(() => {
     const getEvents = async () => {
@@ -112,39 +94,74 @@ const Events = () => {
       const attendance = await attendanceModel.getAttendance()
       dispatchApplication({ type: 'SetAttendance', attendance })
     }
-    if (!events && !attendance) {
-      getEvents()
-      getAttendance()
-    }
+    if (!events) getEvents()
+    if (!attendance) getAttendance()
   }, [events, attendance, dispatchApplication])
 
   useEffect(() => {
-    if (!events || !attendance) return
+    if (!events || !attendance || !services) return
 
     const activeServices = getActiveServices(services, filteredServices)
+    const activeServiceCodes = new Set(activeServices.map(s => s.code))
 
-    const monthLabels = [
-      ...new Set([...events.map(e => e.month), ...attendance.map(a => a.month)])
-    ].sort()
+    const monthLabels = getMonthsInRange(monthRange)
+
+    const chartEvents = filterByMonthRange(events, monthRange)
+    const chartAttendance = filterByMonthRange(attendance, monthRange)
+    const reportingEvents = chartEvents.filter(e => activeServiceCodes.has(e.serviceCode))
+    const reportingAttendance = chartAttendance.filter(a => activeServiceCodes.has(a.serviceCode))
+    const monthlyEventCoverage = getReportingCoverageByGroup(
+      reportingEvents,
+      activeServices,
+      'countEvents',
+      event => `${event.type}|||${event.month}`
+    )
+    const monthlyAttendanceCoverage = getReportingCoverageByGroup(
+      reportingAttendance,
+      activeServices,
+      'countAttendance',
+      record => `${record.type}|||${record.month}`
+    )
+
+    // Pre-aggregate monthly attendance: (type, month) -> sum
+    const attendanceTypeMonthMap = new Map()
+    for (let i = 0; i < chartAttendance.length; i++) {
+      const a = chartAttendance[i]
+      if (Number.isFinite(a.countAttendance)) {
+        const key = `${a.type}|||${a.month}`
+        attendanceTypeMonthMap.set(
+          key,
+          (attendanceTypeMonthMap.get(key) || 0) + a.countAttendance
+        )
+      }
+    }
+
+    // Pre-aggregate monthly events: (type, month) -> sum
+    const eventsTypeMonthMap = new Map()
+    for (let i = 0; i < chartEvents.length; i++) {
+      const e = chartEvents[i]
+      if (Number.isFinite(e.countEvents)) {
+        const key = `${e.type}|||${e.month}`
+        eventsTypeMonthMap.set(
+          key,
+          (eventsTypeMonthMap.get(key) || 0) + e.countEvents
+        )
+      }
+    }
 
     const eventAttendanceCharts = []
 
     // We want a chart for each event type
     Object.keys(eventTypes).forEach(eventType => {
       const datasets = [
-        // One dataset for attendance and one for events
         {
           label: `Attendance - ${eventType}`,
           data: monthLabels.map(month => {
-            // Get the count of attendance for this event type and month
-            return attendance
-              .filter(
-                a =>
-                  a.type === eventType &&
-                  a.month === month &&
-                  activeServices.find(s => s.code === a.serviceCode)
-              )
-              .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
+            const key = `${eventType}|||${month}`
+            const total = attendanceTypeMonthMap.get(key)
+            return total == null
+              ? null
+              : perThousandReportingResidents(total, monthlyAttendanceCoverage.get(key))
           }),
           yAxisID: 'y1',
           type: 'line'
@@ -152,15 +169,11 @@ const Events = () => {
         {
           label: `Events - ${eventType}`,
           data: monthLabels.map(month => {
-            // Get the count of events for this event type and month
-            return events
-              .filter(
-                e =>
-                  e.type === eventType &&
-                  e.month === month &&
-                  activeServices.find(s => s.code === e.serviceCode)
-              )
-              .reduce((sum, e) => sum + (e.countEvents || 0), 0)
+            const key = `${eventType}|||${month}`
+            const total = eventsTypeMonthMap.get(key)
+            return total == null
+              ? null
+              : perThousandReportingResidents(total, monthlyEventCoverage.get(key))
           }),
           yAxisID: 'y',
           stack: 'Stack 0'
@@ -173,145 +186,278 @@ const Events = () => {
           datasets
         },
         eventType,
-        options: {
-          responsive: true,
-          interaction: {
-            mode: 'index',
-            intersect: false
-          },
-          stacked: false,
-          plugins: {
-            title: {
-              display: true,
-              text: `Events and Attendance - ${eventTypes[eventType].label}`
-            }
-          },
-          scales: {
-            x: {
-              stacked: true,
-              title: {
-                display: true,
-                text: 'Month'
-              },
-              ticks: {
-                callback: function (value) {
-                  const label = this.getLabelForValue(value)
-                  const date = new Date(label + '-01')
-                  return date.toLocaleDateString('en-GB', {
-                    month: 'short',
-                    year: '2-digit'
-                  })
-                }
-              }
-            },
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              title: {
-                display: true,
-                text: 'Count of events (bars)'
-              },
-              stacked: true
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              title: {
-                display: true,
-                text: 'Count of attendees (lines)'
-              },
-              grid: {
-                drawOnChartArea: false
-              },
-              stacked: true
-            }
+        options: createTimelineChartOptions(
+          `Events and attendance - ${eventTypes[eventType].label}`,
+          'Events per 1,000 reporting residents (bars)',
+          'Attendees per 1,000 reporting residents (lines)',
+          {
+            stacked: true,
+            interaction: { mode: 'index', intersect: false }
           }
-        }
+        )
       })
     })
 
     setEventsAttendanceChartData(eventAttendanceCharts)
 
-    const serviceLabels = activeServices.map(s => s.niceName).sort()
+    const serviceEvents = reportingEvents
+    const serviceAttendance = reportingAttendance
+    const serviceEventCoverage = getReportingCoverageByGroup(
+      serviceEvents,
+      activeServices,
+      'countEvents',
+      event => `${event.serviceCode}|||${event.type}`
+    )
+    const serviceAttendanceCoverage = getReportingCoverageByGroup(
+      serviceAttendance,
+      activeServices,
+      'countAttendance',
+      record => `${record.serviceCode}|||${record.type}`
+    )
+    const serviceByCode = new Map(activeServices.map(service => [service.code, service]))
+    const regionEventCoverage = getReportingCoverageByGroup(
+      serviceEvents,
+      activeServices,
+      'countEvents',
+      event => `${serviceByCode.get(event.serviceCode)?.region}|||${event.type}`
+    )
+    const regionAttendanceCoverage = getReportingCoverageByGroup(
+      serviceAttendance,
+      activeServices,
+      'countAttendance',
+      record => `${serviceByCode.get(record.serviceCode)?.region}|||${record.type}`
+    )
 
-    const datasets = ['Events', 'Attendance'].map((label, i) => {
-      const data = serviceLabels.map(serviceLabel => {
-        const serviceCode = services.find(
-          s => s.niceName === serviceLabel
-        )?.code
-        if (!serviceCode) return 0
+    // Pre-aggregate service events and attendance
+    const serviceEventsMap = new Map()
+    for (let i = 0; i < serviceEvents.length; i++) {
+      const e = serviceEvents[i]
+      if (Number.isFinite(e.countEvents)) {
+        serviceEventsMap.set(
+          `${e.serviceCode}|||${e.type}`,
+          (serviceEventsMap.get(`${e.serviceCode}|||${e.type}`) || 0) + e.countEvents
+        )
+      }
+    }
 
-        if (label === 'Events') {
-          return events
-            .filter(
-              e =>
-                activeServices.find(s => s.code === e.serviceCode) &&
-                e.serviceCode === serviceCode
+    const serviceAttendanceMap = new Map()
+    for (let i = 0; i < serviceAttendance.length; i++) {
+      const a = serviceAttendance[i]
+      if (Number.isFinite(a.countAttendance)) {
+        serviceAttendanceMap.set(
+          `${a.serviceCode}|||${a.type}`,
+          (serviceAttendanceMap.get(`${a.serviceCode}|||${a.type}`) || 0) + a.countAttendance
+        )
+      }
+    }
+
+    if (isRegionMode) {
+      const regionAggregates = getRegionAggregates(services, selectedRegions)
+
+      const getRegionTotalEventsAttendance = region => {
+        return ['Physical', 'Digital'].reduce((sum, eventType) => {
+          const eventTotal = [...region.serviceCodes].reduce(
+            (total, code) => total + (serviceEventsMap.get(`${code}|||${eventType}`) || 0),
+            0
+          )
+          const attendanceTotal = [...region.serviceCodes].reduce(
+            (total, code) => total + (serviceAttendanceMap.get(`${code}|||${eventType}`) || 0),
+            0
+          )
+          return sum +
+            (perThousandReportingPersonYears(eventTotal, regionEventCoverage.get(`${region.region}|||${eventType}`)) || 0) +
+            (perThousandReportingPersonYears(attendanceTotal, regionAttendanceCoverage.get(`${region.region}|||${eventType}`)) || 0)
+        }, 0)
+      }
+
+      const sortedRegions = sortServicesByMetric(
+        regionAggregates,
+        getRegionTotalEventsAttendance,
+        r => r?.events || r?.attendance
+      )
+
+      const rawRegionLabels = sortedRegions.map(r => r.niceName)
+      const regionByNiceName = new Map(sortedRegions.map(r => [r.niceName, r]))
+
+      const datasets = ['Physical', 'Digital'].flatMap(eventType => [
+        {
+          label: `${eventTypes[eventType].label} events`,
+          data: rawRegionLabels.map(regionLabel => {
+            const region = regionByNiceName.get(regionLabel)
+            if (!region) return null
+            const total = [...region.serviceCodes].reduce(
+              (sum, code) => sum + (serviceEventsMap.get(`${code}|||${eventType}`) || 0),
+              0
             )
-            .reduce((sum, e) => sum + (e.countEvents || 0), 0)
-        } else {
-          return attendance
-            .filter(
-              a =>
-                activeServices.find(s => s.code === a.serviceCode) &&
-                a.serviceCode === serviceCode
+            const rate = perThousandReportingPersonYears(
+              total,
+              regionEventCoverage.get(`${region.region}|||${eventType}`)
             )
-            .reduce((sum, a) => sum + (a.countAttendance || 0), 0)
+            return rate == null ? null : parseFloat(rate.toFixed(2))
+          })
+        },
+        {
+          label: `${eventTypes[eventType].label} attendees`,
+          data: rawRegionLabels.map(regionLabel => {
+            const region = regionByNiceName.get(regionLabel)
+            if (!region) return null
+            const total = [...region.serviceCodes].reduce(
+              (sum, code) => sum + (serviceAttendanceMap.get(`${code}|||${eventType}`) || 0),
+              0
+            )
+            const rate = perThousandReportingPersonYears(
+              total,
+              regionAttendanceCoverage.get(`${region.region}|||${eventType}`)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
+          })
         }
+      ])
+
+      const regionLabels = formatServiceLabelsWithNoData(
+        rawRegionLabels,
+        regionByNiceName,
+        r => r?.events || r?.attendance
+      )
+
+      setServiceChart({
+        labels: regionLabels,
+        datasets
       })
-      return {
-        label,
-        data
+    } else {
+      // ONS: Order categories in bar charts by value descending (services with no data at bottom)
+      const getServiceTotalEventsAttendance = service => {
+        if (!service?.code) return 0
+        return ['Physical', 'Digital'].reduce((sum, eventType) => {
+          const eventTotal = serviceEventsMap.get(`${service.code}|||${eventType}`) || 0
+          const attendanceTotal = serviceAttendanceMap.get(`${service.code}|||${eventType}`) || 0
+          return sum +
+            (perThousandReportingPersonYears(eventTotal, serviceEventCoverage.get(`${service.code}|||${eventType}`)) || 0) +
+            (perThousandReportingPersonYears(attendanceTotal, serviceAttendanceCoverage.get(`${service.code}|||${eventType}`)) || 0)
+        }, 0)
       }
-    })
 
-    // If events and attendees are null for a service change the label to include (no data)
-    serviceLabels.forEach((label, index) => {
-      const service = services.find(s => s.niceName === label)
-      if (!service.events && !service.attendance) {
-        serviceLabels[index] = `${label} (no data)`
-      }
-    })
+      const sortedServices = sortServicesByMetric(
+        activeServices,
+        getServiceTotalEventsAttendance,
+        s => s?.events || s?.attendance
+      )
 
-    setServiceChart({
-      labels: serviceLabels,
-      datasets
-    })
-  }, [filteredServices, services, events, attendance])
+      const rawServiceLabels = sortedServices.map(s => s.niceName)
+      const serviceByNiceName = new Map(
+        sortedServices.map(s => [s.niceName, s])
+      )
+
+      const datasets = ['Physical', 'Digital'].flatMap(eventType => [
+        {
+          label: `${eventTypes[eventType].label} events`,
+          data: rawServiceLabels.map(serviceLabel => {
+            const service = serviceByNiceName.get(serviceLabel)
+            if (!service) return null
+            const total = serviceEventsMap.get(`${service.code}|||${eventType}`) || 0
+            const rate = perThousandReportingPersonYears(
+              total,
+              serviceEventCoverage.get(`${service.code}|||${eventType}`)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
+          })
+        },
+        {
+          label: `${eventTypes[eventType].label} attendees`,
+          data: rawServiceLabels.map(serviceLabel => {
+            const service = serviceByNiceName.get(serviceLabel)
+            if (!service) return null
+            const total = serviceAttendanceMap.get(`${service.code}|||${eventType}`) || 0
+            const rate = perThousandReportingPersonYears(
+              total,
+              serviceAttendanceCoverage.get(`${service.code}|||${eventType}`)
+            )
+            return rate == null ? null : parseFloat(rate.toFixed(2))
+          })
+        }
+      ])
+
+      const serviceLabels = formatServiceLabelsWithNoData(
+        rawServiceLabels,
+        serviceByNiceName,
+        s => s?.events || s?.attendance
+      )
+
+      setServiceChart({
+        labels: serviceLabels,
+        datasets
+      })
+    }
+  }, [
+    filteredServices,
+    services,
+    events,
+    attendance,
+    monthRange,
+    isRegionMode,
+    selectedRegions
+  ])
 
   return (
     <Box>
-      <Typography variant='h4' gutterBottom>
+      <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
         Events and attendance
       </Typography>
       <CardGrid />
-      <Markdown>{eventsMarkdown}</Markdown>
-      <Typography variant='h5' gutterBottom>
-        Event count and attendance by type
-      </Typography>
-      <Markdown>{eventsAttendanceMarkdown}</Markdown>
+      <Box sx={{ my: 2 }}>
+        <Markdown>{eventsMd}</Markdown>
+      </Box>
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Event count and attendance by type
+        </Typography>
+        <Markdown>{eventsAttendanceMd}</Markdown>
+      </Box>
       {eventsAttendanceChartData.map((chart, index) => (
-        <Box key={index} sx={{ mb: 2 }}>
-          <ListSubheader component='div' disableSticky disableGutters>
-            {chart.eventType}
-          </ListSubheader>
-          <Bar data={chart.data} options={chart.options} />
-        </Box>
+        <AppChart
+          key={index}
+          type='bar'
+          title={chart.eventType}
+          data={chart.data}
+          options={chart.options}
+        />
       ))}
-      <Typography variant='h5' gutterBottom>
-        Events and attendance by service
-      </Typography>
-      <Markdown>{eventsAttendanceByServiceMarkdown}</Markdown>
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          height: `${(serviceChart?.labels?.length || 1) * 30 + 120}px`
-        }}
-      >
-        <Bar options={serviceChartOptions} data={serviceChart} />
+
+      <Box sx={{ mt: 4, mb: 2 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          {isRegionMode ? 'Events and attendance by region' : 'Events and attendance by service'}
+        </Typography>
+        <Markdown>
+          {isRegionMode
+            ? 'Annual events and attendees per 1,000 residents in services reporting each measure.'
+            : eventsAttendanceByServiceMd}
+        </Markdown>
+      </Box>
+      <AppChart
+        type='service'
+        data={serviceChart}
+        options={serviceChartOptions}
+      />
+
+      <Box sx={{ mt: 5, mb: 4 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Events data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Monthly scheduled library events count by format and audience category.
+        </Typography>
+        <DatasetDataGrid datasetId='events' />
+      </Box>
+
+      <Box sx={{ mt: 5, mb: 3 }}>
+        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+          Event attendance data
+        </Typography>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
+          Monthly attendee and participant counts across event delivery formats.
+        </Typography>
+        <DatasetDataGrid datasetId='attendance' />
       </Box>
     </Box>
   )

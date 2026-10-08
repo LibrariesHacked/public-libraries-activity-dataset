@@ -1,1 +1,1 @@
-The service comparison chart plots computer usage and WiFi sessions for each service.
+Compare annual computer hours and Wi-Fi sessions per 1,000 residents across library services. Each rate uses only the months in which the service reported that measure.
