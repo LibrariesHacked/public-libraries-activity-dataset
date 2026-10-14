@@ -7,6 +7,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportedTotal } from '../helpers/reportingRates'
 import * as attendanceModel from '../models/attendance'
 
 import NumberCard from './NumberCard'
@@ -55,22 +56,20 @@ const EventsChildrenAttendanceCard = () => {
         activeCodes.has(a.serviceCode)
     )
 
-    if (!matched.length) {
+    const childFilter = a => a.ageGroup === 'Under 12' || a.ageGroup === '12-17'
+    const childRecords = matched.filter(childFilter)
+    const totalChildAttendance = getReportedTotal(childRecords, 'countAttendance')
+    setWarning(getRecordsQualityWarning(childRecords))
+    if (totalChildAttendance == null) {
       setNoData(true)
       setCount(0)
       setDescription('')
+      setChange(null)
       return
     }
 
     setNoData(false)
     const totalAllAttendance = matched.reduce(
-      (acc, a) => acc + (a.countAttendance || 0),
-      0
-    )
-
-    const childFilter = a => a.ageGroup === 'Under 12' || a.ageGroup === '12-17'
-    const childRecords = matched.filter(childFilter)
-    const totalChildAttendance = childRecords.reduce(
       (acc, a) => acc + (a.countAttendance || 0),
       0
     )
@@ -82,7 +81,6 @@ const EventsChildrenAttendanceCard = () => {
         ? (totalChildAttendance / totalAllAttendance) * 100
         : 0
     setDescription(`${Math.round(pct)}% of all attendees`)
-    setWarning(getRecordsQualityWarning(childRecords))
 
     if (comparison && attendance) {
       const chg = getActivityRecordsSharePeriodChange({

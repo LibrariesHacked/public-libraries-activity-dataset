@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import { formatPeriod } from './helpers/periods'
+import { getReportingSnapshotPercentage } from './helpers/reportingRates'
 
 import { getActiveServices, getRegionAggregates } from './models/service'
 import * as usersModel from './models/users'
@@ -224,14 +225,14 @@ const Users = () => {
       : activeServices
 
     const getEntityUserPercentage = entity => {
-      if (!entity || !entity.totalPopulation) return 0
-      return ((entity.users || 0) / entity.totalPopulation) * 100
+      if (!entity) return null
+      return getReportingSnapshotPercentage(isRegionMode ? entity.services : [entity], 'users')
     }
 
     const sortedEntities = sortServicesByMetric(
       entities,
       getEntityUserPercentage,
-      e => e?.users
+      e => getEntityUserPercentage(e) != null
     )
 
     const rawLabels = sortedEntities.map(e => e.niceName)
@@ -239,16 +240,14 @@ const Users = () => {
 
     const serviceData = rawLabels.map(label => {
       const entity = entityByNiceName.get(label)
-      if (!entity) return 0
-      const totalUsers = entity.users || 0
-      const totalPopulation = entity.totalPopulation || 0
-      return totalPopulation > 0 ? Number(((totalUsers / totalPopulation) * 100).toFixed(1)) : 0
+      const percentage = getEntityUserPercentage(entity)
+      return percentage == null ? null : Number(percentage.toFixed(1))
     })
 
     const labels = formatServiceLabelsWithNoData(
       rawLabels,
       entityByNiceName,
-      e => e?.users
+      e => getEntityUserPercentage(e) != null
     )
 
     setServiceChart({

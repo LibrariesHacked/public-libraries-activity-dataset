@@ -253,7 +253,7 @@ const PeriodSelection = () => {
             color: 'primary.main',
             height: 4,
             py: 1,
-            mb: 2.5,
+            mb: 4,
             width: 'calc(100% - 16px)',
             mx: 'auto',
             display: 'block',
@@ -289,7 +289,7 @@ const PeriodSelection = () => {
               fontSize: '0.725rem',
               fontWeight: 500,
               color: 'text.secondary',
-              top: 20,
+              top: 'calc(50% + 16px)',
               whiteSpace: 'nowrap'
             },
             '& .MuiSlider-markLabel[data-index="0"]': {

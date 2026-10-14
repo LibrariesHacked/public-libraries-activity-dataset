@@ -59,6 +59,43 @@ export const getReportingCoverageByGroup = (
   return coverageByGroup
 }
 
+export const getReportedTotal = (records, countProp) => {
+  const values = records.map(record => record[countProp]).filter(Number.isFinite)
+  return values.length ? values.reduce((total, value) => total + value, 0) : null
+}
+
+export const getReportedTotalsByGroup = (records, countProp, getGroupKey) => {
+  const totals = new Map()
+  records.forEach(record => {
+    if (!Number.isFinite(record[countProp])) return
+    const key = getGroupKey(record)
+    totals.set(key, (totals.get(key) || 0) + record[countProp])
+  })
+  return totals
+}
+
+export const getReportingSnapshotPercentage = (services, countProp) => {
+  const reporting = services.filter(service => Number.isFinite(service[countProp]))
+  if (!reporting.length || reporting.some(service => !(service.totalPopulation > 0))) return null
+  const total = getReportedTotal(reporting, countProp)
+  const population = reporting.reduce((sum, service) => sum + service.totalPopulation, 0)
+  return total / population * 100
+}
+
+export const getEventTurnout = (events, attendance) => {
+  const getKey = record => JSON.stringify([record.serviceCode, record.month, record.type, record.ageGroup])
+  const eventTotals = getReportedTotalsByGroup(events, 'countEvents', getKey)
+  const attendanceTotals = getReportedTotalsByGroup(attendance, 'countAttendance', getKey)
+  let totalEvents = 0
+  let totalAttendance = 0
+  eventTotals.forEach((count, key) => {
+    if (!attendanceTotals.has(key)) return
+    totalEvents += count
+    totalAttendance += attendanceTotals.get(key)
+  })
+  return totalEvents > 0 ? totalAttendance / totalEvents : null
+}
+
 /** Converts a monthly total into a rate per 1,000 residents who reported. */
 export const perThousandReportingResidents = (total, coverage) => {
   if (!coverage?.reportingPopulation) return null

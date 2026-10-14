@@ -1,4 +1,4 @@
-import { ActivityRecord, createActivityModel } from './activityFactory'
+import { ActivityRecord, createActivityModel } from './activityFactory.js'
 
 /**
  * Domain model representing active library users categorized by age group and financial year period.
@@ -34,7 +34,7 @@ const getUserTotalsForPeriod = (users, period, ageGroup, serviceCodes) => {
     if (user.period !== period) return
     if (ageGroup && user.ageGroup !== ageGroup) return
     if (serviceCodes && !serviceCodes.includes(user.serviceCode)) return
-    if (user.countUsers == null || user.countUsers === 0) return
+    if (!Number.isFinite(user.countUsers)) return
     totals.set(
       user.serviceCode,
       (totals.get(user.serviceCode) || 0) + user.countUsers
@@ -163,14 +163,14 @@ const POPULATION_AGE_GROUPS = ['Under 12', '12-17', 'Adult']
  * @param {Users[]} users - List of user records for the selected period(s).
  * @returns {Object<string, Object<string, number|null>>} Dictionary keyed by service code containing percentage penetration per age group and total.
  */
-export function getUsersPopulationPercentages (services, users) {
+export function getUsersPopulationPercentages (services, users, useEstimates = true) {
   const percentagesByService = {}
   if (!services?.length) return percentagesByService
 
   const usersByService = new Map()
   if (users?.length) {
     users.forEach(u => {
-      if (u.countUsers == null || u.countUsers === 0) return
+      if (!Number.isFinite(u.countUsers)) return
       let serviceGroup = usersByService.get(u.serviceCode)
       if (!serviceGroup) {
         serviceGroup = new Map()
@@ -189,16 +189,12 @@ export function getUsersPopulationPercentages (services, users) {
     const hasAnyUsers = serviceGroup && serviceGroup.size > 0
 
     POPULATION_AGE_GROUPS.forEach(ageGroup => {
-      if (!hasAnyUsers) {
+      if (!hasAnyUsers || !serviceGroup.has(ageGroup)) {
         serviceResults[ageGroup] = null
         return
       }
 
-      const totalUsers = serviceGroup.get(ageGroup) || 0
-      if (totalUsers === 0) {
-        serviceResults[ageGroup] = null
-        return
-      }
+      const totalUsers = serviceGroup.get(ageGroup)
 
       const populationForAgeGroup =
         ageGroup === 'Under 12'
@@ -216,9 +212,10 @@ export function getUsersPopulationPercentages (services, users) {
         percentage != null ? parseFloat(percentage.toFixed(2)) : null
     })
 
+    const resolvedUsers = service.resolveMetric ? service.resolveMetric('users', useEstimates) : service.users
     const totalUsers =
-      service.users != null && Number.isFinite(service.users) && service.users > 0
-        ? service.users
+      Number.isFinite(resolvedUsers)
+        ? resolvedUsers
         : null
     const totalPopulation = service.totalPopulation || null
     const overallPercentage =

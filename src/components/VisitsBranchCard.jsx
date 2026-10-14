@@ -7,6 +7,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportedTotal } from '../helpers/reportingRates'
 import { getReportingCoverageByGroup, perThousandReportingPersonYears } from '../helpers/reportingRates'
 import * as visitsModel from '../models/visits'
 
@@ -57,22 +58,20 @@ const VisitsBranchCard = () => {
         activeCodes.has(v.serviceCode)
     )
 
-    if (!matched.length) {
+    const branchFilter = v => v.location === 'Library' || v.location === 'Shared building'
+    const branchRecords = matched.filter(branchFilter)
+    const totalBranch = getReportedTotal(branchRecords, 'countVisits')
+    setWarning(getRecordsQualityWarning(branchRecords))
+    if (totalBranch == null) {
       setNoData(true)
       setCount(0)
       setDescription('')
+      setChange(null)
       return
     }
 
     setNoData(false)
     const totalAllVisits = matched.reduce((acc, v) => acc + (v.countVisits || 0), 0)
-
-    const branchFilter = v => v.location === 'Library' || v.location === 'Shared building'
-    const branchRecords = matched.filter(branchFilter)
-    const totalBranch = branchRecords.reduce(
-      (acc, v) => acc + (v.countVisits || 0),
-      0
-    )
 
     const coverage = getReportingCoverageByGroup(
       branchRecords,
@@ -85,7 +84,6 @@ const VisitsBranchCard = () => {
 
     const pct = totalAllVisits > 0 ? (totalBranch / totalAllVisits) * 100 : 0
     setDescription(`${Math.round(pct)}% of visits; per 1,000 reporting residents / yr`)
-    setWarning(getRecordsQualityWarning(branchRecords))
 
     if (comparison && visits) {
       const chg = getActivityRecordsSharePeriodChange({

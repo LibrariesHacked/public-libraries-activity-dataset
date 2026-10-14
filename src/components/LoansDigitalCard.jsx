@@ -7,6 +7,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportedTotal } from '../helpers/reportingRates'
 import * as loansModel from '../models/loans'
 
 import NumberCard from './NumberCard'
@@ -56,28 +57,25 @@ const LoansDigitalCard = () => {
         activeCodes.has(l.serviceCode)
     )
 
-    if (!matched.length) {
+    const digitalFilter = l => l.format === 'Ebook' || l.format === 'Eaudio'
+    const digitalRecords = matched.filter(digitalFilter)
+    const totalDigital = getReportedTotal(digitalRecords, 'countLoans')
+    setWarning(getRecordsQualityWarning(digitalRecords))
+    if (totalDigital == null) {
       setNoData(true)
       setCount(0)
       setDescription('')
+      setChange(null)
       return
     }
 
     setNoData(false)
     const totalAllLoans = matched.reduce((acc, l) => acc + (l.countLoans || 0), 0)
 
-    const digitalFilter = l => l.format === 'Ebook' || l.format === 'Eaudio'
-    const digitalRecords = matched.filter(digitalFilter)
-    const totalDigital = digitalRecords.reduce(
-      (acc, l) => acc + (l.countLoans || 0),
-      0
-    )
-
     setCount(totalDigital)
 
     const pct = totalAllLoans > 0 ? (totalDigital / totalAllLoans) * 100 : 0
     setDescription(`${Math.round(pct)}% of all loans`)
-    setWarning(getRecordsQualityWarning(digitalRecords))
 
     if (comparison && loans) {
       const chg = getActivityRecordsSharePeriodChange({

@@ -84,6 +84,7 @@ ChartJS.register(
 ChartJS.defaults.font.family = '"Roboto", "Helvetica", "Arial", sans-serif'
 ChartJS.defaults.color = '#3d3d3d'
 ChartJS.defaults.borderColor = '#e5e7eb'
+ChartJS.defaults.devicePixelRatio = context => Math.max(2, context.chart.platform.getDevicePixelRatio())
 
 /**
  * Creates configuration options for monthly time-series charts.

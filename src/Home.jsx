@@ -30,7 +30,7 @@ const Home = () => {
           mt: 3,
           mb: 3,
           backgroundColor: 'rgba(25, 118, 210, 0.04)',
-          borderColor: 'primary.light',
+          borderColor: 'divider',
           borderRadius: 2
         }}
       >

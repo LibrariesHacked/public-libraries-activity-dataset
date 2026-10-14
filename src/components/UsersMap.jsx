@@ -40,7 +40,8 @@ const UsersMap = () => {
       mapZoom,
       mapPosition,
       users,
-      snapshotPeriod
+      snapshotPeriod,
+      useEstimates
     },
     dispatchApplication
   ] = useApplicationState()
@@ -123,12 +124,13 @@ const UsersMap = () => {
 
     const latestPercentages = getUsersPopulationPercentages(
       latestRecords.length > 0 ? latestRecords : activeServices,
-      latestUsers
+      latestUsers,
+      useEstimates
     )
 
     const earliestPercentages =
       hasMultipleYears && earliestRecords.length > 0
-        ? getUsersPopulationPercentages(earliestRecords, earliestUsers)
+        ? getUsersPopulationPercentages(earliestRecords, earliestUsers, useEstimates)
         : {}
 
     // Build serviceLookup with coverage percentages and change values
@@ -203,7 +205,7 @@ const UsersMap = () => {
         }
       } else {
         const percent = data[`${displayAgeGroup}Percent`]
-        if (percent !== null && percent !== undefined && percent > 0) {
+        if (percent !== null && percent !== undefined) {
           const norm = maxPercent > 0 ? Math.min(1, percent / maxPercent) : 0
           const opacity = parseFloat(Math.max(0.15, norm * 0.7).toFixed(2))
 
@@ -270,8 +272,7 @@ const UsersMap = () => {
         }
         return (
           data[`${displayAgeGroup}Percent`] !== null &&
-          data[`${displayAgeGroup}Percent`] !== undefined &&
-          data[`${displayAgeGroup}Percent`] > 0
+          data[`${displayAgeGroup}Percent`] !== undefined
         )
       })
       .map(s => s.code)
@@ -323,6 +324,7 @@ const UsersMap = () => {
     displayAgeGroup,
     shadeBy,
     snapshotPeriod,
+    useEstimates,
     periods,
     hasMultipleYears,
     theme

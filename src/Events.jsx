@@ -23,6 +23,7 @@ import {
 } from './helpers/charts'
 import {
   getReportingCoverageByGroup,
+  getReportedTotalsByGroup,
   perThousandReportingPersonYears,
   perThousandReportingResidents
 } from './helpers/reportingRates'
@@ -123,31 +124,16 @@ const Events = () => {
       record => `${record.type}|||${record.month}`
     )
 
-    // Pre-aggregate monthly attendance: (type, month) -> sum
-    const attendanceTypeMonthMap = new Map()
-    for (let i = 0; i < chartAttendance.length; i++) {
-      const a = chartAttendance[i]
-      if (Number.isFinite(a.countAttendance)) {
-        const key = `${a.type}|||${a.month}`
-        attendanceTypeMonthMap.set(
-          key,
-          (attendanceTypeMonthMap.get(key) || 0) + a.countAttendance
-        )
-      }
-    }
-
-    // Pre-aggregate monthly events: (type, month) -> sum
-    const eventsTypeMonthMap = new Map()
-    for (let i = 0; i < chartEvents.length; i++) {
-      const e = chartEvents[i]
-      if (Number.isFinite(e.countEvents)) {
-        const key = `${e.type}|||${e.month}`
-        eventsTypeMonthMap.set(
-          key,
-          (eventsTypeMonthMap.get(key) || 0) + e.countEvents
-        )
-      }
-    }
+    const attendanceTypeMonthMap = getReportedTotalsByGroup(
+      reportingAttendance,
+      'countAttendance',
+      record => `${record.type}|||${record.month}`
+    )
+    const eventsTypeMonthMap = getReportedTotalsByGroup(
+      reportingEvents,
+      'countEvents',
+      record => `${record.type}|||${record.month}`
+    )
 
     const eventAttendanceCharts = []
 

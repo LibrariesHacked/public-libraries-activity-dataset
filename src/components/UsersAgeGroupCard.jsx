@@ -10,6 +10,7 @@ import { resolvePeriodComparison } from '../helpers/periods'
 import { getActiveServices } from '../models/service'
 import { getUsersPenetrationPeriodChange } from '../models/users'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportedTotal } from '../helpers/reportingRates'
 
 import NumberCard from './NumberCard'
 
@@ -68,7 +69,7 @@ const UsersAgeGroupCard = ({
 
     const groupUserServices = activeServices?.filter(service =>
       snapshotUsers.some(
-        u => u.ageGroup === ageGroup && u.serviceCode === service.code
+        u => u.ageGroup === ageGroup && u.serviceCode === service.code && Number.isFinite(u.countUsers)
       )
     )
 
@@ -81,14 +82,10 @@ const UsersAgeGroupCard = ({
     const matchedUsers = snapshotUsers.filter(
       u =>
         u.ageGroup === ageGroup &&
-        (filteredServices.length === 0 ||
-          filteredServices.includes(u.serviceCode))
+        activeServices.some(service => service.code === u.serviceCode)
     )
 
-    const totalGroupUsers = matchedUsers.reduce(
-      (sum, user) => sum + (user.countUsers || 0),
-      0
-    )
+    const totalGroupUsers = getReportedTotal(matchedUsers, 'countUsers') ?? 0
 
     const totalGroupPopulation = populationFn(groupUserServices) || 0
 

@@ -6,7 +6,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices, getServicePeriodChange, getServicesPopulation } from '../models/service'
 import { getRecordsQualityWarning, getServiceQualityWarning } from '../helpers/dataQuality'
 import { filterByMonthRange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
-import { getReportingCoverageByGroup } from '../helpers/reportingRates'
+import { getReportedTotal, getReportingCoverageByGroup } from '../helpers/reportingRates'
 
 import ComputerRoundedIcon from '@mui/icons-material/ComputerRounded'
 import EventRoundedIcon from '@mui/icons-material/EventRounded'
@@ -156,15 +156,14 @@ const MetricTotalCard = ({
           activeServiceCodes.has(r.serviceCode)
       )
 
-      if (!matched.length) {
+      const sampleTotal = getReportedTotal(matched, config.countProp)
+      setWarning(getRecordsQualityWarning(matched))
+      if (sampleTotal == null) {
         setNoData(true)
         setCount(0)
+        setDescription('')
       } else {
         setNoData(false)
-        const sampleTotal = matched.reduce(
-          (acc, r) => acc + (r[config.countProp] || 0),
-          0
-        )
         const coverage = getReportingCoverageByGroup(
           matched,
           activeServices,
@@ -188,7 +187,6 @@ const MetricTotalCard = ({
             })
           )
         }
-        setWarning(getRecordsQualityWarning(matched))
       }
     } else {
       const validServices = filterServices

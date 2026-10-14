@@ -7,6 +7,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
 import { filterByMonthRange, getActivityRecordsSharePeriodChange, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getReportedTotal } from '../helpers/reportingRates'
 import { getReportingCoverageByGroup, perThousandReportingPersonYears } from '../helpers/reportingRates'
 import * as visitsModel from '../models/visits'
 
@@ -56,22 +57,20 @@ const VisitsMobileCard = () => {
         activeCodes.has(v.serviceCode)
     )
 
-    if (!matched.length) {
+    const mobileFilter = v => v.location === 'Mobile library'
+    const mobileRecords = matched.filter(mobileFilter)
+    const totalMobile = getReportedTotal(mobileRecords, 'countVisits')
+    setWarning(getRecordsQualityWarning(mobileRecords))
+    if (totalMobile == null) {
       setNoData(true)
       setCount(0)
       setDescription('')
+      setChange(null)
       return
     }
 
     setNoData(false)
     const totalAllVisits = matched.reduce((acc, v) => acc + (v.countVisits || 0), 0)
-
-    const mobileFilter = v => v.location === 'Mobile library'
-    const mobileRecords = matched.filter(mobileFilter)
-    const totalMobile = mobileRecords.reduce(
-      (acc, v) => acc + (v.countVisits || 0),
-      0
-    )
 
     const coverage = getReportingCoverageByGroup(
       mobileRecords,
@@ -86,7 +85,6 @@ const VisitsMobileCard = () => {
     const formattedPct =
       pct > 0 && pct < 1 ? `${pct.toFixed(1)}%` : `${Math.round(pct)}%`
     setDescription(`${formattedPct} of visits; per 1,000 reporting residents / yr`)
-    setWarning(getRecordsQualityWarning(mobileRecords))
 
     if (comparison && visits) {
       const chg = getActivityRecordsSharePeriodChange({

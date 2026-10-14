@@ -25,7 +25,7 @@ const CHART_COMPONENTS = {
  * @param {Object} data - Chart.js data object
  * @param {Object} options - Chart.js options configuration
  * @param {string} [title] - Optional subheader title displayed above the chart
- * @param {string|number} [height] - Explicit height override
+ * @param {string|number|Object} [height] - Explicit height override, optionally keyed by breakpoint
  * @param {boolean} [disablePaper=false] - Whether to disable enclosing Paper card container
  * @param {Object} [sx] - Extra sx styles for the container Box or Paper
  */
@@ -42,11 +42,33 @@ const AppChart = ({
   if (!data?.labels?.length && !data?.datasets?.length) return null
 
   const Component = CHART_COMPONENTS[type] || BarChart
-  const chartElement = <Component data={data} options={options} {...props} />
+  const chartTitle = title || (
+    options?.plugins?.title?.display ? options.plugins.title.text : null
+  )
+  const xAxisTitle = options?.scales?.x?.title?.display
+    ? options.scales.x.title.text
+    : null
+  const chartOptions = {
+    ...options,
+    maintainAspectRatio: false,
+    plugins: {
+      ...options?.plugins,
+      title: { ...options?.plugins?.title, display: false }
+    },
+    scales: options?.scales && {
+      ...options.scales,
+      x: {
+        ...options.scales.x,
+        title: { ...options.scales.x?.title, display: false }
+      }
+    }
+  }
+  const chartHeight = height ?? (type === 'service' ? undefined : { xs: 360, sm: 400, md: 440 })
+  const chartElement = <Component data={data} options={chartOptions} {...props} />
 
   const content = (
     <>
-      {title && (
+      {chartTitle && (
         <Typography
           variant='subtitle1'
           component='h3'
@@ -54,27 +76,37 @@ const AppChart = ({
             fontWeight: 700,
             color: 'text.primary',
             mb: 1.5,
-            fontSize: '0.95rem'
+            fontSize: '0.95rem',
+            overflowWrap: 'anywhere'
           }}
         >
-          {title}
+          {Array.isArray(chartTitle) ? chartTitle.join(' ') : chartTitle}
         </Typography>
       )}
-      {height ? (
-        <Box sx={{ position: 'relative', width: '100%', height }}>
-          {chartElement}
-        </Box>
-      ) : (
-        <Box sx={{ position: 'relative', width: '100%' }}>
-          {chartElement}
-        </Box>
+      <Box sx={{
+        position: 'relative',
+        width: '100%',
+        minWidth: 0,
+        height: chartHeight,
+        minHeight: type === 'service' ? undefined : 280
+      }}>
+        {chartElement}
+      </Box>
+      {xAxisTitle && (
+        <Typography
+          variant='caption'
+          component='div'
+          sx={{ mt: 1, textAlign: 'center', overflowWrap: 'anywhere' }}
+        >
+          {Array.isArray(xAxisTitle) ? xAxisTitle.join(' ') : xAxisTitle}
+        </Typography>
       )}
     </>
   )
 
   if (disablePaper) {
     return (
-      <Box sx={{ width: '100%', mb: 2, ...sx }}>
+      <Box sx={{ width: '100%', minWidth: 0, mb: 2, ...sx }}>
         {content}
       </Box>
     )
@@ -88,6 +120,7 @@ const AppChart = ({
         borderRadius: 2,
         backgroundColor: 'background.paper',
         mb: 3,
+        minWidth: 0,
         overflow: 'hidden',
         ...sx
       }}

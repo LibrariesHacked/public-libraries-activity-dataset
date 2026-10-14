@@ -239,13 +239,14 @@ export const getActivityRecordsPeriodChange = ({
       if (filterFn && !filterFn(r)) continue
       const count = r.resolveCount
         ? r.resolveCount(useEstimates)
-        : (r[countProp] ?? r.count ?? 0)
+        : (r[countProp] ?? r.count)
       if (!Number.isFinite(count)) continue
 
       totalActivity += count
       reportingServices.add(r.serviceCode)
     }
 
+    if (reportingServices.size === 0) return null
     if (totalActivity === 0) return 0
     if (servicePopMap) {
       let reportingPopulation = 0
@@ -309,7 +310,7 @@ export const getActivityRecordsSharePeriodChange = ({
 
       const count = r.resolveCount
         ? r.resolveCount(useEstimates)
-        : (r[countProp] ?? r.count ?? 0)
+        : (r[countProp] ?? r.count)
       if (!Number.isFinite(count)) continue
 
       if (!totalFilterFn || totalFilterFn(r)) {

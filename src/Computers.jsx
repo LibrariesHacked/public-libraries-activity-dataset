@@ -13,6 +13,7 @@ import computerInventoryMd from './content/computer-inventory.md?raw'
 import { useApplicationState } from './hooks/useApplicationState'
 
 import CardGrid from './components/CardGrid'
+import ComputerInventoryInsights from './components/ComputerInventoryInsights'
 import DatasetDataGrid from './components/DatasetDataGrid'
 import { AppChart } from './components/charts'
 
@@ -320,39 +321,41 @@ const Computers = () => {
         Computers and WiFi
       </Typography>
       <CardGrid />
-      <Box sx={{ my: 2 }}>
-        <Markdown>{computersMd}</Markdown>
-      </Box>
+      <ComputerInventoryInsights>
+        <Box sx={{ my: 2 }}>
+          <Markdown>{computersMd}</Markdown>
+        </Box>
 
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
-          Computer hours and WiFi sessions over time
-        </Typography>
-        <Markdown>{computersWifiMd}</Markdown>
-      </Box>
-      <AppChart
-        type='line'
-        options={computersWiFiChartOptions}
-        data={computersWiFiChart}
-      />
+        <Box sx={{ mt: 4, mb: 2 }}>
+          <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+            Computer hours and WiFi sessions over time
+          </Typography>
+          <Markdown>{computersWifiMd}</Markdown>
+        </Box>
+        <AppChart
+          type='line'
+          options={computersWiFiChartOptions}
+          data={computersWiFiChart}
+        />
 
-      <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
-          {isRegionMode
-            ? 'Computer hours and Wi-Fi sessions by region'
-            : 'Computer hours and Wi-Fi sessions by service'}
-        </Typography>
-        <Markdown>
-          {isRegionMode
-            ? 'Annual computer hours and Wi-Fi sessions per 1,000 residents in services reporting each measure.'
-            : computersWiFiByServiceMd}
-        </Markdown>
-      </Box>
-      <AppChart
-        type='service'
-        data={serviceChart}
-        options={serviceChartOptions}
-      />
+        <Box sx={{ mt: 4, mb: 2 }}>
+          <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
+            {isRegionMode
+              ? 'Computer hours and Wi-Fi sessions by region'
+              : 'Computer hours and Wi-Fi sessions by service'}
+          </Typography>
+          <Markdown>
+            {isRegionMode
+              ? 'Annual computer hours and Wi-Fi sessions per 1,000 residents in services reporting each measure.'
+              : computersWiFiByServiceMd}
+          </Markdown>
+        </Box>
+        <AppChart
+          type='service'
+          data={serviceChart}
+          options={serviceChartOptions}
+        />
+      </ComputerInventoryInsights>
 
       <Box sx={{ mt: 5, mb: 4 }}>
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>

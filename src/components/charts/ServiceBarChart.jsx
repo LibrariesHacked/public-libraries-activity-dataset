@@ -17,7 +17,7 @@ import BarChart from './BarChart'
 const ServiceBarChart = ({ data, options, rowHeight = 40, sx, ...props }) => {
   if (!data?.labels?.length) return null
 
-  const calculatedHeight = Math.max(140, data.labels.length * rowHeight)
+  const calculatedHeight = Math.max(280, data.labels.length * rowHeight + 80)
   const height = `${calculatedHeight}px`
 
   return (

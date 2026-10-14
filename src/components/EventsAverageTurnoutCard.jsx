@@ -5,8 +5,9 @@ import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded'
 import { useApplicationState } from '../hooks/useApplicationState'
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices } from '../models/service'
-import { filterByMonthRange, resolvePeriodComparison } from '../helpers/periods'
+import { filterByMonthRange, getPeriodMonths, resolvePeriodComparison } from '../helpers/periods'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
+import { getEventTurnout } from '../helpers/reportingRates'
 import * as eventsModel from '../models/events'
 import * as attendanceModel from '../models/attendance'
 
@@ -20,7 +21,7 @@ import NumberCard from './NumberCard'
  */
 const EventsAverageTurnoutCard = () => {
   const [
-    { filteredServices, services, serviceRecords, events, attendance, periods, selectedPeriods, monthRange, useEstimates },
+    { filteredServices, services, events, attendance, periods, selectedPeriods, monthRange, useEstimates },
     dispatchApplication
   ] = useApplicationState()
 
@@ -67,47 +68,23 @@ const EventsAverageTurnoutCard = () => {
         activeCodes.has(a.serviceCode)
     )
 
-    if (!matchedEvents.length || !matchedAttendance.length) {
+    const avgTurnout = getEventTurnout(matchedEvents, matchedAttendance)
+    setWarning(getRecordsQualityWarning([...matchedEvents, ...matchedAttendance]))
+    if (avgTurnout == null) {
       setNoData(true)
       setTurnout(0)
-      return
-    }
-
-    const totalEvents = matchedEvents.reduce(
-      (acc, e) => acc + (e.countEvents || 0),
-      0
-    )
-    const totalAttendance = matchedAttendance.reduce(
-      (acc, a) => acc + (a.countAttendance || 0),
-      0
-    )
-
-    if (totalEvents === 0) {
-      setNoData(true)
-      setTurnout(0)
+      setChange(null)
       return
     }
 
     setNoData(false)
-    const avgTurnout = totalAttendance / totalEvents
     setTurnout(Math.round(avgTurnout))
-    setWarning(getRecordsQualityWarning([...matchedEvents, ...matchedAttendance]))
 
-    if (comparison && serviceRecords) {
+    if (comparison) {
       const getTurnoutForPeriod = period => {
-        let totalAtt = 0
-        let totalEv = 0
-        serviceRecords.forEach(record => {
-          if (record.period !== period) return
-          if (activeCodes.size && !activeCodes.has(record.code)) return
-          const att = record.resolveMetric ? record.resolveMetric('attendance', useEstimates) : record.attendance
-          const ev = record.resolveMetric ? record.resolveMetric('events', useEstimates) : record.events
-          if (Number.isFinite(att) && Number.isFinite(ev) && ev > 0) {
-            totalAtt += att
-            totalEv += ev
-          }
-        })
-        return totalEv > 0 ? totalAtt / totalEv : null
+        const months = new Set(getPeriodMonths(period))
+        const matches = record => activeCodes.has(record.serviceCode) && months.has(record.month)
+        return getEventTurnout(events.filter(matches), attendance.filter(matches))
       }
 
       const baseline = getTurnoutForPeriod(comparison.baselinePeriod)
@@ -120,7 +97,7 @@ const EventsAverageTurnoutCard = () => {
     } else {
       setChange(null)
     }
-  }, [events, attendance, services, serviceRecords, filteredServices, monthRange, comparison, useEstimates])
+  }, [events, attendance, services, filteredServices, monthRange, comparison, useEstimates])
 
   return (
     <NumberCard

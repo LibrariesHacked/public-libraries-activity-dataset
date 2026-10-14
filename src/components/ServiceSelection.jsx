@@ -12,11 +12,12 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 
-import AddChartIcon from '@mui/icons-material/AddchartRounded'
+import AddLocationAltOutlinedIcon from '@mui/icons-material/AddLocationAltOutlined'
 import ClearAllIcon from '@mui/icons-material/ClearAllRounded'
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded'
-import HubRoundedIcon from '@mui/icons-material/HubRounded'
-import LocationCityRoundedIcon from '@mui/icons-material/LocationCityRounded'
+import LibraryAddRoundedIcon from '@mui/icons-material/LibraryAddRounded'
+import LocalLibraryRoundedIcon from '@mui/icons-material/LocalLibraryRounded'
+import MapRoundedIcon from '@mui/icons-material/MapRounded'
 
 import { useApplicationState } from '../hooks/useApplicationState'
 
@@ -225,7 +226,7 @@ const ServiceSelection = () => {
               aria-label='Group by service'
               sx={{ px: 3, minWidth: 135, minHeight: 44 }}
             >
-              <LocationCityRoundedIcon sx={{ mr: 1, fontSize: 20 }} />
+              <LocalLibraryRoundedIcon sx={{ mr: 1, fontSize: 20 }} />
               By service
             </ToggleButton>
             <ToggleButton
@@ -233,7 +234,7 @@ const ServiceSelection = () => {
               aria-label='Group by region'
               sx={{ px: 3, minWidth: 135, minHeight: 44 }}
             >
-              <HubRoundedIcon sx={{ mr: 1, fontSize: 20 }} />
+              <MapRoundedIcon sx={{ mr: 1, fontSize: 20 }} />
               By region
             </ToggleButton>
           </ToggleButtonGroup>
@@ -254,7 +255,7 @@ const ServiceSelection = () => {
                 variant='contained'
                 color='primary'
                 onClick={e => setServiceMenuAnchor(e.currentTarget)}
-                startIcon={<AddChartIcon fontSize='small' />}
+                startIcon={<LibraryAddRoundedIcon fontSize='small' />}
               >
                 Add service
               </Button>
@@ -346,7 +347,7 @@ const ServiceSelection = () => {
                 variant='contained'
                 color='primary'
                 onClick={e => setRegionMenuAnchor(e.currentTarget)}
-                startIcon={<HubRoundedIcon fontSize='small' />}
+                startIcon={<AddLocationAltOutlinedIcon fontSize='small' />}
               >
                 Add region
               </Button>

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { resolveEffectiveValue } from '../helpers/dataQuality'
+import { resolveEffectiveValue } from '../helpers/dataQuality.js'
 
 /**
  * Base record class representing an individual library activity record.
