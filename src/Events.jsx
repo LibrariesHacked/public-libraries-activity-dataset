@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
@@ -22,6 +22,7 @@ import {
   sortServicesByMetric
 } from './helpers/charts'
 import {
+  getComparisonChart,
   getReportingCoverageByGroup,
   getReportedTotalsByGroup,
   perThousandReportingPersonYears,
@@ -70,17 +71,6 @@ const Events = () => {
   ] = useApplicationState()
 
   const isRegionMode = comparisonMode === 'regions'
-
-  const serviceChartOptions = useMemo(
-    () =>
-      createServiceBarChartOptions(
-        isRegionMode
-          ? 'Events and attendees per 1,000 reporting residents by region'
-          : 'Events and attendees per 1,000 reporting residents by service',
-        'Events and attendees per 1,000 reporting residents per year'
-      ),
-    [isRegionMode]
-  )
 
   const [eventsAttendanceChartData, setEventsAttendanceChartData] = useState([])
   const [serviceChart, setServiceChart] = useState({ labels: [], datasets: [] })
@@ -135,54 +125,24 @@ const Events = () => {
       record => `${record.type}|||${record.month}`
     )
 
-    const eventAttendanceCharts = []
-
-    // We want a chart for each event type
-    Object.keys(eventTypes).forEach(eventType => {
-      const datasets = [
-        {
-          label: `Attendance - ${eventType}`,
+    const eventAttendanceCharts = [
+      { title: 'Events over time', unit: 'Events', totals: eventsTypeMonthMap, coverage: monthlyEventCoverage },
+      { title: 'Attendance over time', unit: 'Attendances', totals: attendanceTypeMonthMap, coverage: monthlyAttendanceCoverage }
+    ].map(({ title, unit, totals, coverage }) => ({
+      title,
+      data: {
+        labels: monthLabels,
+        datasets: Object.keys(eventTypes).map(eventType => ({
+          label: eventTypes[eventType].label,
           data: monthLabels.map(month => {
             const key = `${eventType}|||${month}`
-            const total = attendanceTypeMonthMap.get(key)
-            return total == null
-              ? null
-              : perThousandReportingResidents(total, monthlyAttendanceCoverage.get(key))
-          }),
-          yAxisID: 'y1',
-          type: 'line'
-        },
-        {
-          label: `Events - ${eventType}`,
-          data: monthLabels.map(month => {
-            const key = `${eventType}|||${month}`
-            const total = eventsTypeMonthMap.get(key)
-            return total == null
-              ? null
-              : perThousandReportingResidents(total, monthlyEventCoverage.get(key))
-          }),
-          yAxisID: 'y',
-          stack: 'Stack 0'
-        }
-      ]
-
-      eventAttendanceCharts.push({
-        data: {
-          labels: monthLabels,
-          datasets
-        },
-        eventType,
-        options: createTimelineChartOptions(
-          `Events and attendance - ${eventTypes[eventType].label}`,
-          'Events per 1,000 reporting residents (bars)',
-          'Attendees per 1,000 reporting residents (lines)',
-          {
-            stacked: true,
-            interaction: { mode: 'index', intersect: false }
-          }
-        )
-      })
-    })
+            const total = totals.get(key)
+            return total == null ? null : perThousandReportingResidents(total, coverage.get(key))
+          })
+        }))
+      },
+      options: createTimelineChartOptions(title, `${unit} per 1,000 reporting residents per month`)
+    }))
 
     setEventsAttendanceChartData(eventAttendanceCharts)
 
@@ -260,12 +220,9 @@ const Events = () => {
     const getEntityTotalEventsAttendance = entity => {
       if (!entity?.code && !entity?.serviceCodes) return 0
       return ['Physical', 'Digital'].reduce((sum, eventType) => {
-        const evTotal = getTotal(entity, serviceEventsMap, eventType)
-        const evCov = getCoverage(entity, isRegionMode ? regionEventCoverage : serviceEventCoverage, eventType)
         const attTotal = getTotal(entity, serviceAttendanceMap, eventType)
         const attCov = getCoverage(entity, isRegionMode ? regionAttendanceCoverage : serviceAttendanceCoverage, eventType)
         return sum +
-          (perThousandReportingPersonYears(evTotal, evCov) || 0) +
           (perThousandReportingPersonYears(attTotal, attCov) || 0)
       }, 0)
     }
@@ -343,8 +300,8 @@ const Events = () => {
       {eventsAttendanceChartData.map((chart, index) => (
         <AppChart
           key={index}
-          type='bar'
-          title={chart.eventType}
+          type='line'
+          title={chart.title}
           data={chart.data}
           options={chart.options}
         />
@@ -354,17 +311,19 @@ const Events = () => {
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
           {isRegionMode ? 'Events and attendance by region' : 'Events and attendance by service'}
         </Typography>
-        <Markdown>
-          {isRegionMode
-            ? 'Annual events and attendees per 1,000 residents in services reporting each measure.'
-            : eventsAttendanceByServiceMd}
-        </Markdown>
+        <Markdown>{eventsAttendanceByServiceMd}</Markdown>
       </Box>
-      <AppChart
-        type='service'
-        data={serviceChart}
-        options={serviceChartOptions}
-      />
+      {['events', 'attendees'].map(measure => (
+        <AppChart
+          key={measure}
+          type='service'
+          data={getComparisonChart(serviceChart, [`Physical ${measure}`, `Virtual ${measure}`])}
+          options={createServiceBarChartOptions(
+            `${measure === 'events' ? 'Events' : 'Attendances'} by ${isRegionMode ? 'region' : 'service'}`,
+            `Annualised ${measure === 'events' ? 'events' : 'attendances'} per 1,000 reporting residents`
+          )}
+        />
+      ))}
 
       <Box sx={{ mt: 5, mb: 4 }}>
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>

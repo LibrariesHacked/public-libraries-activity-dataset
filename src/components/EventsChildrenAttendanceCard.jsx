@@ -80,7 +80,7 @@ const EventsChildrenAttendanceCard = () => {
       totalAllAttendance > 0
         ? (totalChildAttendance / totalAllAttendance) * 100
         : 0
-    setDescription(`${Math.round(pct)}% of all attendees`)
+    setDescription(`${pct.toFixed(1)}% of recorded attendances`)
 
     if (comparison && attendance) {
       const chg = getActivityRecordsSharePeriodChange({
@@ -100,12 +100,12 @@ const EventsChildrenAttendanceCard = () => {
 
   return (
     <NumberCard
-      title="Children's attendance"
+      title='Under-18 attendances'
       number={formatCompactNumber(count)}
       description={description}
       icon={ChildCareRoundedIcon}
       change={change}
-      changeDescription={comparison?.changeDescription || ''}
+      changeDescription={`share ${comparison?.changeDescription || ''}`}
       changeUnit='percentage points'
       colour='chartPurple'
       noData={noData}

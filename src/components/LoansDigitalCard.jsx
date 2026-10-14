@@ -75,7 +75,7 @@ const LoansDigitalCard = () => {
     setCount(totalDigital)
 
     const pct = totalAllLoans > 0 ? (totalDigital / totalAllLoans) * 100 : 0
-    setDescription(`${Math.round(pct)}% of all loans`)
+    setDescription(`${pct.toFixed(1)}% of recorded loans`)
 
     if (comparison && loans) {
       const chg = getActivityRecordsSharePeriodChange({
@@ -100,7 +100,7 @@ const LoansDigitalCard = () => {
       description={description}
       icon={LaptopChromebookRoundedIcon}
       change={change}
-      changeDescription={comparison?.changeDescription || ''}
+      changeDescription={`share ${comparison?.changeDescription || ''}`}
       changeUnit='percentage points'
       colour='chartOrange'
       noData={noData}

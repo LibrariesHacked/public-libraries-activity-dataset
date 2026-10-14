@@ -1,1 +1,3 @@
-Compare annual computer hours and Wi-Fi sessions per 1,000 residents across library services. Rates are adjusted for the months each service reported.
+These charts compare yearly **computer hours** and **Wi-Fi sessions** per 1,000 residents in areas with reported data. Rates use the available months to estimate a full year. Each chart is sorted by its own rate.
+
+Hours and sessions are different units, so do not add them together. Regional rates combine the reporting areas; missing rates are left out. Equipment, opening hours, local internet access and counting methods can all affect the figures.

@@ -5,7 +5,6 @@ import { useLocation } from 'react-router-dom'
 import Grid from '@mui/material/Grid'
 
 import AttendanceTotalCard from './AttendanceTotalCard'
-import ComputerMonthlyPaceCard from './ComputerMonthlyPaceCard'
 import ComputerTotalCard from './ComputerTotalCard'
 import EventsAverageTurnoutCard from './EventsAverageTurnoutCard'
 import EventsChildrenAttendanceCard from './EventsChildrenAttendanceCard'
@@ -20,9 +19,7 @@ import UsersTotalCard from './UsersTotalCard'
 import UsersUnder12Card from './UsersUnder12Card'
 import VisitsBranchCard from './VisitsBranchCard'
 import VisitsMobileCard from './VisitsMobileCard'
-import VisitsMonthlyPaceCard from './VisitsMonthlyPaceCard'
 import VisitsTotalCard from './VisitsTotalCard'
-import WiFiMonthlyPaceCard from './WiFiMonthlyPaceCard'
 import WiFiTotalCard from './WiFiTotalCard'
 
 const PAGE_CARDS = {
@@ -47,12 +44,11 @@ const PAGE_CARDS = {
     ]
   },
   '/visits': {
-    sizes: { xs: 12, sm: 6, lg: 3 },
+    sizes: { xs: 12, sm: 6, lg: 4 },
     cards: [
       VisitsTotalCard,
       VisitsBranchCard,
-      VisitsMobileCard,
-      VisitsMonthlyPaceCard
+      VisitsMobileCard
     ]
   },
   '/events': {
@@ -65,12 +61,10 @@ const PAGE_CARDS = {
     ]
   },
   '/computers': {
-    sizes: { xs: 12, sm: 6, lg: 3 },
+    sizes: { xs: 12, sm: 6 },
     cards: [
       ComputerTotalCard,
-      ComputerMonthlyPaceCard,
-      WiFiTotalCard,
-      WiFiMonthlyPaceCard
+      WiFiTotalCard
     ]
   },
   '/users': {

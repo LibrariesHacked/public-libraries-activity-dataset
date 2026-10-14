@@ -156,6 +156,8 @@ const Loans = () => {
         }
       })
 
+      if (!datasets.some(dataset => dataset.data.some(Number.isFinite))) return
+
       formatCharts.push({
         format,
         labels: formatLabels,
@@ -299,11 +301,7 @@ const Loans = () => {
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
           {isRegionMode ? 'Loans by region and format' : 'Loans by service and format'}
         </Typography>
-        <Markdown>
-          {isRegionMode
-            ? 'Annual loans per 1,000 residents in services reporting each format, by format.'
-            : loansByServiceMd}
-        </Markdown>
+        <Markdown>{loansByServiceMd}</Markdown>
       </Box>
       <AppChart
         type='service'

@@ -92,7 +92,7 @@ const DATASET_CONFIGS = {
     filename: 'loans.csv',
     endpoint: './loans.json',
     fetcher: loansModel.getLoans,
-    description: 'Detailed monthly physical book, ebook, audiobook, and electronic audio loans by format and audience category.',
+    description: 'Monthly loans by format and intended age group.',
     dimensions: [
       { field: 'format', headerName: 'Format', width: 150 },
       { field: 'contentAgeGroup', headerName: 'Age group', width: 130 },
@@ -119,7 +119,7 @@ const DATASET_CONFIGS = {
     filename: 'events.csv',
     endpoint: './events.json',
     fetcher: eventsModel.getEvents,
-    description: 'Monthly library events, activities, and workshops organized by delivery format and audience group.',
+    description: 'Monthly events by in-person or online delivery and age group.',
     dimensions: [
       { field: 'type', headerName: 'Event type', width: 160 },
       { field: 'ageGroup', headerName: 'Age group', width: 130 },
@@ -133,7 +133,7 @@ const DATASET_CONFIGS = {
     filename: 'attendance.csv',
     endpoint: './attendance.json',
     fetcher: attendanceModel.getAttendance,
-    description: 'Monthly attendee and participant counts for library events and activities across age categories.',
+    description: 'Monthly event attendance by age group.',
     dimensions: [
       { field: 'type', headerName: 'Event type', width: 160 },
       { field: 'ageGroup', headerName: 'Age group', width: 130 },
@@ -159,7 +159,7 @@ const DATASET_CONFIGS = {
     filename: 'computers.csv',
     endpoint: './computers.json',
     fetcher: computersModel.getComputers,
-    description: 'Monthly public computer terminal and connected device session usage hours across library services.',
+    description: 'Monthly hours on public computers and borrowed devices used in the library.',
     dimensions: [
       { field: 'month', headerName: 'Month', width: 130 }
     ],
@@ -171,7 +171,7 @@ const DATASET_CONFIGS = {
     filename: 'computer_inventory.csv',
     endpoint: './computer_inventory.json',
     fetcher: computerInventoryModel.getComputerInventory,
-    description: 'Annual counts of public computers, devices available to borrow, and issues of loanable devices. These are year-end snapshots.',
+    description: 'Year-end device counts and yearly device loans.',
     dimensions: [
       { field: 'measure', headerName: 'Measure', width: 230 },
       { field: 'period', headerName: 'Financial year', width: 140 }
@@ -185,7 +185,7 @@ const DATASET_CONFIGS = {
     filename: 'wifi.csv',
     endpoint: './wifi.json',
     fetcher: wifiModel.getWiFi,
-    description: 'Monthly public library wireless Wi-Fi internet login and connection sessions.',
+    description: 'Monthly Wi-Fi connections.',
     dimensions: [
       { field: 'month', headerName: 'Month', width: 130 }
     ],
@@ -197,7 +197,7 @@ const DATASET_CONFIGS = {
     filename: 'users.csv',
     endpoint: './users.json',
     fetcher: usersModel.getUsers,
-    description: 'Annual active borrowers within the last 12 months, categorized by audience age group and financial year.',
+    description: 'People who borrowed or renewed an item during the financial year, by age group.',
     dimensions: [
       { field: 'period', headerName: 'Financial year', width: 140 },
       { field: 'ageGroup', headerName: 'Age group', width: 140 }

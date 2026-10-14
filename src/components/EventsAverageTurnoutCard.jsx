@@ -103,7 +103,7 @@ const EventsAverageTurnoutCard = () => {
     <NumberCard
       title='Turnout per event'
       number={formatCompactNumber(turnout)}
-      description='attendees per event'
+      description='attendances per event; matching records only'
       icon={GroupsRoundedIcon}
       change={change}
       changeDescription={comparison?.changeDescription || ''}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import Markdown from 'react-markdown'
 
@@ -24,6 +24,7 @@ import {
   sortServicesByMetric
 } from './helpers/charts'
 import {
+  getComparisonChart,
   getReportingCoverageByGroup,
   perThousandReportingPersonYears,
   perThousandReportingResidents
@@ -41,11 +42,10 @@ import * as wifiModel from './models/wifi'
 /**
  * Chart configuration options for the dual-axis timeline chart comparing computer hours and Wi-Fi sessions over time.
  */
-const computersWiFiChartOptions = createTimelineChartOptions(
-  'Computer hours and WiFi sessions over time',
-  'Computer hours per 1,000 reporting residents',
-  'Wi-Fi sessions per 1,000 reporting residents'
-)
+const USAGE_MEASURES = [
+  { label: 'Computer hours', title: 'Computer hours', unit: 'hours' },
+  { label: 'WiFi sessions', title: 'Wi-Fi sessions', unit: 'sessions' }
+]
 
 /**
  * Computers and Wi-Fi dashboard page view displaying summary KPI cards,
@@ -68,17 +68,6 @@ const Computers = () => {
   ] = useApplicationState()
 
   const isRegionMode = comparisonMode === 'regions'
-
-  const serviceChartOptions = useMemo(
-    () =>
-      createServiceBarChartOptions(
-        isRegionMode
-          ? 'Computer hours and Wi-Fi sessions per 1,000 reporting residents by region'
-          : 'Computer hours and Wi-Fi sessions per 1,000 reporting residents by service',
-        'Annual activity per 1,000 reporting residents'
-      ),
-    [isRegionMode]
-  )
 
   const [computersWiFiChart, setComputersWiFiChart] = useState({
     datasets: [],
@@ -175,10 +164,7 @@ const Computers = () => {
     setComputersWiFiChart({
       format: 'Computer Usage Hours vs WiFi Sessions',
       labels: monthLabels,
-      datasets: computersWiFiDatasets.map((d, index) => ({
-        ...d,
-        yAxisID: index === 0 ? 'y' : 'y1'
-      }))
+      datasets: computersWiFiDatasets
     })
 
     // Compare each measure using the population covered by its reporting services.
@@ -255,10 +241,7 @@ const Computers = () => {
       if (!entity?.code && !entity?.serviceCodes) return 0
       const compTotal = getTotal(entity, serviceComputersMap)
       const compCov = getCoverage(entity, isRegionMode ? regionComputerCoverage : serviceComputerCoverage)
-      const wifiTotal = getTotal(entity, serviceWifiMap)
-      const wifiCov = getCoverage(entity, isRegionMode ? regionWifiCoverage : serviceWifiCoverage)
-      return (perThousandReportingPersonYears(compTotal, compCov) || 0) +
-        (perThousandReportingPersonYears(wifiTotal, wifiCov) || 0)
+      return perThousandReportingPersonYears(compTotal, compCov) || 0
     }
 
     const sortedEntities = sortServicesByMetric(
@@ -318,7 +301,7 @@ const Computers = () => {
   return (
     <Box>
       <Typography variant='h4' gutterBottom sx={{ fontWeight: 800, mb: 1.5 }}>
-        Computers and WiFi
+        Computers and Wi-Fi
       </Typography>
       <CardGrid />
       <ComputerInventoryInsights>
@@ -328,15 +311,18 @@ const Computers = () => {
 
         <Box sx={{ mt: 4, mb: 2 }}>
           <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
-            Computer hours and WiFi sessions over time
+            Computer use and Wi-Fi over time
           </Typography>
           <Markdown>{computersWifiMd}</Markdown>
         </Box>
-        <AppChart
-          type='line'
-          options={computersWiFiChartOptions}
-          data={computersWiFiChart}
-        />
+        {USAGE_MEASURES.map(({ label, title, unit }) => (
+          <AppChart
+            key={label}
+            type='line'
+            options={createTimelineChartOptions(`${title} over time`, `${unit} per 1,000 reporting residents per month`)}
+            data={{ ...computersWiFiChart, datasets: computersWiFiChart.datasets.filter(dataset => dataset.label === label) }}
+          />
+        ))}
 
         <Box sx={{ mt: 4, mb: 2 }}>
           <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
@@ -344,17 +330,20 @@ const Computers = () => {
               ? 'Computer hours and Wi-Fi sessions by region'
               : 'Computer hours and Wi-Fi sessions by service'}
           </Typography>
-          <Markdown>
-            {isRegionMode
-              ? 'Annual computer hours and Wi-Fi sessions per 1,000 residents in services reporting each measure.'
-              : computersWiFiByServiceMd}
-          </Markdown>
+          <Markdown>{computersWiFiByServiceMd}</Markdown>
         </Box>
-        <AppChart
-          type='service'
-          data={serviceChart}
-          options={serviceChartOptions}
-        />
+        {USAGE_MEASURES.map(({ label, title, unit }) => (
+          <AppChart
+            key={label}
+            type='service'
+            data={getComparisonChart(serviceChart, [label])}
+            options={createServiceBarChartOptions(
+              `${title} by ${isRegionMode ? 'region' : 'service'}`,
+              `Annualised ${unit} per 1,000 reporting residents`,
+              { showLegend: false }
+            )}
+          />
+        ))}
       </ComputerInventoryInsights>
 
       <Box sx={{ mt: 5, mb: 4 }}>

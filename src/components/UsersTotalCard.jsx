@@ -36,7 +36,7 @@ const UsersTotalCard = () => {
     const percentageUsers =
       totalPopulation > 0 ? (total / totalPopulation) * 100 : 0
 
-    return `${Math.round(percentageUsers)}% of residents`
+    return `${percentageUsers.toFixed(1)}% of reporting residents`
   }, [])
 
   const computeChange = useCallback(

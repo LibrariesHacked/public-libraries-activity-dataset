@@ -1,1 +1,3 @@
-Active users as a percentage of the population in each library service. Select an age group or view change over time.
+The map shows borrowers as a percentage of residents in the latest selected financial year. Age-group views use residents of the same age. Darker shading means a higher percentage, not more people.
+
+Change shading compares the earliest and latest selected years in **percentage points**, where both have data. Grey areas mean missing data, not zero. Check the labels for exact rates: colours stop getting darker at the top of the scale.

@@ -21,8 +21,15 @@ const ServiceBarChart = ({ data, options, rowHeight = 40, sx, ...props }) => {
   const height = `${calculatedHeight}px`
 
   return (
-    <Box sx={{ position: 'relative', width: '100%', height, ...sx }}>
-      <BarChart data={data} options={options} {...props} />
+    <Box
+      tabIndex={0}
+      role='region'
+      aria-label='Scrollable service comparison'
+      sx={{ width: '100%', maxHeight: { xs: 480, sm: 560 }, overflowY: 'auto', ...sx }}
+    >
+      <Box sx={{ position: 'relative', width: '100%', height }}>
+        <BarChart data={data} options={options} {...props} />
+      </Box>
     </Box>
   )
 }

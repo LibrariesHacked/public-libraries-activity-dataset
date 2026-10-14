@@ -25,7 +25,7 @@ const AttendanceTotalCard = () => {
   return (
     <MetricTotalCard
       metric='attendance'
-      title='Event attendees'
+      title='Event attendances'
       colour='chartRed'
       formatDescription={formatDescription}
     />

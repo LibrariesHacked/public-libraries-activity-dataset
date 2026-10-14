@@ -6,7 +6,7 @@ import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded'
 import { useApplicationState } from '../hooks/useApplicationState'
 
 import { formatCompactNumber } from '../helpers/numbers'
-import { resolvePeriodComparison } from '../helpers/periods'
+import { formatPeriod, resolvePeriodComparison } from '../helpers/periods'
 import { getActiveServices } from '../models/service'
 import { getUsersPenetrationPeriodChange } from '../models/users'
 import { getRecordsQualityWarning } from '../helpers/dataQuality'
@@ -51,6 +51,7 @@ const UsersAgeGroupCard = ({
   const [usersChange, setUsersChange] = useState(null)
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
+  const [coverageLabel, setCoverageLabel] = useState('')
 
   const comparison = useMemo(
     () => resolvePeriodComparison(selectedPeriods, periods),
@@ -86,6 +87,7 @@ const UsersAgeGroupCard = ({
     )
 
     const totalGroupUsers = getReportedTotal(matchedUsers, 'countUsers') ?? 0
+    setCoverageLabel(`${groupUserServices?.length || 0} of ${activeServices.length} selected services reporting`)
 
     const totalGroupPopulation = populationFn(groupUserServices) || 0
 
@@ -128,10 +130,11 @@ const UsersAgeGroupCard = ({
     <NumberCard
       title={title}
       number={formatCompactNumber(usersCount)}
-      description={`${Math.round(percentageUsers)}% of ${descLabel}`}
+      description={`${percentageUsers.toFixed(1)}% of reporting ${descLabel}`}
+      context={`Annual borrowers (${formatPeriod(snapshotPeriod)}) · ${coverageLabel}`}
       icon={icon || AGE_GROUP_ICONS[ageGroup]}
       change={usersChange}
-      changeDescription={comparison?.changeDescription || ''}
+      changeDescription={`borrower rate ${comparison?.changeDescription || ''}`}
       changeUnit='percentage points'
       colour={colour}
       noData={noData}

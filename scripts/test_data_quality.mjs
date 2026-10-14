@@ -7,7 +7,24 @@ import { ErrorRecord } from '../src/models/errors.js'
 import { getActivityRecordsPeriodChange, getMonthRangeForPeriods, getPeriodMonths, getPeriodsInMonthRange, isRecordInMonthRange } from '../src/helpers/periods.js'
 import { getUsersPeriodChange, getUsersPopulationPercentages, Users } from '../src/models/users.js'
 import { createActivityModel } from '../src/models/activityFactory.js'
-import { getEventTurnout, getReportedTotal, getReportedTotalsByGroup, getReportingCoverageByGroup, getReportingSnapshotPercentage, perThousandReportingResidents } from '../src/helpers/reportingRates.js'
+import { getComparisonChart, getEventTurnout, getReportedTotal, getReportedTotalsByGroup, getReportingCoverageByGroup, getReportingSnapshotPercentage, perThousandReportingResidents } from '../src/helpers/reportingRates.js'
+
+test('comparison charts separate measures, sort their own values and retain reported zero', () => {
+  const data = {
+    labels: ['Low', 'Missing', 'High', 'Zero'],
+    datasets: [
+      { label: 'Hours', data: [2, null, 10, 0] },
+      { label: 'Sessions', data: [100, 900, 1, 5] },
+      { label: 'Unavailable', data: [null, null, null, null] }
+    ]
+  }
+  assert.deepEqual(getComparisonChart(data, ['Hours', 'Unavailable']), {
+    labels: ['High', 'Low', 'Zero'],
+    datasets: [{ label: 'Hours', data: [10, 2, 0] }]
+  })
+  assert.deepEqual(getComparisonChart(data, ['Unavailable']), { labels: [], datasets: [] })
+  assert.equal(data.labels[0], 'Low')
+})
 
 test('all published activity counts decode exactly and honour the corrections toggle', () => {
   const fieldsByDataset = {

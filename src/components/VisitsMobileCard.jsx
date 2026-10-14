@@ -79,12 +79,12 @@ const VisitsMobileCard = () => {
       () => 'mobile'
     ).get('mobile')
     const annualRate = perThousandReportingPersonYears(totalMobile, coverage) || 0
-    setCount(annualRate)
+    setCount(totalMobile)
 
     const pct = totalAllVisits > 0 ? (totalMobile / totalAllVisits) * 100 : 0
     const formattedPct =
       pct > 0 && pct < 1 ? `${pct.toFixed(1)}%` : `${Math.round(pct)}%`
-    setDescription(`${formattedPct} of visits; per 1,000 reporting residents / yr`)
+    setDescription(`${formatCompactNumber(annualRate, 1)} per 1,000 reporting residents / yr; ${formattedPct} of recorded visits`)
 
     if (comparison && visits) {
       const chg = getActivityRecordsSharePeriodChange({
@@ -109,7 +109,7 @@ const VisitsMobileCard = () => {
       description={description}
       icon={DirectionsBusRoundedIcon}
       change={change}
-      changeDescription={comparison?.changeDescription || ''}
+      changeDescription={`share ${comparison?.changeDescription || ''}`}
       changeUnit='percentage points'
       colour='chartPurple'
       noData={noData}

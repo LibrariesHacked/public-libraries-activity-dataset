@@ -5,7 +5,7 @@ import { useApplicationState } from '../hooks/useApplicationState'
 import { formatCompactNumber } from '../helpers/numbers'
 import { getActiveServices, getServicePeriodChange, getServicesPopulation } from '../models/service'
 import { getRecordsQualityWarning, getServiceQualityWarning } from '../helpers/dataQuality'
-import { filterByMonthRange, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
+import { filterByMonthRange, formatPeriod, getMonthsInRange, resolvePeriodComparison } from '../helpers/periods'
 import { getReportedTotal, getReportingCoverageByGroup } from '../helpers/reportingRates'
 
 import ComputerRoundedIcon from '@mui/icons-material/ComputerRounded'
@@ -111,6 +111,7 @@ const MetricTotalCard = ({
       serviceRecords,
       periods,
       selectedPeriods,
+      snapshotPeriod,
       loans,
       visits,
       events,
@@ -128,6 +129,7 @@ const MetricTotalCard = ({
   const [change, setChange] = useState(null)
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
+  const [coverageLabel, setCoverageLabel] = useState('')
 
   const config = METRIC_CONFIG[metric]
   const records = config
@@ -159,6 +161,7 @@ const MetricTotalCard = ({
       const sampleTotal = getReportedTotal(matched, config.countProp)
       setWarning(getRecordsQualityWarning(matched))
       if (sampleTotal == null) {
+        setCoverageLabel('')
         setNoData(true)
         setCount(0)
         setDescription('')
@@ -170,6 +173,7 @@ const MetricTotalCard = ({
           config.countProp,
           () => 'all'
         ).get('all')
+        setCoverageLabel(`${coverage?.reportingServices || 0} of ${activeServices.length} selected services reporting`)
         const reportingYearCount = coverage?.reportingPopulation
           ? coverage.personYears / coverage.reportingPopulation
           : 0
@@ -201,6 +205,8 @@ const MetricTotalCard = ({
 
       const sampleTotal =
         validServices?.reduce((acc, s) => acc + (s[metric] || 0), 0) || 0
+
+      setCoverageLabel(`${validServices?.length || 0} of ${activeServices.length} selected services reporting`)
 
       setCount(sampleTotal)
 
@@ -267,9 +273,10 @@ const MetricTotalCard = ({
       title={title}
       number={formatCompactNumber(count)}
       description={description}
+      context={`${metric === 'users' ? `Annual borrowers (${formatPeriod(snapshotPeriod)})` : 'Activity in selected months'} · ${coverageLabel}`}
       icon={icon || METRIC_ICONS[metric]}
       change={change}
-      changeDescription={effectiveChangeDescription}
+      changeDescription={`${metric === 'users' ? 'borrower rate ' : ''}${effectiveChangeDescription}`}
       changeUnit={changeUnit}
       colour={colour}
       noData={noData}

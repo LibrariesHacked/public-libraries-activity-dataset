@@ -64,6 +64,28 @@ export const getReportedTotal = (records, countProp) => {
   return values.length ? values.reduce((total, value) => total + value, 0) : null
 }
 
+export const getComparisonChart = (data, datasetLabels) => {
+  const datasets = (data?.datasets || []).filter(dataset =>
+    datasetLabels.includes(dataset.label) && dataset.data.some(Number.isFinite)
+  )
+  const rows = (data?.labels || []).map((label, index) => ({
+    label,
+    index,
+    values: datasets.map(dataset => dataset.data[index])
+  })).filter(row => row.values.some(Number.isFinite))
+  rows.sort((first, second) =>
+    second.values.reduce((sum, value) => sum + (value ?? 0), 0) -
+    first.values.reduce((sum, value) => sum + (value ?? 0), 0)
+  )
+  return {
+    labels: rows.map(row => row.label),
+    datasets: datasets.map(dataset => ({
+      ...dataset,
+      data: rows.map(row => dataset.data[row.index])
+    }))
+  }
+}
+
 export const getReportedTotalsByGroup = (records, countProp, getGroupKey) => {
   const totals = new Map()
   records.forEach(record => {

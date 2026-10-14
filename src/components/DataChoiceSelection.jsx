@@ -81,7 +81,7 @@ const DataChoiceSelection = () => {
               Data corrections
             </Typography>
             <Tooltip
-              title='Adjusts known reporting errors to prevent chart distortion.'
+              title='Uses corrected figures for known reporting errors.'
               arrow
             >
               <InfoOutlinedIcon

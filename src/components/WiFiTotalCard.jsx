@@ -25,7 +25,7 @@ const WiFiTotalCard = () => {
   return (
     <MetricTotalCard
       metric='wifiSessions'
-      title='WiFi sessions'
+      title='Wi-Fi sessions'
       colour='chartYellow'
       formatDescription={formatDescription}
     />

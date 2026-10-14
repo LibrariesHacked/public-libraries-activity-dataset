@@ -94,6 +94,7 @@ const NumberCard = props => {
     title,
     number,
     description,
+    context,
     descriptionIcon,
     icon,
     change,
@@ -241,12 +242,7 @@ const NumberCard = props => {
                           ? (() => {
                               const roundedChange =
                                 Math.abs(change) < 0.05 ? 0 : change
-                              const color =
-                                roundedChange > 0
-                                  ? 'success.main'
-                                  : roundedChange < 0
-                                    ? 'error.main'
-                                    : 'text.secondary'
+                              const color = 'text.secondary'
                               const sign = roundedChange > 0 ? '+' : ''
                               const unitStr =
                                 changeUnit === 'percentage points'
@@ -279,7 +275,8 @@ const NumberCard = props => {
                                     sx={{
                                       fontWeight: 600,
                                       color: 'inherit',
-                                      whiteSpace: 'nowrap'
+                                      whiteSpace: 'normal',
+                                      overflowWrap: 'anywhere'
                                     }}
                                   >
                                     {trendLabel}
@@ -302,6 +299,11 @@ const NumberCard = props => {
                       </Stack>
                       )
                     : null}
+                  {context && (
+                    <Typography variant='caption' color='text.secondary' sx={{ mt: 1, display: 'block' }}>
+                      {context}
+                    </Typography>
+                  )}
                 </>
                 )}
           </Stack>

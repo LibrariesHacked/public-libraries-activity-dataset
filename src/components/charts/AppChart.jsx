@@ -39,7 +39,23 @@ const AppChart = ({
   sx,
   ...props
 }) => {
-  if (!data?.labels?.length && !data?.datasets?.length) return null
+  if (!data) return null
+
+  const reportedDatasets = (data?.datasets || []).filter(dataset =>
+    dataset.data?.some(Number.isFinite)
+  )
+  if (!reportedDatasets.length) {
+    return (
+      <Box sx={{ mb: 3 }} role='status'>
+        <Typography variant='subtitle1' component='h3' sx={{ fontWeight: 700 }}>
+          {title || options?.plugins?.title?.text}
+        </Typography>
+        <Typography variant='body2' color='text.secondary'>
+          No data reported for this selection. Missing data does not mean no activity.
+        </Typography>
+      </Box>
+    )
+  }
 
   const Component = CHART_COMPONENTS[type] || BarChart
   const chartTitle = title || (
@@ -64,7 +80,7 @@ const AppChart = ({
     }
   }
   const chartHeight = height ?? (type === 'service' ? undefined : { xs: 360, sm: 400, md: 440 })
-  const chartElement = <Component data={data} options={chartOptions} {...props} />
+  const chartElement = <Component data={{ ...data, datasets: reportedDatasets }} options={chartOptions} {...props} />
 
   const content = (
     <>

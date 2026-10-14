@@ -1,0 +1,3 @@
+**Estimate change** compares estimated England totals with 2023/24. **Same services** compares reported totals from services with data in both years, so changes in who reported have less effect.
+
+If they disagree, changes in reporting may help explain why. Neither accounts for changes in counting methods or tells us what happened in areas with missing data. Changes are percentages of totals, including borrower counts, not percentage points. A dash means there is not enough data to compare.

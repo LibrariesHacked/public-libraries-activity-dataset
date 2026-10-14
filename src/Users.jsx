@@ -168,12 +168,11 @@ const Users = () => {
       : [...new Set(users.map(m => m.period))].sort()
 
     const yearLabels = periods.map(formatPeriod)
-    const ageGroups = [...new Set(users.map(user => user.ageGroup))].sort()
+    const ageGroups = ['Under 12', '12-17', 'Adult']
     const populationPropertyByAgeGroup = {
       'Under 12': 'populationUnder12',
       '12-17': 'population12To17',
-      Adult: 'populationAdult',
-      Unknown: 'totalPopulation'
+      Adult: 'populationAdult'
     }
 
     const usersByPeriodAgeGroup = new Map()
@@ -313,11 +312,7 @@ const Users = () => {
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
           {isRegionMode ? 'Active users by region' : 'Active users by service'}
         </Typography>
-        <Markdown>
-          {isRegionMode
-            ? 'Active users as a percentage of resident population by region (typically 5–20%). Commuters and students can push this percentage higher.'
-            : usersByServiceMd}
-        </Markdown>
+        <Markdown>{usersByServiceMd}</Markdown>
       </Box>
       <AppChart
         type='service'

@@ -1,1 +1,5 @@
-Annual snapshots as of 31 March, showing computers and devices available for use or loan. As these are year-end counts, they should not be added together across years.
+Device counts show what was available on **31 March**, not activity over the year. The cards use the latest complete financial year selected and show how many services supplied figures. Do not add counts across years or treat changes in totals as a trend: different services may report each year.
+
+**Computer hours per device** divides yearly use by the number of devices at year end. It includes only services with device counts and all 12 months of usage. Select more than one complete year to compare years. This does not show how often computers were occupied: opening hours, device availability and reporting services can differ.
+
+**Device loans per available device** divides yearly loans by the number of devices available to borrow at year end, using services that reported both. A small stock can produce a high rate. This is not a count of borrowers or a percentage of devices used. The source table includes dates and reporting notes.

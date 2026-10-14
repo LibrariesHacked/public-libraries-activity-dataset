@@ -80,10 +80,10 @@ const VisitsBranchCard = () => {
       () => 'branch'
     ).get('branch')
     const annualRate = perThousandReportingPersonYears(totalBranch, coverage) || 0
-    setCount(annualRate)
+    setCount(totalBranch)
 
     const pct = totalAllVisits > 0 ? (totalBranch / totalAllVisits) * 100 : 0
-    setDescription(`${Math.round(pct)}% of visits; per 1,000 reporting residents / yr`)
+    setDescription(`${formatCompactNumber(annualRate, 1)} per 1,000 reporting residents / yr; ${Math.round(pct)}% of recorded visits`)
 
     if (comparison && visits) {
       const chg = getActivityRecordsSharePeriodChange({
@@ -108,7 +108,7 @@ const VisitsBranchCard = () => {
       description={description}
       icon={StorefrontRoundedIcon}
       change={change}
-      changeDescription={comparison?.changeDescription || ''}
+      changeDescription={`share ${comparison?.changeDescription || ''}`}
       changeUnit='percentage points'
       colour='chartBlue'
       noData={noData}

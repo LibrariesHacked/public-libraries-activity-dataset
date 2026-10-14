@@ -41,6 +41,7 @@ const LoansCategoryCard = ({
   const [change, setChange] = useState(null)
   const [noData, setNoData] = useState(false)
   const [warning, setWarning] = useState(null)
+  const [coverageLabel, setCoverageLabel] = useState('')
 
   const comparison = useMemo(
     () => resolvePeriodComparison(selectedPeriods, periods),
@@ -68,6 +69,7 @@ const LoansCategoryCard = ({
       () => 'category',
       service => populationFn([service])
     ).get('category')
+    setCoverageLabel(`${coverage?.reportingServices || 0} of ${activeServices.length} selected services reporting`)
 
     setNoData(!coverage)
 
@@ -114,6 +116,7 @@ const LoansCategoryCard = ({
       title={title}
       number={formatCompactNumber(count)}
       description={`${formatCompactNumber(perCapita, 1)} per 1,000 ${perCapitaLabel} per year`}
+      context={`Activity in selected months · ${coverageLabel}`}
       icon={icon}
       change={change}
       changeDescription={comparison?.changeDescription || ''}

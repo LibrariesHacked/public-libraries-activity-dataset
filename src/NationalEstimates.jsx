@@ -42,6 +42,9 @@ import {
   DCMS_BASELINE_PERIOD,
 } from './helpers/nationalEstimates'
 import nationalEstimatesNotesMd from './content/national-estimates-notes.md?raw'
+import nationalEstimatesIntroMd from './content/national-estimates-intro.md?raw'
+import nationalEstimatesComparisonMd from './content/national-estimates-comparison.md?raw'
+import nationalEstimatesRegionsMd from './content/national-estimates-regions.md?raw'
 
 /**
  * Format a number with British English thousand-separator commas.
@@ -84,7 +87,7 @@ const renderTrendChip = change => {
       <Chip
         size='small'
         icon={<TrendingFlatRoundedIcon fontSize='small' />}
-        label='Stable (0.0%)'
+        label={formatChange(change)}
         variant='outlined'
       />
     )
@@ -93,7 +96,6 @@ const renderTrendChip = change => {
   return (
     <Chip
       size='small'
-      color={isPositive ? 'success' : 'error'}
       variant='outlined'
       icon={
         isPositive ? (
@@ -174,28 +176,28 @@ const NationalEstimates = () => {
 
     return [
       {
-        title: 'Active Users',
+        title: 'Estimated active borrowers',
         icon: <PeopleRoundedIcon color='primary' fontSize='small' />,
         est: usersEst,
         subText: usersEst ? `${usersEst.grossedRate.toFixed(1)}% of population` : ''
       },
       {
-        title: 'Visits',
+        title: 'Estimated visits',
         icon: <PlaceRoundedIcon color='primary' fontSize='small' />,
         est: visitsEst,
         subText: visitsEst ? `${visitsEst.grossedRate.toFixed(1)} per 1,000 residents` : ''
       },
       {
-        title: 'Total Loans',
+        title: 'Estimated loans',
         icon: <MenuBookRoundedIcon color='primary' fontSize='small' />,
         est: loansEst,
         subText: loansEst ? `${loansEst.grossedRate.toFixed(1)} per 1,000 residents` : ''
       },
       {
-        title: 'Events',
+        title: 'Estimated events',
         icon: <EventRoundedIcon color='primary' fontSize='small' />,
         est: eventsEst,
-        subText: attendanceEst ? `${formatNumber(attendanceEst.grossedTotal)} attendees` : ''
+        subText: attendanceEst ? `${formatNumber(attendanceEst.grossedTotal)} estimated attendances` : ''
       }
     ]
   }, [nationalEstimates])
@@ -231,9 +233,7 @@ const NationalEstimates = () => {
           >
             National estimates
           </Typography>
-          <Typography variant='body1' color='text.secondary'>
-            Estimated annual activity totals for England based on reporting library services.
-          </Typography>
+          <Markdown>{nationalEstimatesIntroMd}</Markdown>
         </Box>
 
         {/* Period Selector */}
@@ -290,7 +290,7 @@ const NationalEstimates = () => {
                   {subText}
                 </Typography>
                 <Typography variant='caption' color='text.secondary'>
-                  {est ? `${est.reportingAuthorities}/${est.totalAuthorities} authorities` : ''}
+                  {est ? `${est.reportingAuthorities}/${est.totalAuthorities} authorities reporting${est.meetsThreshold ? '' : ' · Low coverage'}` : ''}
                 </Typography>
               </CardContent>
             </Card>
@@ -367,8 +367,8 @@ const NationalEstimates = () => {
                     {row.meetsThreshold ? (
                       <Tooltip
                         title={row.reportingAuthorities >= row.minimumReportingAuthorities
-                          ? `At least ${row.minimumReportingAuthorities} of ${row.totalAuthorities} authorities reported, meeting DCMS's published count benchmark.`
-                          : `Reporting services cover ${row.populationCoveragePercent.toFixed(1)}% of England's population, meeting DCMS's population benchmark.`}
+                          ? `At least ${row.minimumReportingAuthorities} of ${row.totalAuthorities} authorities reported, meeting the DCMS benchmark.`
+                          : `Reporting areas cover ${row.populationCoveragePercent.toFixed(1)}% of England's population, meeting the DCMS benchmark.`}
                         arrow
                       >
                         <Chip
@@ -381,7 +381,7 @@ const NationalEstimates = () => {
                       </Tooltip>
                     ) : (
                       <Tooltip
-                        title={`Fewer than ${row.minimumReportingAuthorities} of ${row.totalAuthorities} authorities reported this measure, and population coverage is below 70%. Treat the estimate with caution.`}
+                        title={`Fewer than ${row.minimumReportingAuthorities} of ${row.totalAuthorities} authorities reported, covering less than 70% of the population. This estimate is less certain.`}
                         arrow
                       >
                         <Chip
@@ -443,9 +443,7 @@ const NationalEstimates = () => {
         >
           Multi-year comparison
         </Typography>
-        <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
-          Estimated annual totals for England compared against the 2023/24 baseline.
-        </Typography>
+        <Markdown>{nationalEstimatesComparisonMd}</Markdown>
 
         <TableContainer component={Paper} elevation={0} variant='outlined' sx={{ boxShadow: 'none' }}>
           <Table size='small' aria-label='Multi-year comparison table' sx={{ boxShadow: 'none' }}>
@@ -550,9 +548,7 @@ const NationalEstimates = () => {
         >
           Regional estimates
         </Typography>
-        <Typography variant='body2' color='text.secondary' sx={{ mb: 1.5 }}>
-          Estimated totals and rates by region.
-        </Typography>
+        <Markdown>{nationalEstimatesRegionsMd}</Markdown>
 
         <TableContainer component={Paper} elevation={0} variant='outlined' sx={{ boxShadow: 'none' }}>
           <Table size='small' aria-label='Regional estimates table' sx={{ boxShadow: 'none' }}>

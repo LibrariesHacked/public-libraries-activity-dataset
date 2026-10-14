@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
+import Markdown from 'react-markdown'
 
 import Grid from '@mui/material/Grid'
 import Typography from '@mui/material/Typography'
@@ -13,6 +14,7 @@ import { formatCompactNumber } from '../helpers/numbers'
 import { createTimelineChartOptions } from '../helpers/charts'
 import { formatPeriod, getPeriodForMonth, getPeriodMonths } from '../helpers/periods'
 import * as computerInventoryModel from '../models/computerInventory'
+import computerInventoryMd from '../content/computer-inventory.md?raw'
 
 import { AppChart } from './charts'
 import NumberCard from './NumberCard'
@@ -21,7 +23,6 @@ const DEVICES_IN_SERVICE = 'Computers and devices in service'
 const DEVICES_AVAILABLE_TO_BORROW = 'Devices available to borrow'
 const LOANABLE_DEVICE_ISSUES = 'Issues of loanable devices'
 
-const inventoryChartOptions = createTimelineChartOptions('', 'Devices reported')
 const usageChartOptions = createTimelineChartOptions(
   '',
   'Computer hours per in-service device'
@@ -148,19 +149,6 @@ const ComputerInventoryInsights = ({ children }) => {
   }, [computerInventory, computers, filteredServices, selectedPeriods, monthRange])
 
   const latest = annualData[annualData.length - 1]
-  const inventoryChartData = useMemo(() => ({
-    labels: annualData.map(record => formatPeriod(record.period)),
-    datasets: [
-      {
-        label: 'Computers and devices in service',
-        data: annualData.map(record => record.devicesInService)
-      },
-      {
-        label: 'Devices available to borrow',
-        data: annualData.map(record => record.devicesAvailable)
-      }
-    ]
-  }), [annualData])
   const usageChartData = useMemo(() => ({
     labels: annualData.map(record => formatPeriod(record.period)),
     datasets: [{
@@ -198,7 +186,8 @@ const ComputerInventoryInsights = ({ children }) => {
           <NumberCard
             title='Computer hours per device'
             number={formatCompactNumber(latest?.hoursPerDevice || 0, 1)}
-            description={latest ? `${latest.usageServiceCount} services with complete usage and inventory` : ''}
+            description={latest ? `${latest.usageServiceCount} services with a full year of use and device counts` : ''}
+            context={`Annual hours per device (${periodLabel})`}
             icon={TrendingUpRoundedIcon}
             colour='chartRed'
             noData={!latest || latest.hoursPerDevice == null}
@@ -206,9 +195,10 @@ const ComputerInventoryInsights = ({ children }) => {
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <NumberCard
-            title='Loan issues per device'
+            title='Device loans per available device'
             number={formatCompactNumber(latest?.issuesPerDevice || 0, 1)}
             description={latest ? `${latest.loanServiceCount} services reporting both measures` : ''}
+            context={`Annual loans per device (${periodLabel})`}
             icon={SwapHorizRoundedIcon}
             colour='chartOrange'
             noData={!latest || latest.issuesPerDevice == null}
@@ -221,30 +211,18 @@ const ComputerInventoryInsights = ({ children }) => {
       <Typography variant='h5' sx={{ fontWeight: 700, mt: 5, mb: 0.5 }}>
         Device inventory and use
       </Typography>
-      <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-        Inventory is a 31 March snapshot. Comparisons use complete financial years; usage per device includes only services reporting all 12 months. Loan issues are compared with the loanable-device snapshot.
-      </Typography>
-
-      {annualData.length > 0
+      <Markdown>{computerInventoryMd}</Markdown>
+      {annualData.length > 1
         ? (
-          <>
             <AppChart
-              type='line'
-              data={inventoryChartData}
-              options={inventoryChartOptions}
-              title='Reported device inventory by financial year'
-              height={{ xs: 280, sm: 300 }}
-            />
-            <AppChart
-              type='line'
+              type='bar'
               data={usageChartData}
               options={usageChartOptions}
               title='Annual computer usage per in-service device'
               height={{ xs: 280, sm: 300 }}
             />
-          </>
           )
-        : (
+        : !latest && (
           <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
             Select at least one complete financial year to view inventory and usage comparisons.
           </Typography>

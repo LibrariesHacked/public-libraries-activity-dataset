@@ -23,6 +23,7 @@ import {
   sortServicesByMetric
 } from './helpers/charts'
 import {
+  getComparisonChart,
   getReportingCoverageByGroup,
   perThousandReportingPersonYears,
   perThousandReportingResidents
@@ -78,7 +79,7 @@ const Visits = () => {
           ? 'Visits per 1,000 reporting residents by region'
           : 'Visits per 1,000 reporting residents by service',
         'Annual visits per 1,000 reporting residents',
-        { stacked: true }
+        { showLegend: false }
       ),
     [isRegionMode]
   )
@@ -299,7 +300,16 @@ const Visits = () => {
         </Typography>
         <Markdown>{visitsByLocationMd}</Markdown>
       </Box>
-      <AppChart type='line' options={visitsChartOptions} data={visitData} />
+      {(visitData?.datasets || []).filter(dataset => dataset.data.some(Number.isFinite)).map(dataset => (
+        <AppChart
+          key={dataset.label}
+          type='line'
+          title={`${dataset.label} visits and interactions over time`}
+          options={visitsChartOptions}
+          data={{ ...visitData, datasets: [dataset] }}
+          height={{ xs: 280, sm: 320 }}
+        />
+      ))}
 
       <Box sx={{ mt: 4, mb: 2 }}>
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
@@ -317,17 +327,17 @@ const Visits = () => {
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>
           {isRegionMode ? 'Visit types by region' : 'Visit types by service'}
         </Typography>
-        <Markdown>
-          {isRegionMode
-            ? 'Annual visits and outreach interactions per 1,000 residents in services reporting each location type.'
-            : visitsByServiceMd}
-        </Markdown>
+        <Markdown>{visitsByServiceMd}</Markdown>
       </Box>
-      <AppChart
-        type='service'
-        data={serviceChart}
-        options={serviceChartOptions}
-      />
+      {serviceChart.datasets.filter(dataset => dataset.data.some(Number.isFinite)).map(dataset => (
+        <AppChart
+          key={dataset.label}
+          type='service'
+          title={`${dataset.label} by ${isRegionMode ? 'region' : 'service'}`}
+          data={getComparisonChart(serviceChart, [dataset.label])}
+          options={serviceChartOptions}
+        />
+      ))}
 
       <Box sx={{ mt: 5, mb: 3 }}>
         <Typography variant='h5' sx={{ fontWeight: 700, mb: 0.5 }}>

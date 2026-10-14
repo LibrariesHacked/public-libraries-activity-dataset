@@ -1,1 +1,3 @@
-Active users as a share of the population in each library service. Percentages may be higher in areas used by commuters, students, or visitors from neighbouring authorities.
+Compare borrowers as a percentage of residents for the latest selected financial year. Regional rates combine borrowers and populations from services with reported totals, rather than averaging service percentages.
+
+Commuters, students and people borrowing outside their home area can affect these rates, as can local counting methods. They are not necessarily the percentage of local residents using a library. A missing bar means no data.

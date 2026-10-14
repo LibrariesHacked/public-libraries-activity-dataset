@@ -1,0 +1,3 @@
+These are **estimated totals for England**, not counts from every service. Reported yearly totals are scaled up using population. The year selected here is separate from the activity-page filters.
+
+Check how many services reported and how much of the population they cover. Meeting the coverage benchmark does not guarantee accuracy. Estimates assume areas with missing data have similar activity per resident, which may not be true.
