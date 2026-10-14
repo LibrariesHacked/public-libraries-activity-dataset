@@ -1,6 +1,6 @@
-import"./rolldown-runtime-XKyaHtl9.js";import{A as e,H as t,t as n}from"./Box-BiKC9aLS.js";import{u as r}from"./index-CUEkA_6C.js";t();var i=`# Privacy policy
+import"./rolldown-runtime-XKyaHtl9.js";import{A as e,H as t,t as n}from"./Box-BiKC9aLS.js";import{l as r}from"./index-Cndu9yyd.js";t();var i=`# Privacy policy
 
-This policy outlines how the Public Libraries Activity Dataset website handles visitor information.
+This page explains how the Public Libraries Activity Dataset website handles visitor information.
 
 ## Overview
 
@@ -13,7 +13,7 @@ This policy outlines how the Public Libraries Activity Dataset website handles v
 
 This site does not use tracking, advertising, or third-party cookies.
 
-Filter choices—such as selected years, services, or view options—are saved temporarily in your browser session to maintain your view while navigating.
+Your filter choices, such as years and services, are saved in your browser session so they stay the same as you move between pages.
 
 ## Analytics
 
@@ -21,7 +21,7 @@ The site uses [Plausible Analytics](https://plausible.io), an open-source analyt
 
 * **Cookie-free:** Plausible does not use cookies or store identifiers on your device.
 * **No individual tracking:** IP addresses are not recorded, and visitors are not tracked across websites.
-* **Public reporting:** Visitor statistics are publicly viewable on our [analytics dashboard](https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk).
+* **Public reporting:** Visitor statistics are available on our [analytics dashboard](https://analytics.librarydata.uk/share/aofzROqYtqmn5JNS/activity.librarydata.uk).
 
 ## External links
 
@@ -29,5 +29,5 @@ This website includes links to third-party services and organisations, including
 
 ## Contact
 
-For questions regarding this website or policy, contact [Libraries Hacked](https://www.librarieshacked.org) or open an issue on [GitHub](https://github.com/LibrariesHacked/public-libraries-activity-dataset).
+For questions about this website or policy, contact [Libraries Hacked](https://www.librarieshacked.org) or open an issue on [GitHub](https://github.com/LibrariesHacked/public-libraries-activity-dataset).
 `,a=e(),o=()=>(0,a.jsx)(n,{sx:{my:3},children:(0,a.jsx)(r,{children:i})});export{o as default};
